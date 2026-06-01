@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Parcelas</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: #f8f9fa; color: #3c4043; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 950px; padding: 24px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15); position: relative; }
+        h2 { margin-top: 0; color: #1a73e8; font-size: 22px; border-bottom: 2px solid #e8eaed; padding-bottom: 12px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 8px; border: 1px solid #dadce0; font-size: 14px; text-align: left; }
+        td { padding: 6px 8px; border: 1px solid #dadce0; vertical-align: middle; font-size: 14px; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        .col-num { width: 10%; font-weight: bold; text-align: center; }
+        .col-check { width: 10%; text-align: center; }
+        .col-fecha { width: 25%; color: #5f6368; font-family: monospace; }
+        .col-color { width: 20%; text-align: center; }
+        .col-nombre { width: 35%; }
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
+        .select-color { width: 100%; max-width: 120px; height: 34px; padding: 6px; border-radius: 4px; border: 1px solid #dadce0; cursor: pointer; font-size: 0; }
+        .color-verde { background-color: #2ecc71 !important; }
+        .color-rojo { background-color: #e74c3c !important; }
+        .input-nombre { width: 100%; padding: 6px 10px; border: 1px solid #dadce0; border-radius: 4px; outline: none; }
+        .input-nombre:focus { border-color: #1a73e8; }
+        .status-bar { background: #e8f0fe; color: #1a73e8; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; display: none; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Control de Parcelas</h2>
+    <div id="status" class="status-bar">Cargando datos desde la nube...</div>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-num">Nº Parcela</th>
+                    <th class="col-check">Hecho</th>
+                    <th class="col-fecha">Fecha de Registro</th>
+                    <th class="col-color">Color</th>
+                    <th class="col-nombre">Nombre Parcela</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-parcelas"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Tu enlace de Google Apps Script (Versión 2) enlazado correctamente:
+    const URL_API = 'https://script.google.com/macros/s/AKfybyPjcoSXfeKuGf9yocTQko_ljZeKUKhMu31Bxy2FMZNj_hBHj8Z4SVKRkp1jpe70UxW4g/exec'; 
+    const TOTAL_PARCELAS = 21;
+    let temporizadorGuardado;
+
+    window.onload = function() {
+        generarTablaVacia();
+        cargarDatosDesdeNube();
+    };
+
+    function generarTablaVacia() {
+        const tbody = document.getElementById('tabla-parcelas');
+        tbody.innerHTML = '';
+        for (let i = 1; i <= TOTAL_PARCELAS; i++) {
+            const tr = document.createElement('tr');
+            tr.id = `fila-${i}`;
+            tr.innerHTML = `
+                <td class="col-num">${i}</td>
+                <td class="col-check"><input type="checkbox" class="chk" onchange="toggleFila(${i})"></td>
+                <td class="col-fecha" id="fecha-${i}">-</td>
+                <td class="col-color">
+                    <select class="select-color color-verde" onchange="cambiarColor(${i})">
+                        <option value="Verde"></option>
+                        <option value="Rojo"></option>
+                    </select>
+                </td>
+                <td><input type="text" class="input-nombre" placeholder="Escribe el nombre..." oninput="programarGuardado()"></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function toggleFila(id) {
+        const checkbox = document.querySelector(`#fila-${id} .chk`);
+        const celdaFecha = document.getElementById(`fecha-${id}`);
+        if (checkbox.checked) {
+            const ahora = new Date();
+            celdaFecha.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+        } else {
+            celdaFecha.textContent = "-";
+        }
+        enviarDatosANube();
+    }
+
+    function cambiarColor(id) {
+        const select = document.querySelector(`#fila-${id} .select-color`);
+        select.className = 'select-color ' + (select.value === 'Verde' ? 'color-verde' : 'color-rojo');
+        enviarDatosANube();
+    }
+
+    function programarGuardado() {
+        clearTimeout(temporizadorGuardado);
+        mostrarEstado("Escribiendo...");
+        temporizadorGuardado = setTimeout(enviarDatosANube, 1000); 
+    }
+
+    function enviarDatosANube() {
+        mostrarEstado("Guardando en la nube...");
+        const datos = [];
+        for (let i = 1; i <= TOTAL_PARCELAS; i++) {
+            const fila = document.getElementById(`fila-${i}`);
+            datos.push({
+                id: i,
+                check: fila.querySelector('.chk').checked,
+                fecha: document.getElementById(`fecha-${i}`).textContent,
+                color: fila.querySelector('.select-color').value,
+                nombre: fila.querySelector('.input-nombre').value
+            });
+        }
+
+        fetch(URL_API, { method: 'POST', body: JSON.stringify(datos) })
+        .then(() => mostrarEstado("Sincronizado con la nube ✔️"))
+        .catch(() => mostrarEstado("❌ Error al guardar en internet"));
+    }
+
+    function cargarDatosDesdeNube() {
+        mostrarEstado("Sincronizando lista con Google Sheets...");
+        fetch(URL_API)
+        .then(res => res.json())
+        .then(lista => {
+            if(lista.length === 0) { mostrarEstado("Lista vacía y lista para usar"); return; }
+            lista.forEach(p => {
+                const fila = document.getElementById(`fila-${p.id}`);
+                if (fila) {
+                    fila.querySelector('.chk').checked = p.check;
+                    document.getElementById(`fecha-${p.id}`).textContent = p.fecha;
+                    const select = fila.querySelector('.select-color');
+                    select.value = p.color;
+                    select.className = 'select-color ' + (p.color === 'Verde' ? 'color-verde' : 'color-rojo');
+                    fila.querySelector('.input-nombre').value = p.nombre;
+                }
+            });
+            mostrarEstado("Datos cargados correctamente ✔️");
+        })
+        .catch(() => mostrarEstado("❌ No se pudo conectar a internet para cargar datos"));
+    }
+
+    function mostrarEstado(msg) {
+        const div = document.getElementById("status");
+        div.style.display = "block";
+        div.textContent = msg;
+    }
+</script>
+</body>
+</html>
