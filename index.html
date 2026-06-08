@@ -11,16 +11,15 @@
         h2 { margin-top: 0; color: #1a73e8; font-size: 22px; border-bottom: 2px solid #e8eaed; padding-bottom: 12px; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 8px; border: 1px solid #dadce0; font-size: 13px; text-align: left; }
+        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 8px; border: 1px solid #dadce0; font-size: 13px; text-align: center; }
         td { padding: 8px 8px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; }
         tr:nth-child(even) { background-color: #f8f9fa; }
         .col-pol { width: 10%; text-align: center; font-weight: 500; color: #202124; }
         .col-num { width: 10%; font-weight: bold; text-align: center; }
-        .col-check { width: 8%; text-align: center; }
+        .col-check { width: 10%; text-align: center; }
         .col-fecha { width: 16%; color: #5f6368; font-family: monospace; text-align: center; }
-        .col-color { width: 14%; text-align: center; position: relative; }
-        .col-nombre { width: 26%; }
-        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
+        .col-nombre { width: 28%; text-align: left; }
+        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; accent-color: #1a73e8; }
         
         .input-nombre { 
             width: 100%; 
@@ -38,61 +37,6 @@
         }
         .input-nombre:focus { border-color: #1a73e8; }
         .status-bar { background: #e8f0fe; color: #1a73e8; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; display: none; font-weight: 500; }
-
-        .custom-select {
-            position: relative;
-            width: 100%;
-            max-width: 100px;
-            margin: 0 auto;
-            user-select: none;
-        }
-        .select-trigger {
-            padding: 6px 20px 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            color: white;
-            font-weight: bold;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-        }
-        .select-trigger::after {
-            content: '▼';
-            font-size: 8px;
-            position: absolute;
-            right: 6px;
-        }
-        .select-options {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
-            z-index: 100;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .select-options div {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 13px;
-            color: white;
-            font-weight: bold;
-            text-align: left;
-        }
-        .color-verde { background-color: #2ecc71 !important; }
-        .color-rojo { background-color: #e74c3c !important; }
-        
-        .select-options div.color-verde:hover { background-color: #27ae60 !important; }
-        .select-options div.color-rojo:hover { background-color: #c0392b !important; }
-
-        .custom-select.open .select-options { display: block; }
     </style>
 </head>
 <body>
@@ -105,13 +49,13 @@
         <table>
             <thead>
                 <tr>
-                    <th style="text-align: center;">Nº Polígono</th>
-                    <th style="text-align: center;">Nº Parcela</th>
-                    <th class="col-check">Hecho</th>
-                    <th style="text-align: center;">Fecha Registro 1</th>
-                    <th style="text-align: center;">Tratamiento</th>
-                    <th style="text-align: center;">Fecha Registro 2</th>
-                    <th class="col-nombre">Nombre Parcela</th>
+                    <th>Nº Polígono</th>
+                    <th>Nº Parcela</th>
+                    <th>Hecho</th>
+                    <th>Fecha Registro 1</th>
+                    <th>Tratamiento</th>
+                    <th>Fecha Registro 2</th>
+                    <th>Nombre Parcela</th>
                 </tr>
             </thead>
             <tbody id="tabla-parcelas">
@@ -130,12 +74,6 @@
 
     window.onload = function() {
         cargarDatosDesdeNube();
-        
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-select')) {
-                document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('open'));
-            }
-        });
     };
 
     function cargarDatosDesdeNube() {
@@ -159,17 +97,9 @@
                 tr.innerHTML = `
                     <td class="col-pol">${p.poligono}</td>
                     <td class="col-num">${p.id}</td>
-                    <td class="col-check"><input type="checkbox" class="chk" ${p.check ? 'checked' : ''} onchange="toggleFila(${index})"></td>
+                    <td class="col-check"><input type="checkbox" class="chk-hecho" ${p.checkHecho ? 'checked' : ''} onchange="toggleHecho(${index})"></td>
                     <td class="col-fecha" id="fecha1-${index}">${p.fecha1}</td>
-                    <td class="col-color">
-                        <div class="custom-select" id="select-container-${index}">
-                            <div class="select-trigger ${p.tratamiento === 'Rojo' ? 'color-rojo' : 'color-verde'}" onclick="toggledropdown(${index})" id="trigger-${index}" data-value="${p.tratamiento}">${p.tratamiento}</div>
-                            <div class="select-options">
-                                <div class="color-verde" onclick="seleccionarTratamiento(${index}, 'Verde')">Verde</div>
-                                <div class="color-rojo" onclick="seleccionarTratamiento(${index}, 'Rojo')">Rojo</div>
-                            </div>
-                        </div>
-                    </td>
+                    <td class="col-check"><input type="checkbox" class="chk-tratamiento" ${p.checkTratamiento ? 'checked' : ''} onchange="toggleTratamiento(${index})"></td>
                     <td class="col-fecha" id="fecha2-${index}">${p.fecha2}</td>
                     <td class="col-nombre"><textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado(${index})">${p.nombre}</textarea></td>
                 `;
@@ -190,39 +120,26 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    function toggledropdown(index) {
-        const contenedor = document.getElementById(`select-container-${index}`);
-        const estabaAbierto = contenedor.classList.contains('open');
-        document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('open'));
-        if (!estabaAbierto) {
-            contenedor.classList.add('open');
-        }
-    }
-
-    function seleccionarTratamiento(index, valor) {
-        const trigger = document.getElementById(`trigger-${index}`);
-        trigger.textContent = valor;
-        trigger.setAttribute('data-value', valor);
-        trigger.className = 'select-trigger ' + (valor === 'Verde' ? 'color-verde' : 'color-rojo');
-        
-        document.getElementById(`select-container-${index}`).classList.remove('open');
-        
-        // Al cambiar el tratamiento (Verde/Rojo), registramos la fecha actual en la Fecha Registro 2
-        const celdaFecha2 = document.getElementById(`fecha2-${index}`);
-        const ahora = new Date();
-        celdaFecha2.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
-        
-        enviarDatosANube();
-    }
-
-    function toggleFila(index) {
-        const checkbox = document.querySelector(`#fila-${index} .chk`);
+    function toggleHecho(index) {
+        const checkbox = document.querySelector(`#fila-${index} .chk-hecho`);
         const celdaFecha1 = document.getElementById(`fecha1-${index}`);
         if (checkbox.checked) {
             const ahora = new Date();
             celdaFecha1.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
         } else {
             celdaFecha1.textContent = "-";
+        }
+        enviarDatosANube();
+    }
+
+    function toggleTratamiento(index) {
+        const checkbox = document.querySelector(`#fila-${index} .chk-tratamiento`);
+        const celdaFecha2 = document.getElementById(`fecha2-${index}`);
+        if (checkbox.checked) {
+            const ahora = new Date();
+            celdaFecha2.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+        } else {
+            celdaFecha2.textContent = "-";
         }
         enviarDatosANube();
     }
@@ -240,12 +157,11 @@
         listaGlobalParcelas.forEach((p, index) => {
             const fila = document.getElementById(`fila-${index}`);
             if (fila) {
-                const valorTratamiento = document.getElementById(`trigger-${index}`).getAttribute('data-value');
                 datos.push({
                     id: p.id,
-                    check: fila.querySelector('.chk').checked,
+                    checkHecho: fila.querySelector('.chk-hecho').checked,
                     fecha1: document.getElementById(`fecha1-${index}`).textContent,
-                    tratamiento: valorTratamiento,
+                    checkTratamiento: fila.querySelector('.chk-tratamiento').checked,
                     fecha2: document.getElementById(`fecha2-${index}`).textContent,
                     nombre: fila.querySelector('.input-nombre').value
                 });
