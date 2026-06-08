@@ -6,102 +6,228 @@
     <title>Control de Parcelas</title>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-        body { background-color: #f8f9fa; color: #3c4043; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 950px; padding: 24px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15); position: relative; }
+        body { background-color: #f8f9fa; color: #3c4043; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 1100px; padding: 15px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15); position: relative; }
         h2 { margin-top: 0; color: #1a73e8; font-size: 22px; border-bottom: 2px solid #e8eaed; padding-bottom: 12px; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 8px; border: 1px solid #dadce0; font-size: 14px; text-align: left; }
-        td { padding: 6px 8px; border: 1px solid #dadce0; vertical-align: middle; font-size: 14px; }
+        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 8px; border: 1px solid #dadce0; font-size: 13px; text-align: left; }
+        td { padding: 8px 8px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; }
         tr:nth-child(even) { background-color: #f8f9fa; }
+        .col-pol { width: 10%; text-align: center; font-weight: 500; color: #202124; }
         .col-num { width: 10%; font-weight: bold; text-align: center; }
-        .col-check { width: 10%; text-align: center; }
-        .col-fecha { width: 25%; color: #5f6368; font-family: monospace; }
-        .col-color { width: 20%; text-align: center; }
-        .col-nombre { width: 35%; }
+        .col-check { width: 8%; text-align: center; }
+        .col-fecha { width: 16%; color: #5f6368; font-family: monospace; text-align: center; }
+        .col-color { width: 14%; text-align: center; position: relative; }
+        .col-nombre { width: 26%; }
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
-        .select-color { width: 100%; max-width: 120px; height: 34px; padding: 6px; border-radius: 4px; border: 1px solid #dadce0; cursor: pointer; font-size: 0; }
-        .color-verde { background-color: #2ecc71 !important; }
-        .color-rojo { background-color: #e74c3c !important; }
-        .input-nombre { width: 100%; padding: 6px 10px; border: 1px solid #dadce0; border-radius: 4px; outline: none; }
+        
+        .input-nombre { 
+            width: 100%; 
+            min-width: 160px;
+            min-height: 40px;
+            max-height: 120px;
+            padding: 6px 10px; 
+            border: 1px solid #dadce0; 
+            border-radius: 4px; 
+            outline: none; 
+            resize: vertical;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
         .input-nombre:focus { border-color: #1a73e8; }
         .status-bar { background: #e8f0fe; color: #1a73e8; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; display: none; font-weight: 500; }
+
+        .custom-select {
+            position: relative;
+            width: 100%;
+            max-width: 100px;
+            margin: 0 auto;
+            user-select: none;
+        }
+        .select-trigger {
+            padding: 6px 20px 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: white;
+            font-weight: bold;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .select-trigger::after {
+            content: '▼';
+            font-size: 8px;
+            position: absolute;
+            right: 6px;
+        }
+        .select-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .select-options div {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+        }
+        .color-verde { background-color: #2ecc71 !important; }
+        .color-rojo { background-color: #e74c3c !important; }
+        
+        .select-options div.color-verde:hover { background-color: #27ae60 !important; }
+        .select-options div.color-rojo:hover { background-color: #c0392b !important; }
+
+        .custom-select.open .select-options { display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Control de Parcelas</h2>
-    <div id="status" class="status-bar">Cargando datos desde la nube...</div>
+    <h2>Control de Parcelas Real</h2>
+    <div id="status" class="status-bar">Sincronizando con Google Sheets...</div>
     
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
-                    <th class="col-num">Nº Parcela</th>
+                    <th style="text-align: center;">Nº Polígono</th>
+                    <th style="text-align: center;">Nº Parcela</th>
                     <th class="col-check">Hecho</th>
-                    <th class="col-fecha">Fecha de Registro</th>
-                    <th class="col-color">Color</th>
+                    <th style="text-align: center;">Fecha Registro 1</th>
+                    <th style="text-align: center;">Tratamiento</th>
+                    <th style="text-align: center;">Fecha Registro 2</th>
                     <th class="col-nombre">Nombre Parcela</th>
                 </tr>
             </thead>
-            <tbody id="tabla-parcelas"></tbody>
+            <tbody id="tabla-parcelas">
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#5f6368;">Cargando tus parcelas reales de la nube...</td></tr>
+            </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // Tu enlace de Google Apps Script (Versión 2) enlazado correctamente:
-    const URL_API = 'https://script.google.com/macros/s/AKfybyPjcoSXfeKuGf9yocTQko_ljZeKUKhMu31Bxy2FMZNj_hBHj8Z4SVKRkp1jpe70UxW4g/exec'; 
-    const TOTAL_PARCELAS = 21;
+    // ⚠️ REEMPLAZA ESTO POR TU NUEVA URL /exec DE APPS SCRIPT
+    const URL_API = 'TU_URL_DE_APPS_SCRIPT_AQUI'; 
+    
+    let listaGlobalParcelas = [];
     let temporizadorGuardado;
 
     window.onload = function() {
-        generarTablaVacia();
         cargarDatosDesdeNube();
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-select')) {
+                document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('open'));
+            }
+        });
     };
 
-    function generarTablaVacia() {
-        const tbody = document.getElementById('tabla-parcelas');
-        tbody.innerHTML = '';
-        for (let i = 1; i <= TOTAL_PARCELAS; i++) {
-            const tr = document.createElement('tr');
-            tr.id = `fila-${i}`;
-            tr.innerHTML = `
-                <td class="col-num">${i}</td>
-                <td class="col-check"><input type="checkbox" class="chk" onchange="toggleFila(${i})"></td>
-                <td class="col-fecha" id="fecha-${i}">-</td>
-                <td class="col-color">
-                    <select class="select-color color-verde" onchange="cambiarColor(${i})">
-                        <option value="Verde"></option>
-                        <option value="Rojo"></option>
-                    </select>
-                </td>
-                <td><input type="text" class="input-nombre" placeholder="Escribe el nombre..." oninput="programarGuardado()"></td>
-            `;
-            tbody.appendChild(tr);
+    function cargarDatosDesdeNube() {
+        mostrarEstado("Sincronizando lista con Google Sheets...");
+        fetch(URL_API)
+        .then(res => res.json())
+        .then(lista => {
+            listaGlobalParcelas = lista;
+            const tbody = document.getElementById('tabla-parcelas');
+            tbody.innerHTML = '';
+
+            if(!lista || lista.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">La hoja está vacía.</td></tr>`;
+                mostrarEstado("Lista vacía"); 
+                return; 
+            }
+            
+            lista.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.id = `fila-${index}`;
+                tr.innerHTML = `
+                    <td class="col-pol">${p.poligono}</td>
+                    <td class="col-num">${p.id}</td>
+                    <td class="col-check"><input type="checkbox" class="chk" ${p.check ? 'checked' : ''} onchange="toggleFila(${index})"></td>
+                    <td class="col-fecha" id="fecha1-${index}">${p.fecha1}</td>
+                    <td class="col-color">
+                        <div class="custom-select" id="select-container-${index}">
+                            <div class="select-trigger ${p.tratamiento === 'Rojo' ? 'color-rojo' : 'color-verde'}" onclick="toggledropdown(${index})" id="trigger-${index}" data-value="${p.tratamiento}">${p.tratamiento}</div>
+                            <div class="select-options">
+                                <div class="color-verde" onclick="seleccionarTratamiento(${index}, 'Verde')">Verde</div>
+                                <div class="color-rojo" onclick="seleccionarTratamiento(${index}, 'Rojo')">Rojo</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="col-fecha" id="fecha2-${index}">${p.fecha2}</td>
+                    <td class="col-nombre"><textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado(${index})">${p.nombre}</textarea></td>
+                `;
+                tbody.appendChild(tr);
+                
+                setTimeout(() => {
+                    const txt = tr.querySelector('.input-nombre');
+                    if(txt) autoExpand(txt);
+                }, 50);
+            });
+            mostrarEstado("Datos cargados correctamente ✔️");
+        })
+        .catch(() => mostrarEstado("❌ No se pudo conectar a internet"));
+    }
+
+    function autoExpand(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function toggledropdown(index) {
+        const contenedor = document.getElementById(`select-container-${index}`);
+        const estabaAbierto = contenedor.classList.contains('open');
+        document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('open'));
+        if (!estabaAbierto) {
+            contenedor.classList.add('open');
         }
     }
 
-    function toggleFila(id) {
-        const checkbox = document.querySelector(`#fila-${id} .chk`);
-        const celdaFecha = document.getElementById(`fecha-${id}`);
+    function seleccionarTratamiento(index, valor) {
+        const trigger = document.getElementById(`trigger-${index}`);
+        trigger.textContent = valor;
+        trigger.setAttribute('data-value', valor);
+        trigger.className = 'select-trigger ' + (valor === 'Verde' ? 'color-verde' : 'color-rojo');
+        
+        document.getElementById(`select-container-${index}`).classList.remove('open');
+        
+        // Al cambiar el tratamiento (Verde/Rojo), registramos la fecha actual en la Fecha Registro 2
+        const celdaFecha2 = document.getElementById(`fecha2-${index}`);
+        const ahora = new Date();
+        celdaFecha2.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+        
+        enviarDatosANube();
+    }
+
+    function toggleFila(index) {
+        const checkbox = document.querySelector(`#fila-${index} .chk`);
+        const celdaFecha1 = document.getElementById(`fecha1-${index}`);
         if (checkbox.checked) {
             const ahora = new Date();
-            celdaFecha.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+            celdaFecha1.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
         } else {
-            celdaFecha.textContent = "-";
+            celdaFecha1.textContent = "-";
         }
         enviarDatosANube();
     }
 
-    function cambiarColor(id) {
-        const select = document.querySelector(`#fila-${id} .select-color`);
-        select.className = 'select-color ' + (select.value === 'Verde' ? 'color-verde' : 'color-rojo');
-        enviarDatosANube();
-    }
-
-    function programarGuardado() {
+    function programarGuardado(index) {
         clearTimeout(temporizadorGuardado);
         mostrarEstado("Escribiendo...");
         temporizadorGuardado = setTimeout(enviarDatosANube, 1000); 
@@ -110,42 +236,32 @@
     function enviarDatosANube() {
         mostrarEstado("Guardando en la nube...");
         const datos = [];
-        for (let i = 1; i <= TOTAL_PARCELAS; i++) {
-            const fila = document.getElementById(`fila-${i}`);
-            datos.push({
-                id: i,
-                check: fila.querySelector('.chk').checked,
-                fecha: document.getElementById(`fecha-${i}`).textContent,
-                color: fila.querySelector('.select-color').value,
-                nombre: fila.querySelector('.input-nombre').value
-            });
-        }
+        
+        listaGlobalParcelas.forEach((p, index) => {
+            const fila = document.getElementById(`fila-${index}`);
+            if (fila) {
+                const valorTratamiento = document.getElementById(`trigger-${index}`).getAttribute('data-value');
+                datos.push({
+                    id: p.id,
+                    check: fila.querySelector('.chk').checked,
+                    fecha1: document.getElementById(`fecha1-${index}`).textContent,
+                    tratamiento: valorTratamiento,
+                    fecha2: document.getElementById(`fecha2-${index}`).textContent,
+                    nombre: fila.querySelector('.input-nombre').value
+                });
+            }
+        });
 
-        fetch(URL_API, { method: 'POST', body: JSON.stringify(datos) })
-        .then(() => mostrarEstado("Sincronizado con la nube ✔️"))
-        .catch(() => mostrarEstado("❌ Error al guardar en internet"));
-    }
-
-    function cargarDatosDesdeNube() {
-        mostrarEstado("Sincronizando lista con Google Sheets...");
-        fetch(URL_API)
-        .then(res => res.json())
-        .then(lista => {
-            if(lista.length === 0) { mostrarEstado("Lista vacía y lista para usar"); return; }
-            lista.forEach(p => {
-                const fila = document.getElementById(`fila-${p.id}`);
-                if (fila) {
-                    fila.querySelector('.chk').checked = p.check;
-                    document.getElementById(`fecha-${p.id}`).textContent = p.fecha;
-                    const select = fila.querySelector('.select-color');
-                    select.value = p.color;
-                    select.className = 'select-color ' + (p.color === 'Verde' ? 'color-verde' : 'color-rojo');
-                    fila.querySelector('.input-nombre').value = p.nombre;
-                }
-            });
-            mostrarEstado("Datos cargados correctamente ✔️");
+        fetch(URL_API, { 
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos) 
         })
-        .catch(() => mostrarEstado("❌ No se pudo conectar a internet para cargar datos"));
+        .then(() => {
+            mostrarEstado("Datos guardados en la nube ✔️");
+        })
+        .catch(() => mostrarEstado("❌ Error al guardar en internet"));
     }
 
     function mostrarEstado(msg) {
