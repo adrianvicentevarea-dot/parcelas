@@ -7,37 +7,36 @@
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
         body { background-color: #f8f9fa; color: #3c4043; margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 1200px; padding: 15px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); }
+        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 1300px; padding: 15px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); }
         h2 { margin-top: 0; color: #1a73e8; font-size: 22px; border-bottom: 2px solid #e8eaed; padding-bottom: 12px; }
         .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 4px; border: 1px solid #dadce0; font-size: 13px; text-align: center; }
-        td { padding: 12px 4px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        
+        /* Tamaños de columnas exactos basados en la estructura del Excel */
+        th, td { border: 1px solid #dadce0; vertical-align: middle; text-align: center; font-size: 13px; padding: 10px 4px; }
+        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
-        .col-pol { width: 8%; }
-        .col-num { width: 8%; font-weight: bold; }
-        
-        /* Columna Hecho con sus 3 casillas */
-        .col-hecho-triple { width: 14%; }
+        .w-pol { width: 7%; }
+        .w-num { width: 8%; font-weight: bold; }
+        .w-hecho { width: 12%; }
+        .w-fecha-d { width: 23%; } /* Más espaciosa para las fechas con comas */
+        .w-trat { width: 13%; }
+        .w-fecha-f { width: 11%; }
+        .w-nombre { width: 26%; }
+
         .flex-checks { display: flex; justify-content: center; gap: 8px; }
-        
-        /* Columna Tratamiento con su casilla única */
-        .col-tratamiento-check { width: 11%; }
-        
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
         
-        /* Estilos de fechas estables */
-        .col-fecha-d { width: 18%; color: #3c4043; font-family: monospace; font-size: 12px; white-space: normal; word-break: break-all; }
-        .col-fecha-f { width: 14%; color: #3c4043; font-family: monospace; font-size: 13px; white-space: nowrap; }
-        .col-nombre { width: 27%; text-align: left; }
+        /* Estilos de visualización de celdas de texto e inputs */
+        .col-fecha-d { color: #3c4043; font-family: monospace; font-size: 12px; white-space: normal; word-break: break-all; text-align: center; }
+        .col-fecha-f { color: #3c4043; font-family: monospace; font-size: 13px; white-space: nowrap; }
         
-        .input-nombre { 
-            width: 100%; min-width: 160px; min-height: 40px; max-height: 120px;
-            padding: 6px 10px; border: 1px solid #dadce0; border-radius: 4px; 
-            outline: none; resize: vertical; font-size: 13px;
+        .input-tratamiento, .input-nombre { 
+            width: 100%; min-height: 40px; padding: 6px 8px; border: 1px solid #dadce0; 
+            border-radius: 4px; outline: none; resize: vertical; font-size: 13px;
         }
-        .input-nombre:focus { border-color: #1a73e8; }
+        .input-tratamiento:focus, .input-nombre:focus { border-color: #1a73e8; }
         .status-bar { background: #e8f0fe; color: #1a73e8; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; display: none; font-weight: 500; }
     </style>
 </head>
@@ -51,13 +50,13 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nº Polígono</th>
-                    <th>Nº Parcela</th>
-                    <th>Hecho</th>
-                    <th>Fecha de Registro</th>
-                    <th>Tratamiento</th>
-                    <th>Fecha de Registro</th>
-                    <th>Nombre Parcela</th>
+                    <th class="w-pol">Nº Polígono</th>
+                    <th class="w-num">Nº Parcela</th>
+                    <th class="w-hecho">Hecho</th>
+                    <th class="w-fecha-d">Fecha de Registro</th>
+                    <th class="w-trat">Tratamiento</th>
+                    <th class="w-fecha-f">Fecha de Registro</th>
+                    <th class="w-nombre">Nombre Parcela</th>
                 </tr>
             </thead>
             <tbody id="tabla-parcelas">
@@ -95,10 +94,10 @@
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
                 tr.innerHTML = `
-                    <td class="col-pol">${p.poligono}</td>
-                    <td class="col-num">${p.id}</td>
+                    <td>${p.poligono}</td>
+                    <td style="font-weight: bold;">${p.id}</td>
                     
-                    <td class="col-hecho-triple">
+                    <td>
                         <div class="flex-checks">
                             <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
                             <input type="checkbox" class="chk-c2" ${p.c2 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
@@ -108,19 +107,23 @@
                     
                     <td class="col-fecha-d" id="fechaD-${index}">${p.fechaD}</td>
                     
-                    <td class="col-tratamiento-check">
-                        <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
+                    <td>
+                        <textarea class="input-tratamiento" placeholder="Tratamiento..." oninput="autoExpand(this); programarGuardado()">${p.tratamiento}</textarea>
                     </td>
                     
-                    <td class="col-fecha-f" id="fechaF-${index}">${p.fechaF}</td>
+                    <td class="col-fecha-f">
+                        <input type="text" id="fechaF-${index}" value="${p.fechaF}" style="width:100%; text-align:center; border:none; background:transparent; font-family:monospace;" oninput="programarGuardado()">
+                    </td>
                     
-                    <td class="col-nombre"><textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado(${index})">${p.nombre}</textarea></td>
+                    <td>
+                        <textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado()">${p.nombre}</textarea>
+                    </td>
                 `;
                 tbody.appendChild(tr);
                 
+                // Ajustar tamaño inicial de los cuadros de texto
                 setTimeout(() => {
-                    const txt = tr.querySelector('.input-nombre');
-                    if(txt) autoExpand(txt);
+                    tr.querySelectorAll('textarea').forEach(autoExpand);
                 }, 50);
             });
             mostrarEstado("Datos cargados correctamente ✔️");
@@ -133,7 +136,7 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    // Gestiona los 3 cuadraditos de Hecho y los junta en la Columna D con comas
+    // Procesa los 3 cuadraditos de la columna Hecho y junta las fechas con comas en la Columna D
     function calcularFechasColumnaD(index) {
         const c1 = document.querySelector(`#fila-${index} .chk-c1`).checked;
         const c2 = document.querySelector(`#fila-${index} .chk-c2`).checked;
@@ -148,6 +151,7 @@
         if (c2) fechasArray.push(fechaHoy);
         if (c3) fechasArray.push(fechaHoy);
 
+        // Si hay cuadros marcados los une con una coma y espacio, sino pone un guion
         if (fechasArray.length > 0) {
             celdaD.textContent = fechasArray.join(", ");
         } else {
@@ -157,22 +161,7 @@
         enviarDatosANube();
     }
 
-    // Gestiona el cuadradito único de Tratamiento y escribe en la Columna F
-    function cambiarFechaTratamiento(index) {
-        const checkTrat = document.querySelector(`#fila-${index} .chk-tratamiento`);
-        const celdaF = document.getElementById(`fechaF-${index}`);
-
-        if (checkTrat.checked) {
-            const ahora = new Date();
-            celdaF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
-        } else {
-            celdaF.textContent = "-";
-        }
-
-        enviarDatosANube();
-    }
-
-    function programarGuardado(index) {
+    function programarGuardado() {
         clearTimeout(temporizadorGuardado);
         mostrarEstado("Escribiendo...");
         temporizadorGuardado = setTimeout(enviarDatosANube, 1000); 
@@ -191,8 +180,8 @@
                     c2: fila.querySelector('.chk-c2').checked,
                     c3: fila.querySelector('.chk-c3').checked,
                     fechaD: document.getElementById(`fechaD-${index}`).textContent,
-                    tratamientoCheck: fila.querySelector('.chk-tratamiento').checked,
-                    fechaF: document.getElementById(`fechaF-${index}`).textContent,
+                    tratamiento: fila.querySelector('.input-tratamiento').value,
+                    fechaF: document.getElementById(`fechaF-${index}`).value,
                     nombre: fila.querySelector('.input-nombre').value
                 });
             }
