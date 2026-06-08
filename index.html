@@ -12,19 +12,25 @@
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 4px; border: 1px solid #dadce0; font-size: 13px; text-align: center; }
-        td { padding: 8px 4px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; text-align: center; }
+        td { padding: 12px 4px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; text-align: center; }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
         .col-pol { width: 8%; }
         .col-num { width: 8%; font-weight: bold; }
         
-        /* Ajuste de los 3 cuadraditos de Hecho */
-        .col-hecho-triple { width: 15%; }
-        .flex-checks { display: flex; justify-content: center; gap: 10px; }
+        /* Columna Hecho con sus 3 casillas */
+        .col-hecho-triple { width: 14%; }
+        .flex-checks { display: flex; justify-content: center; gap: 8px; }
+        
+        /* Columna Tratamiento con su casilla única */
+        .col-tratamiento-check { width: 11%; }
         
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
-        .col-fecha { width: 15%; color: #3c4043; font-family: monospace; font-size: 13px; white-space: normal; word-break: break-all; }
-        .col-nombre { width: 24%; text-align: left; }
+        
+        /* Estilos de fechas estables */
+        .col-fecha-d { width: 18%; color: #3c4043; font-family: monospace; font-size: 12px; white-space: normal; word-break: break-all; }
+        .col-fecha-f { width: 14%; color: #3c4043; font-family: monospace; font-size: 13px; white-space: nowrap; }
+        .col-nombre { width: 27%; text-align: left; }
         
         .input-nombre { 
             width: 100%; min-width: 160px; min-height: 40px; max-height: 120px;
@@ -94,15 +100,19 @@
                     
                     <td class="col-hecho-triple">
                         <div class="flex-checks">
-                            <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="procesarFechasConComas(${index})">
-                            <input type="checkbox" class="chk-c2" ${p.c2 ? 'checked' : ''} onchange="procesarFechasConComas(${index})">
-                            <input type="checkbox" class="chk-c3" ${p.c3 ? 'checked' : ''} onchange="procesarFechasConComas(${index})">
+                            <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
+                            <input type="checkbox" class="chk-c2" ${p.c2 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
+                            <input type="checkbox" class="chk-c3" ${p.c3 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
                         </div>
                     </td>
                     
-                    <td class="col-fecha" id="fecha1-${index}">${p.fecha1}</td>
-                    <td class="col-fecha" id="fecha2-${index}">${p.fecha2}</td>
-                    <td class="col-fecha" id="fecha3-${index}">${p.fecha3}</td>
+                    <td class="col-fecha-d" id="fechaD-${index}">${p.fechaD}</td>
+                    
+                    <td class="col-tratamiento-check">
+                        <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
+                    </td>
+                    
+                    <td class="col-fecha-f" id="fechaF-${index}">${p.fechaF}</td>
                     
                     <td class="col-nombre"><textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado(${index})">${p.nombre}</textarea></td>
                 `;
@@ -123,38 +133,40 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    // Procesa las fechas y las junta en una sola línea separadas por comas
-    function procesarFechasConComas(index) {
+    // Gestiona los 3 cuadraditos de Hecho y los junta en la Columna D con comas
+    function calcularFechasColumnaD(index) {
         const c1 = document.querySelector(`#fila-${index} .chk-c1`).checked;
         const c2 = document.querySelector(`#fila-${index} .chk-c2`).checked;
         const c3 = document.querySelector(`#fila-${index} .chk-c3`).checked;
-
-        const celdaFecha1 = document.getElementById(`fecha1-${index}`);
-        const celdaFecha2 = document.getElementById(`fecha2-${index}`);
-        const celdaFecha3 = document.getElementById(`fecha3-${index}`);
+        const celdaD = document.getElementById(`fechaD-${index}`);
 
         const ahora = new Date();
         const fechaHoy = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
 
-        // Control del Primer Cuadradito -> Columna D (Fecha de Registro)
-        if (c1) {
-            celdaFecha1.textContent = fechaHoy;
+        let fechasArray = [];
+        if (c1) fechasArray.push(fechaHoy);
+        if (c2) fechasArray.push(fechaHoy);
+        if (c3) fechasArray.push(fechaHoy);
+
+        if (fechasArray.length > 0) {
+            celdaD.textContent = fechasArray.join(", ");
         } else {
-            celdaFecha1.textContent = "-";
+            celdaD.textContent = "-";
         }
 
-        // Control del Segundo Cuadradito -> Columna E (Tratamiento)
-        if (c2) {
-            celdaFecha2.textContent = fechaHoy;
-        } else {
-            celdaFecha2.textContent = "-";
-        }
+        enviarDatosANube();
+    }
 
-        // Control del Tercer Cuadradito -> Columna F (Fecha de Registro 2)
-        if (c3) {
-            celdaFecha3.textContent = fechaHoy;
+    // Gestiona el cuadradito único de Tratamiento y escribe en la Columna F
+    function cambiarFechaTratamiento(index) {
+        const checkTrat = document.querySelector(`#fila-${index} .chk-tratamiento`);
+        const celdaF = document.getElementById(`fechaF-${index}`);
+
+        if (checkTrat.checked) {
+            const ahora = new Date();
+            celdaF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
         } else {
-            celdaFecha3.textContent = "-";
+            celdaF.textContent = "-";
         }
 
         enviarDatosANube();
@@ -178,9 +190,9 @@
                     c1: fila.querySelector('.chk-c1').checked,
                     c2: fila.querySelector('.chk-c2').checked,
                     c3: fila.querySelector('.chk-c3').checked,
-                    fecha1: document.getElementById(`fecha1-${index}`).textContent,
-                    fecha2: document.getElementById(`fecha2-${index}`).textContent,
-                    fecha3: document.getElementById(`fecha3-${index}`).textContent,
+                    fechaD: document.getElementById(`fechaD-${index}`).textContent,
+                    tratamientoCheck: fila.querySelector('.chk-tratamiento').checked,
+                    fechaF: document.getElementById(`fechaF-${index}`).textContent,
                     nombre: fila.querySelector('.input-nombre').value
                 });
             }
