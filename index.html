@@ -52,9 +52,9 @@
                     <th>Nº Polígono</th>
                     <th>Nº Parcela</th>
                     <th>Hecho</th>
-                    <th>Fecha Registro 1</th>
+                    <th>Fecha de Registro</th>
                     <th>Tratamiento</th>
-                    <th>Fecha Registro 2</th>
+                    <th>Fecha de Registro</th>
                     <th>Nombre Parcela</th>
                 </tr>
             </thead>
@@ -120,6 +120,7 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
+    // Controla la casilla de "Hecho" y su respectiva Fecha de Registro 1
     function toggleHecho(index) {
         const checkbox = document.querySelector(`#fila-${index} .chk-hecho`);
         const celdaFecha1 = document.getElementById(`fecha1-${index}`);
@@ -132,6 +133,7 @@
         enviarDatosANube();
     }
 
+    // Controla la casilla de "Tratamiento" y su respectiva Fecha de Registro 2
     function toggleTratamiento(index) {
         const checkbox = document.querySelector(`#fila-${index} .chk-tratamiento`);
         const celdaFecha2 = document.getElementById(`fecha2-${index}`);
