@@ -7,23 +7,23 @@
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
         body { background-color: #f8f9fa; color: #3c4043; margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 1100px; padding: 15px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15); position: relative; }
+        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 1250px; padding: 15px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15); position: relative; }
         h2 { margin-top: 0; color: #1a73e8; font-size: 22px; border-bottom: 2px solid #e8eaed; padding-bottom: 12px; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 8px; border: 1px solid #dadce0; font-size: 13px; text-align: center; }
-        td { padding: 8px 8px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; }
+        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; padding: 10px 6px; border: 1px solid #dadce0; font-size: 13px; text-align: center; }
+        td { padding: 8px 6px; border: 1px solid #dadce0; vertical-align: middle; font-size: 13px; }
         tr:nth-child(even) { background-color: #f8f9fa; }
-        .col-pol { width: 10%; text-align: center; font-weight: 500; color: #202124; }
-        .col-num { width: 10%; font-weight: bold; text-align: center; }
-        .col-check { width: 10%; text-align: center; }
-        .col-fecha { width: 16%; color: #5f6368; font-family: monospace; text-align: center; }
-        .col-nombre { width: 28%; text-align: left; }
-        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; accent-color: #1a73e8; }
+        .col-pol { width: 8%; text-align: center; font-weight: 500; color: #202124; }
+        .col-num { width: 8%; font-weight: bold; text-align: center; }
+        .col-check { width: 7%; text-align: center; }
+        .col-fecha { width: 13%; color: #5f6368; font-family: monospace; text-align: center; font-size: 12px; }
+        .col-nombre { width: 24%; text-align: left; }
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
         
         .input-nombre { 
             width: 100%; 
-            min-width: 160px;
+            min-width: 150px;
             min-height: 40px;
             max-height: 120px;
             padding: 6px 10px; 
@@ -55,18 +55,19 @@
                     <th>Fecha de Registro</th>
                     <th>Tratamiento</th>
                     <th>Fecha de Registro</th>
+                    <th>Tercero</th>
+                    <th>Fecha de Registro</th>
                     <th>Nombre Parcela</th>
                 </tr>
             </thead>
             <tbody id="tabla-parcelas">
-                <tr><td colspan="7" style="text-align:center; padding:20px; color:#5f6368;">Cargando tus parcelas reales de la nube...</td></tr>
+                <tr><td colspan="9" style="text-align:center; padding:20px; color:#5f6368;">Cargando tus parcelas reales de la nube...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // URL de tu API enlazada de forma automática
     const URL_API = 'https://script.google.com/macros/s/AKfycbze9oKK_oEHStZDEOV_DnetmAT6ifmOMVvPSCR7E03lgKISNGeuXJ_UDuX_LljitonK/exec'; 
     
     let listaGlobalParcelas = [];
@@ -86,7 +87,7 @@
             tbody.innerHTML = '';
 
             if(!lista || lista.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">La hoja está vacía.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px;">La hoja está vacía.</td></tr>`;
                 mostrarEstado("Lista vacía"); 
                 return; 
             }
@@ -97,10 +98,12 @@
                 tr.innerHTML = `
                     <td class="col-pol">${p.poligono}</td>
                     <td class="col-num">${p.id}</td>
-                    <td class="col-check"><input type="checkbox" class="chk-hecho" ${p.checkHecho ? 'checked' : ''} onchange="toggleHecho(${index})"></td>
+                    <td class="col-check"><input type="checkbox" class="chk-hecho" ${p.checkHecho ? 'checked' : ''} onchange="toggleCheck(${index}, 'hecho', 'fecha1')"></td>
                     <td class="col-fecha" id="fecha1-${index}">${p.fecha1}</td>
-                    <td class="col-check"><input type="checkbox" class="chk-tratamiento" ${p.checkTratamiento ? 'checked' : ''} onchange="toggleTratamiento(${index})"></td>
+                    <td class="col-check"><input type="checkbox" class="chk-tratamiento" ${p.checkTratamiento ? 'checked' : ''} onchange="toggleCheck(${index}, 'tratamiento', 'fecha2')"></td>
                     <td class="col-fecha" id="fecha2-${index}">${p.fecha2}</td>
+                    <td class="col-check"><input type="checkbox" class="chk-tercero" ${p.checkTercero ? 'checked' : ''} onchange="toggleCheck(${index}, 'tercero', 'fecha3')"></td>
+                    <td class="col-fecha" id="fecha3-${index}">${p.fecha3}</td>
                     <td class="col-nombre"><textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado(${index})">${p.nombre}</textarea></td>
                 `;
                 tbody.appendChild(tr);
@@ -120,28 +123,16 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    // Controla la casilla de "Hecho" y estampa su Fecha de Registro
-    function toggleHecho(index) {
-        const checkbox = document.querySelector(`#fila-${index} .chk-hecho`);
-        const celdaFecha1 = document.getElementById(`fecha1-${index}`);
+    // Manejador único para cualquier casilla de verificación y su fecha asignada
+    function toggleCheck(index, claseCheck, idFecha) {
+        const checkbox = document.querySelector(`#fila-${index} .chk-${claseCheck}`);
+        const celdaFecha = document.getElementById(`${idFecha}-${index}`);
+        
         if (checkbox.checked) {
             const ahora = new Date();
-            celdaFecha1.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+            celdaFecha.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
         } else {
-            celdaFecha1.textContent = "-";
-        }
-        enviarDatosANube();
-    }
-
-    // Controla la casilla de "Tratamiento" y estampa su Fecha de Registro independiente
-    function toggleTratamiento(index) {
-        const checkbox = document.querySelector(`#fila-${index} .chk-tratamiento`);
-        const celdaFecha2 = document.getElementById(`fecha2-${index}`);
-        if (checkbox.checked) {
-            const ahora = new Date();
-            celdaFecha2.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()} ${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
-        } else {
-            celdaFecha2.textContent = "-";
+            celdaFecha.textContent = "-";
         }
         enviarDatosANube();
     }
@@ -165,6 +156,8 @@
                     fecha1: document.getElementById(`fecha1-${index}`).textContent,
                     checkTratamiento: fila.querySelector('.chk-tratamiento').checked,
                     fecha2: document.getElementById(`fecha2-${index}`).textContent,
+                    checkTercero: fila.querySelector('.chk-tercero').checked,
+                    fecha3: document.getElementById(`fecha3-${index}`).textContent,
                     nombre: fila.querySelector('.input-nombre').value
                 });
             }
