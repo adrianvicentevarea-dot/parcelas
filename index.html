@@ -66,8 +66,8 @@
 </div>
 
 <script>
-    // ⚠️ REEMPLAZA ESTO POR TU NUEVA URL /exec DE APPS SCRIPT
-    const URL_API = 'TU_URL_DE_APPS_SCRIPT_AQUI'; 
+    // URL de tu API enlazada de forma automática
+    const URL_API = 'https://script.google.com/macros/s/AKfycbze9oKK_oEHStZDEOV_DnetmAT6ifmOMVvPSCR7E03lgKISNGeuXJ_UDuX_LljitonK/exec'; 
     
     let listaGlobalParcelas = [];
     let temporizadorGuardado;
@@ -120,7 +120,7 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    // Controla la casilla de "Hecho" y su respectiva Fecha de Registro 1
+    // Controla la casilla de "Hecho" y estampa su Fecha de Registro
     function toggleHecho(index) {
         const checkbox = document.querySelector(`#fila-${index} .chk-hecho`);
         const celdaFecha1 = document.getElementById(`fecha1-${index}`);
@@ -133,7 +133,7 @@
         enviarDatosANube();
     }
 
-    // Controla la casilla de "Tratamiento" y su respectiva Fecha de Registro 2
+    // Controla la casilla de "Tratamiento" y estampa su Fecha de Registro independiente
     function toggleTratamiento(index) {
         const checkbox = document.querySelector(`#fila-${index} .chk-tratamiento`);
         const celdaFecha2 = document.getElementById(`fecha2-${index}`);
