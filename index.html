@@ -77,6 +77,7 @@
         }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
+        /* ANCHOS DE LAS 7 COLUMNAS */
         .w-pol { width: 8%; }
         .w-num { width: 9%; font-weight: bold; }
         .w-hecho { width: 14%; }
@@ -187,6 +188,7 @@
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
                 tr.innerHTML = `
+                    <!-- SOLO LECTURA EN POLIGONO Y PARCELA -->
                     <td class="col-poligono">${p.poligono}</td>
                     <td class="col-parcela">${p.id}</td>
                     
