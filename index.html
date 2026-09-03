@@ -1,219 +1,89 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Parcelas</title>
-    <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-        body { background-color: #f8f9fa; color: #3c4043; margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .container { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; width: 100%; max-width: 1350px; padding: 15px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); }
-        h2 { margin-top: 0; color: #1a73e8; font-size: 22px; border-bottom: 2px solid #e8eaed; padding-bottom: 12px; }
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
-        
-        th, td { border: 1px solid #dadce0; vertical-align: middle; text-align: center; font-size: 13px; padding: 12px 4px; }
-        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; }
-        tr:nth-child(even) { background-color: #f8f9fa; }
-        
-        /* Definición estricta de anchos de columna */
-        .w-pol { width: 7%; }
-        .w-num { width: 8%; font-weight: bold; }
-        .w-hecho { width: 12%; }
-        .w-fecha-d { width: 25%; } /* Espacio amplio para las fechas en línea */
-        .w-trat { width: 10%; }
-        .w-fecha-f { width: 13%; }
-        .w-nombre { width: 25%; }
+const NOMBRE_HOJA = "Hoja 1";
 
-        .flex-checks { display: flex; justify-content: center; gap: 8px; }
-        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
-        
-        /* Forzar visualización horizontal de fechas en una sola fila */
-        .col-fecha-d { color: #3c4043; font-family: monospace; font-size: 12px; white-space: nowrap; text-align: center; }
-        .col-fecha-f { color: #3c4043; font-family: monospace; font-size: 13px; white-space: nowrap; }
-        
-        .input-nombre { 
-            width: 100%; min-height: 40px; padding: 6px 8px; border: 1px solid #dadce0; 
-            border-radius: 4px; outline: none; resize: vertical; font-size: 13px;
-        }
-        .input-nombre:focus { border-color: #1a73e8; }
-        .status-bar { background: #e8f0fe; color: #1a73e8; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; display: none; font-weight: 500; }
-    </style>
-</head>
-<body>
+// 1. LEER DATOS (GET)
+function doGet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let hoja = ss.getSheetByName(NOMBRE_HOJA);
+  
+  if (!hoja) {
+    hoja = ss.insertSheet(NOMBRE_HOJA);
+    hoja.appendRow(["Nº Poligono", "Nº Parcela", "Hecho", "Fecha de Registro", "Tratamiento", "Fecha de Registro", "Nombre Parcela"]);
+  }
+  
+  const datos = hoja.getDataRange().getValues();
+  const resultado = [];
+  
+  for (let i = 1; i < datos.length; i++) {
+    // Formatear Fecha Registro 1 (Columna D)
+    let fD = datos[i][3];
+    fD = (fD instanceof Date) ? Utilities.formatDate(fD, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy") : (fD ? fD.toString() : "-");
 
-<div class="container">
-    <h2>Control de Parcelas Real</h2>
-    <div id="status" class="status-bar">Sincronizando con Google Sheets...</div>
+    // Formatear Tratamiento como Booleano (Columna E)
+    let valTratamiento = datos[i][4];
+    let tratamientoCheckActivo = (valTratamiento === true || valTratamiento === "TRUE" || valTratamiento.toString().toLowerCase() === "true");
+
+    // Formatear Fecha Registro 2 (Columna F)
+    let fF = datos[i][5];
+    fF = (fF instanceof Date) ? Utilities.formatDate(fF, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy") : (fF ? fF.toString() : "-");
+
+    let txtHecho = datos[i][2] ? datos[i][2].toString() : "";
+
+    resultado.push({
+      poligono: datos[i][0] !== undefined && datos[i][0] !== "" ? datos[i][0].toString() : "-",
+      id: datos[i][1] !== undefined && datos[i][1] !== "" ? datos[i][1].toString() : "-",
+      c1: txtHecho.includes("1"),
+      c2: txtHecho.includes("2"),
+      c3: txtHecho.includes("3"),
+      fechaD: fD,
+      tratamientoCheck: tratamientoCheckActivo,
+      fechaF: fF,
+      nombre: datos[i][6] || ""
+    });
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(resultado))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// 2. GUARDAR DATOS (POST)
+function doPost(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let hoja = ss.getSheetByName(NOMBRE_HOJA);
     
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th class="w-pol">Nº Polígono</th>
-                    <th class="w-num">Nº Parcela</th>
-                    <th class="w-hecho">Hecho</th>
-                    <th class="w-fecha-d">Fecha de Registro</th>
-                    <th class="w-trat">Tratamiento</th>
-                    <th class="w-fecha-f">Fecha de Registro</th>
-                    <th class="w-nombre">Nombre Parcela</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-parcelas">
-                <tr><td colspan="7" style="text-align:center; padding:20px; color:#5f6368;">Cargando parcelas reales...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-    const URL_API = 'https://script.google.com/macros/s/AKfycbze9oKK_oEHStZDEOV_DnetmAT6ifmOMVvPSCR7E03lgKISNGeuXJ_UDuX_LljitonK/exec'; 
+    const datosRecibidos = JSON.parse(e.postData.contents);
+    const rangoActual = hoja.getDataRange();
+    const filasActuales = rangoActual.getValues();
     
-    let listaGlobalParcelas = [];
-    let temporizadorGuardado;
-
-    window.onload = function() {
-        cargarDatosDesdeNube();
-    };
-
-    function cargarDatosDesdeNube() {
-        mostrarEstado("Sincronizando lista con Google Sheets...");
-        fetch(URL_API)
-        .then(res => res.json())
-        .then(lista => {
-            listaGlobalParcelas = lista;
-            const tbody = document.getElementById('tabla-parcelas');
-            tbody.innerHTML = '';
-
-            if(!lista || lista.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">La hoja está vacía.</td></tr>`;
-                return; 
-            }
-            
-            lista.forEach((p, index) => {
-                const tr = document.createElement('tr');
-                tr.id = `fila-${index}`;
-                tr.innerHTML = `
-                    <td>${p.poligono}</td>
-                    <td style="font-weight: bold;">${p.id}</td>
-                    
-                    <td>
-                        <div class="flex-checks">
-                            <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
-                            <input type="checkbox" class="chk-c2" ${p.c2 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
-                            <input type="checkbox" class="chk-c3" ${p.c3 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
-                        </div>
-                    </td>
-                    
-                    <td class="col-fecha-d" id="fechaD-${index}">${p.fechaD}</td>
-                    
-                    <td>
-                        <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
-                    </td>
-                    
-                    <td class="col-fecha-f" id="fechaF-${index}">${p.fechaF}</td>
-                    
-                    <td>
-                        <textarea class="input-nombre" placeholder="Escribe el nombre..." oninput="autoExpand(this); programarGuardado()">${p.nombre}</textarea>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-                
-                setTimeout(() => {
-                    const txt = tr.querySelector('.input-nombre');
-                    if(txt) autoExpand(txt);
-                }, 50);
-            });
-            mostrarEstado("Datos cargados correctamente ✔️");
-        })
-        .catch(() => mostrarEstado("❌ No se pudo conectar con Google Sheets"));
+    hoja.clearContents();
+    hoja.appendRow(["Nº Poligono", "Nº Parcela", "Hecho", "Fecha de Registro", "Tratamiento", "Fecha de Registro", "Nombre Parcela"]);
+    
+    const filasNuevas = datosRecibidos.map((p, index) => {
+      let polimix = (filasActuales[index + 1] && filasActuales[index + 1][0] !== "") ? filasActuales[index + 1][0] : "-";
+      let parcelaMix = (filasActuales[index + 1] && filasActuales[index + 1][1] !== "") ? filasActuales[index + 1][1] : p.id;
+      
+      let resumenHecho = [p.c1?'1':'', p.c2?'2':'', p.c3?'3':''].filter(Boolean).join(",") || "FALSE";
+      
+      return [
+        polimix,                                 // A
+        parcelaMix,                              // B
+        resumenHecho,                            // C
+        p.fechaD,                                // D
+        p.tratamientoCheck ? "TRUE" : "FALSE",   // E (Tratamiento guarda TRUE/FALSE)
+        p.fechaF,                                // F
+        p.nombre                                 // G
+      ];
+    });
+    
+    if (filasNuevas.length > 0) {
+      hoja.getRange(2, 1, filasNuevas.length, 7).setValues(filasNuevas);
     }
-
-    function autoExpand(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    // Maneja los 3 cuadraditos de Hecho y los junta con comas en la Columna D
-    function calcularFechasColumnaD(index) {
-        const c1 = document.querySelector(`#fila-${index} .chk-c1`).checked;
-        const c2 = document.querySelector(`#fila-${index} .chk-c2`).checked;
-        const c3 = document.querySelector(`#fila-${index} .chk-c3`).checked;
-        const celdaD = document.getElementById(`fechaD-${index}`);
-
-        const ahora = new Date();
-        const fechaHoy = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
-
-        let fechasArray = [];
-        if (c1) fechasArray.push(fechaHoy);
-        if (c2) fechasArray.push(fechaHoy);
-        if (c3) fechasArray.push(fechaHoy);
-
-        if (fechasArray.length > 0) {
-            celdaD.textContent = fechasArray.join(", ");
-        } else {
-            celdaD.textContent = "-";
-        }
-
-        enviarDatosANube();
-    }
-
-    // Maneja el tick de Tratamiento y asigna o remueve la fecha de la Columna F
-    function cambiarFechaTratamiento(index) {
-        const checkTrat = document.querySelector(`#fila-${index} .chk-tratamiento`);
-        const celdaF = document.getElementById(`fechaF-${index}`);
-
-        if (checkTrat.checked) {
-            const ahora = new Date();
-            celdaF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
-        } else {
-            celdaF.textContent = "-";
-        }
-
-        enviarDatosANube();
-    }
-
-    function programarGuardado() {
-        clearTimeout(temporizadorGuardado);
-        mostrarEstado("Escribiendo...");
-        temporizadorGuardado = setTimeout(enviarDatosANube, 1000); 
-    }
-
-    function enviarDatosANube() {
-        mostrarEstado("Guardando en la nube...");
-        const datos = [];
-        
-        listaGlobalParcelas.forEach((p, index) => {
-            const fila = document.getElementById(`fila-${index}`);
-            if (fila) {
-                datos.push({
-                    id: p.id,
-                    c1: fila.querySelector('.chk-c1').checked,
-                    c2: fila.querySelector('.chk-c2').checked,
-                    c3: fila.querySelector('.chk-c3').checked,
-                    fechaD: document.getElementById(`fechaD-${index}`).textContent,
-                    tratamientoCheck: fila.querySelector('.chk-tratamiento').checked,
-                    fechaF: document.getElementById(`fechaF-${index}`).textContent,
-                    nombre: fila.querySelector('.input-nombre').value
-                });
-            }
-        });
-
-        fetch(URL_API, { 
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos) 
-        })
-        .then(() => mostrarEstado("Datos guardados en la nube ✔️"))
-        .catch(() => mostrarEstado("❌ Error al guardar"));
-    }
-
-    function mostrarEstado(msg) {
-        const div = document.getElementById("status");
-        div.style.display = "block";
-        div.textContent = msg;
-    }
-</script>
-</body>
-</html>
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
