@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Control de Parcelas</title>
     <style>
         * { 
@@ -13,7 +13,7 @@
             background-color: #f8f9fa; 
             color: #3c4043; 
             margin: 0; 
-            padding: 10px; 
+            padding: 8px; 
             display: flex; 
             justify-content: center; 
         }
@@ -23,141 +23,141 @@
             border-radius: 8px; 
             width: 100%; 
             max-width: 1350px; 
-            padding: 15px; 
-            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); 
+            padding: 10px; 
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.15); 
+            overflow: hidden;
         }
         h2 { 
             margin-top: 0; 
             color: #1a73e8; 
-            font-size: 20px; 
+            font-size: 18px; 
             border-bottom: 2px solid #e8eaed; 
-            padding-bottom: 12px; 
+            padding-bottom: 8px; 
             text-align: center;
         }
         
         .status-bar { 
             background: #e8f0fe; 
             color: #1a73e8; 
-            padding: 10px 12px; 
+            padding: 8px; 
             border-radius: 6px; 
-            font-size: 13px; 
-            margin-bottom: 15px; 
+            font-size: 12px; 
+            margin-bottom: 10px; 
             display: none; 
             font-weight: 500; 
             text-align: center;
         }
 
-        /* --- ESTILOS TABLA ESCRITORIO --- */
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        /* TABLA RIGIDA CON BLINDAJE DE CELDAS */
+        .table-responsive { 
+            width: 100%; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        table { 
+            width: 100%; 
+            min-width: 700px; /* Evita que en pantallas pequeñas se estrujen las columnas */
+            border-collapse: collapse; 
+            table-layout: fixed; 
+        }
         
-        th, td { border: 1px solid #dadce0; vertical-align: middle; text-align: center; font-size: 13px; padding: 10px 4px; }
-        th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; }
+        th, td { 
+            border: 1px solid #dadce0; 
+            vertical-align: middle; 
+            text-align: center; 
+            font-size: 12px; 
+            padding: 6px 2px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            word-break: break-word; 
+        }
+        th { 
+            background-color: #f1f3f4; 
+            color: #5f6368; 
+            font-weight: 600; 
+        }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
+        /* ANCHOS DE COLUMNA FIJOS */
         .w-pol { width: 8%; }
-        .w-num { width: 8%; font-weight: bold; }
-        .w-hecho { width: 12%; }
+        .w-num { width: 9%; font-weight: bold; }
+        .w-hecho { width: 14%; }
         .w-fecha-d { width: 22%; }
         .w-trat { width: 10%; }
         .w-fecha-f { width: 15%; }
-        .w-nombre { width: 25%; }
+        .w-nombre { width: 22%; }
 
-        .flex-checks { display: flex; justify-content: center; gap: 10px; }
-        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; accent-color: #1a73e8; }
+        .flex-checks { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            gap: 4px; 
+            width: 100%;
+        }
         
-        .col-fecha-d, .col-fecha-f { color: #3c4043; font-family: monospace; font-size: 12px; white-space: nowrap; text-align: center; }
+        input[type="checkbox"] { 
+            width: 18px;
+            height: 18px;
+            cursor: pointer; 
+            accent-color: #1a73e8; 
+            margin: 0;
+        }
+        
+        .col-fecha-d, .col-fecha-f { 
+            color: #3c4043; 
+            font-family: monospace; 
+            font-size: 11px; 
+            line-height: 1.2;
+            word-wrap: break-word;
+            white-space: normal;
+        }
         
         .input-nombre { 
-            width: 100%; min-height: 38px; padding: 6px 8px; border: transparent; 
-            border-radius: 4px; outline: none; resize: none; font-size: 13px;
-            background-color: #f1f3f4; color: #3c4043; cursor: not-allowed; text-align: center;
+            width: 100%; 
+            min-height: 32px; 
+            padding: 4px; 
+            border: transparent; 
+            border-radius: 4px; 
+            outline: none; 
+            resize: none; 
+            font-size: 11px;
+            background-color: transparent; 
+            color: #3c4043; 
+            cursor: not-allowed; 
+            text-align: center;
+            word-break: break-word;
         }
 
-        /* --- ADAPTACIÓN RESPONSIVA PARA MÓVILES (Menos de 768px) --- */
-        @media (max-width: 768px) {
-            body { padding: 5px; }
-            .container { padding: 10px; border: none; box-shadow: none; background: transparent; }
-            h2 { font-size: 18px; margin-bottom: 10px; }
-
-            /* Ocultar la cabecera de la tabla */
-            table thead { display: none; }
-            table, tbody, tr, td { display: block; width: 100%; }
-
-            /* Convertir cada fila en una tarjeta independiente */
-            tr {
-                background-color: #ffffff !important;
-                border: 1px solid #dadce0;
-                border-radius: 8px;
-                margin-bottom: 12px;
-                padding: 12px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            }
-
-            td {
-                border: none;
-                text-align: left;
-                padding: 6px 0;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                font-size: 14px;
-            }
-
-            /* Estilos específicos dentro de las tarjetas en móvil */
-            td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: #5f6368;
-                font-size: 13px;
-                padding-right: 10px;
-                flex-shrink: 0;
-            }
-
-            /* Estilo de la cabecera de la tarjeta (Polígono y Parcela) */
-            td:nth-child(1), td:nth-child(2) {
-                background-color: #f1f3f4;
-                padding: 6px 10px;
-                border-radius: 4px;
-                margin-bottom: 4px;
-            }
-
-            .w-nombre, .input-nombre {
-                text-align: right;
-                background-color: transparent;
-            }
-
-            .flex-checks { gap: 15px; }
-            input[type="checkbox"] { transform: scale(1.5); }
-            
-            .col-fecha-d, .col-fecha-f {
-                font-size: 13px;
-                font-weight: 500;
-            }
+        /* ADAPTACIÓN EN MÓVILES SIN AMONTONAR */
+        @media (max-width: 600px) {
+            body { padding: 4px; }
+            .container { padding: 6px; }
+            th, td { font-size: 11px; padding: 4px 1px; }
+            input[type="checkbox"] { width: 16px; height: 16px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Control de Parcelas Real</h2>
+    <h2>Control de Parcelas</h2>
     <div id="status" class="status-bar">Sincronizando con Google Sheets...</div>
     
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
-                    <th class="w-pol">Nº Polígono</th>
-                    <th class="w-num">Nº Parcela</th>
+                    <th class="w-pol">Nº Pol.</th>
+                    <th class="w-num">Nº Parc.</th>
                     <th class="w-hecho">Hecho</th>
-                    <th class="w-fecha-d">Fecha de Registro</th>
-                    <th class="w-trat">Tratamiento</th>
-                    <th class="w-fecha-f">Fecha de Registro</th>
+                    <th class="w-fecha-d">Fecha Registro</th>
+                    <th class="w-trat">Trat.</th>
+                    <th class="w-fecha-f">Fecha Trat.</th>
                     <th class="w-nombre">Nombre Parcela</th>
                 </tr>
             </thead>
             <tbody id="tabla-parcelas">
-                <tr><td colspan="7" style="text-align:center; padding:20px; color:#5f6368;">Cargando parcelas reales...</td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#5f6368;">Cargando datos...</td></tr>
             </tbody>
         </table>
     </div>
@@ -165,19 +165,16 @@
 
 <script>
     const URL_API = 'https://script.google.com/macros/s/AKfycbze9oKK_oEHStZDEOV_DnetmAT6ifmOMVvPSCR7E03lgKISNGeuXJ_UDuX_LljitonK/exec'; 
-    
-    let listaGlobalParcelas = [];
 
     window.onload = function() {
         cargarDatosDesdeNube();
     };
 
     function cargarDatosDesdeNube() {
-        mostrarEstado("Sincronizando lista con Google Sheets...");
+        mostrarEstado("Sincronizando con Google Sheets...");
         fetch(URL_API)
         .then(res => res.json())
         .then(lista => {
-            listaGlobalParcelas = lista;
             const tbody = document.getElementById('tabla-parcelas');
             tbody.innerHTML = '';
 
@@ -193,11 +190,11 @@
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
                 tr.innerHTML = `
-                    <td data-label="Nº Polígono">${p.poligono}</td>
-                    <td data-label="Nº Parcela" style="font-weight: bold;">${p.id}</td>
+                    <td class="col-poligono">${p.poligono}</td>
+                    <td class="col-parcela">${p.id}</td>
                     
-                    <!-- COLUMNA HECHO -->
-                    <td data-label="Hecho">
+                    <!-- HECHO -->
+                    <td>
                         <div class="flex-checks">
                             <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
                             <input type="checkbox" class="chk-c2" ${p.c2 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
@@ -205,28 +202,23 @@
                         </div>
                     </td>
                     
-                    <!-- COLUMNA FECHA DE REGISTRO HECHO (D) -->
-                    <td data-label="Fecha Registro" class="col-fecha-d" id="fechaD-${index}">${fechaDFormateada}</td>
+                    <!-- FECHA DE REGISTRO HECHO (D) -->
+                    <td class="col-fecha-d" id="fechaD-${index}">${fechaDFormateada}</td>
                     
-                    <!-- COLUMNA TRATAMIENTO (E) -->
-                    <td data-label="Tratamiento">
+                    <!-- TRATAMIENTO (E) -->
+                    <td>
                         <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
                     </td>
                     
-                    <!-- COLUMNA FECHA DE REGISTRO TRATAMIENTO (F) -->
-                    <td data-label="Fecha Tratamiento" class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
+                    <!-- FECHA DE REGISTRO TRATAMIENTO (F) -->
+                    <td class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
                     
-                    <!-- COLUMNA NOMBRE PARCELA (G) -->
-                    <td data-label="Nombre Parcela">
+                    <!-- NOMBRE PARCELA (G) -->
+                    <td>
                         <textarea class="input-nombre" readonly>${p.nombre}</textarea>
                     </td>
                 `;
                 tbody.appendChild(tr);
-                
-                setTimeout(() => {
-                    const txt = tr.querySelector('.input-nombre');
-                    if(txt) autoExpand(txt);
-                }, 50);
             });
             mostrarEstado("Datos cargados correctamente ✔️");
         })
@@ -249,11 +241,6 @@
         }
 
         return textoFecha;
-    }
-
-    function autoExpand(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
     }
 
     function calcularFechasColumnaD(index) {
@@ -297,7 +284,7 @@
     }
 
     function enviarDatosANube() {
-        mostrarEstado("Guardando en la nube...");
+        mostrarEstado("Guardando en Google Sheets...");
         const datos = [];
         
         const filas = document.querySelectorAll('#tabla-parcelas tr');
@@ -306,8 +293,8 @@
             const celdas = tr.querySelectorAll('td');
             if (celdas.length >= 7) {
                 datos.push({
-                    poligono: celdas[0].textContent.replace('Nº Polígono', '').trim(),
-                    id: celdas[1].textContent.replace('Nº Parcela', '').trim(),
+                    poligono: celdas[0].textContent.trim(),
+                    id: celdas[1].textContent.trim(),
                     c1: tr.querySelector('.chk-c1') ? tr.querySelector('.chk-c1').checked : false,
                     c2: tr.querySelector('.chk-c2') ? tr.querySelector('.chk-c2').checked : false,
                     c3: tr.querySelector('.chk-c3') ? tr.querySelector('.chk-c3').checked : false,
