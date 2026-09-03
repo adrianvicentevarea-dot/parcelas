@@ -1,6 +1,5 @@
 const NOMBRE_HOJA = "Hoja 1";
 
-// 1. LEER DATOS (GET)
 function doGet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let hoja = ss.getSheetByName(NOMBRE_HOJA);
@@ -14,15 +13,12 @@ function doGet() {
   const resultado = [];
   
   for (let i = 1; i < datos.length; i++) {
-    // Formatear Fecha Registro 1 (Columna D)
     let fD = datos[i][3];
     fD = (fD instanceof Date) ? Utilities.formatDate(fD, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy") : (fD ? fD.toString() : "-");
 
-    // Formatear Tratamiento como Booleano (Columna E)
     let valTratamiento = datos[i][4];
-    let tratamientoCheckActivo = (valTratamiento === true || valTratamiento === "TRUE" || valTratamiento.toString().toLowerCase() === "true");
+    let tratamientoCheckActivo = (valTratamiento === true || valTratamiento === "TRUE" || (valTratamiento && valTratamiento.toString().toLowerCase() === "true"));
 
-    // Formatear Fecha Registro 2 (Columna F)
     let fF = datos[i][5];
     fF = (fF instanceof Date) ? Utilities.formatDate(fF, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy") : (fF ? fF.toString() : "-");
 
@@ -45,7 +41,6 @@ function doGet() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// 2. GUARDAR DATOS (POST)
 function doPost(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -65,13 +60,13 @@ function doPost(e) {
       let resumenHecho = [p.c1?'1':'', p.c2?'2':'', p.c3?'3':''].filter(Boolean).join(",") || "FALSE";
       
       return [
-        polimix,                                 // A
-        parcelaMix,                              // B
-        resumenHecho,                            // C
-        p.fechaD,                                // D
-        p.tratamientoCheck ? "TRUE" : "FALSE",   // E (Tratamiento guarda TRUE/FALSE)
-        p.fechaF,                                // F
-        p.nombre                                 // G
+        polimix,
+        parcelaMix,
+        resumenHecho,
+        p.fechaD,
+        p.tratamientoCheck ? "TRUE" : "FALSE",
+        p.fechaF,
+        p.nombre
       ];
     });
     
