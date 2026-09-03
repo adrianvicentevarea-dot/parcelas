@@ -89,6 +89,9 @@
             }
             
             lista.forEach((p, index) => {
+                let fechaDFormateada = normalizarFechaTexto(p.fechaD);
+                let fechaFFormateada = normalizarFechaTexto(p.fechaF);
+
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
                 tr.innerHTML = `
@@ -105,7 +108,7 @@
                     </td>
                     
                     <!-- COLUMNA FECHA DE REGISTRO HECHO (D) -->
-                    <td class="col-fecha-d" id="fechaD-${index}">${p.fechaD}</td>
+                    <td class="col-fecha-d" id="fechaD-${index}">${fechaDFormateada}</td>
                     
                     <!-- COLUMNA TRATAMIENTO (E) -->
                     <td>
@@ -113,9 +116,9 @@
                     </td>
                     
                     <!-- COLUMNA FECHA DE REGISTRO TRATAMIENTO (F) -->
-                    <td class="col-fecha-f" id="fechaF-${index}">${p.fechaF}</td>
+                    <td class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
                     
-                    <!-- COLUMNA NOMBRE PARCELA (G): No editable (readonly) -->
+                    <!-- COLUMNA NOMBRE PARCELA (G) -->
                     <td>
                         <textarea class="input-nombre" readonly>${p.nombre}</textarea>
                     </td>
@@ -130,6 +133,24 @@
             mostrarEstado("Datos cargados correctamente ✔️");
         })
         .catch(() => mostrarEstado("❌ No se pudo conectar con Google Sheets"));
+    }
+
+    function normalizarFechaTexto(textoFecha) {
+        if (!textoFecha || textoFecha === "-" || textoFecha === "FALSE") return "-";
+        
+        if (textoFecha.includes(',')) {
+            return textoFecha.split(',').map(f => normalizarFechaTexto(f.trim())).join(', ');
+        }
+
+        const d = new Date(textoFecha);
+        if (!isNaN(d.getTime())) {
+            const dia = String(d.getDate()).padStart(2, '0');
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            const anio = d.getFullYear();
+            return `${dia}/${mes}/${anio}`;
+        }
+
+        return textoFecha;
     }
 
     function autoExpand(textarea) {
@@ -185,6 +206,7 @@
             const fila = document.getElementById(`fila-${index}`);
             if (fila) {
                 datos.push({
+                    poligono: p.poligono,
                     id: p.id,
                     c1: fila.querySelector('.chk-c1').checked,
                     c2: fila.querySelector('.chk-c2').checked,
