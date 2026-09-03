@@ -28,7 +28,7 @@
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: #1a73e8; }
         
         .col-fecha-d { color: #3c4043; font-family: monospace; font-size: 12px; white-space: nowrap; text-align: center; }
-        .col-fecha-f { color: #3c4043; font-family: monospace; font-size: 13px; white-space: nowrap; }
+        .col-fecha-f { color: #3c4043; font-family: monospace; font-size: 12px; white-space: nowrap; text-align: center; }
         
         .input-nombre { 
             width: 100%; min-height: 40px; padding: 6px 8px; border: transparent; 
@@ -104,18 +104,18 @@
                         </div>
                     </td>
                     
-                    <!-- COLUMNA FECHA DE REGISTRO (D) -->
+                    <!-- COLUMNA FECHA DE REGISTRO HECHO (D) -->
                     <td class="col-fecha-d" id="fechaD-${index}">${p.fechaD}</td>
                     
-                    <!-- COLUMNA TRATAMIENTO (E): Casilla/Tick -->
+                    <!-- COLUMNA TRATAMIENTO (E) -->
                     <td>
                         <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
                     </td>
                     
-                    <!-- COLUMNA FECHA DE REGISTRO (F) -->
+                    <!-- COLUMNA FECHA DE REGISTRO TRATAMIENTO (F) -->
                     <td class="col-fecha-f" id="fechaF-${index}">${p.fechaF}</td>
                     
-                    <!-- COLUMNA NOMBRE PARCELA (G): Bloqueada -->
+                    <!-- COLUMNA NOMBRE PARCELA (G): No editable (readonly) -->
                     <td>
                         <textarea class="input-nombre" readonly>${p.nombre}</textarea>
                     </td>
@@ -144,7 +144,10 @@
         const celdaD = document.getElementById(`fechaD-${index}`);
 
         const ahora = new Date();
-        const fechaHoy = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
+        const dia = String(ahora.getDate()).padStart(2, '0');
+        const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+        const anio = ahora.getFullYear();
+        const fechaHoy = `${dia}/${mes}/${anio}`;
 
         let fechasArray = [];
         if (c1) fechasArray.push(fechaHoy);
@@ -162,7 +165,11 @@
 
         if (checkTrat.checked) {
             const ahora = new Date();
-            celdaF.textContent = `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`;
+            const dia = String(ahora.getDate()).padStart(2, '0');
+            const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+            const anio = ahora.getFullYear();
+            
+            celdaF.textContent = `${dia}/${mes}/${anio}`;
         } else {
             celdaF.textContent = "-";
         }
