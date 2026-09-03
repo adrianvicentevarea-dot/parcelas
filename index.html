@@ -48,7 +48,6 @@
             text-align: center;
         }
 
-        /* TABLA RIGIDA CON BLINDAJE DE CELDAS */
         .table-responsive { 
             width: 100%; 
             overflow-x: auto; 
@@ -56,7 +55,7 @@
         }
         table { 
             width: 100%; 
-            min-width: 700px; /* Evita que en pantallas pequeñas se estrujen las columnas */
+            min-width: 700px; 
             border-collapse: collapse; 
             table-layout: fixed; 
         }
@@ -78,7 +77,6 @@
         }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
-        /* ANCHOS DE COLUMNA FIJOS */
         .w-pol { width: 8%; }
         .w-num { width: 9%; font-weight: bold; }
         .w-hecho { width: 14%; }
@@ -128,7 +126,6 @@
             word-break: break-word;
         }
 
-        /* ADAPTACIÓN EN MÓVILES SIN AMONTONAR */
         @media (max-width: 600px) {
             body { padding: 4px; }
             .container { padding: 6px; }
@@ -226,7 +223,7 @@
     }
 
     function normalizarFechaTexto(textoFecha) {
-        if (!textoFecha || textoFecha === "-" || textoFecha === "FALSE") return "-";
+        if (!textoFecha || textoFecha === "FALSE") return "";
         
         if (textoFecha.includes(',')) {
             return textoFecha.split(',').map(f => normalizarFechaTexto(f.trim())).join(', ');
@@ -260,7 +257,7 @@
         if (c2) fechasArray.push(fechaHoy);
         if (c3) fechasArray.push(fechaHoy);
 
-        celdaD.textContent = fechasArray.length > 0 ? fechasArray.join(", ") : "-";
+        celdaD.textContent = fechasArray.length > 0 ? fechasArray.join(", ") : "";
 
         enviarDatosANube();
     }
@@ -277,7 +274,7 @@
             
             celdaF.textContent = `${dia}/${mes}/${anio}`;
         } else {
-            celdaF.textContent = "-";
+            celdaF.textContent = "";
         }
 
         enviarDatosANube();
@@ -298,9 +295,9 @@
                     c1: tr.querySelector('.chk-c1') ? tr.querySelector('.chk-c1').checked : false,
                     c2: tr.querySelector('.chk-c2') ? tr.querySelector('.chk-c2').checked : false,
                     c3: tr.querySelector('.chk-c3') ? tr.querySelector('.chk-c3').checked : false,
-                    fechaD: document.getElementById(`fechaD-${index}`) ? document.getElementById(`fechaD-${index}`).textContent : "-",
+                    fechaD: document.getElementById(`fechaD-${index}`) ? document.getElementById(`fechaD-${index}`).textContent : "",
                     tratamientoCheck: tr.querySelector('.chk-tratamiento') ? tr.querySelector('.chk-tratamiento').checked : false,
-                    fechaF: document.getElementById(`fechaF-${index}`) ? document.getElementById(`fechaF-${index}`).textContent : "-",
+                    fechaF: document.getElementById(`fechaF-${index}`) ? document.getElementById(`fechaF-${index}`).textContent : "",
                     nombre: tr.querySelector('.input-nombre') ? tr.querySelector('.input-nombre').value : ""
                 });
             }
