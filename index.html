@@ -77,7 +77,7 @@
         }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
-        /* ANCHOS DE LAS COLUMNAS */
+        /* ANCHOS DE LAS 7 COLUMNAS */
         .w-pol { width: 8%; }
         .w-num { width: 9%; font-weight: bold; }
         .w-hecho { width: 14%; }
@@ -162,8 +162,7 @@
 </div>
 
 <script>
-    // URL DE LA API DE GOOGLE APPS SCRIPT ACTUALIZADA
-    const URL_API = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
+    const URL_API = 'https://script.google.com/macros/s/AKfycbze9oKK_oEHStZDEOV_DnetmAT6ifmOMVvPSCR7E03lgKISNGeuXJ_UDuX_LljitonK/exec'; 
 
     window.onload = function() {
         cargarDatosDesdeNube();
@@ -189,11 +188,11 @@
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
                 tr.innerHTML = `
-                    <!-- COLUMNAS SOLO LECTURA -->
+                    <!-- SOLO LECTURA EN POLIGONO Y PARCELA -->
                     <td class="col-poligono">${p.poligono}</td>
                     <td class="col-parcela">${p.id}</td>
                     
-                    <!-- HECHO (EDITABLE) -->
+                    <!-- HECHO -->
                     <td>
                         <div class="flex-checks">
                             <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
@@ -205,7 +204,7 @@
                     <!-- FECHA DE REGISTRO HECHO (D) -->
                     <td class="col-fecha-d" id="fechaD-${index}">${fechaDFormateada}</td>
                     
-                    <!-- TRATAMIENTO (E) (EDITABLE) -->
+                    <!-- TRATAMIENTO (E) -->
                     <td>
                         <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
                     </td>
@@ -213,7 +212,7 @@
                     <!-- FECHA DE REGISTRO TRATAMIENTO (F) -->
                     <td class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
                     
-                    <!-- NOMBRE PARCELA (SOLO LECTURA) -->
+                    <!-- NOMBRE PARCELA (G) -->
                     <td>
                         <textarea class="input-nombre" readonly>${p.nombre}</textarea>
                     </td>
