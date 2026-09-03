@@ -55,7 +55,7 @@
         }
         table { 
             width: 100%; 
-            min-width: 700px; 
+            min-width: 800px; 
             border-collapse: collapse; 
             table-layout: fixed; 
         }
@@ -77,14 +77,14 @@
         }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
-        /* ANCHOS DE LAS 7 COLUMNAS */
-        .w-pol { width: 8%; }
+        /* ANCHOS DE COLUMNAS CON TÍTULOS COMPLETOS */
+        .w-pol { width: 9%; }
         .w-num { width: 9%; font-weight: bold; }
-        .w-hecho { width: 14%; }
-        .w-fecha-d { width: 22%; }
-        .w-trat { width: 10%; }
-        .w-fecha-f { width: 15%; }
-        .w-nombre { width: 22%; }
+        .w-hecho { width: 13%; }
+        .w-fecha-d { width: 20%; }
+        .w-trat { width: 11%; }
+        .w-fecha-f { width: 18%; }
+        .w-nombre { width: 20%; }
 
         .flex-checks { 
             display: flex; 
@@ -145,12 +145,12 @@
         <table>
             <thead>
                 <tr>
-                    <th class="w-pol">Nº Pol.</th>
-                    <th class="w-num">Nº Parc.</th>
+                    <th class="w-pol">Nº Polígono</th>
+                    <th class="w-num">Nº Parcela</th>
                     <th class="w-hecho">Hecho</th>
                     <th class="w-fecha-d">Fecha Registro</th>
-                    <th class="w-trat">Trat.</th>
-                    <th class="w-fecha-f">Fecha Trat.</th>
+                    <th class="w-trat">Tratamiento</th>
+                    <th class="w-fecha-f">Fecha Tratamiento</th>
                     <th class="w-nombre">Nombre Parcela</th>
                 </tr>
             </thead>
@@ -162,7 +162,7 @@
 </div>
 
 <script>
-    const URL_API = 'https://script.google.com/macros/s/AKfycbze9oKK_oEHStZDEOV_DnetmAT6ifmOMVvPSCR7E03lgKISNGeuXJ_UDuX_LljitonK/exec'; 
+    const URL_API = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
 
     window.onload = function() {
         cargarDatosDesdeNube();
@@ -188,7 +188,6 @@
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
                 tr.innerHTML = `
-                    <!-- SOLO LECTURA EN POLIGONO Y PARCELA -->
                     <td class="col-poligono">${p.poligono}</td>
                     <td class="col-parcela">${p.id}</td>
                     
@@ -201,18 +200,18 @@
                         </div>
                     </td>
                     
-                    <!-- FECHA DE REGISTRO HECHO (D) -->
+                    <!-- FECHA REGISTRO HECHO -->
                     <td class="col-fecha-d" id="fechaD-${index}">${fechaDFormateada}</td>
                     
-                    <!-- TRATAMIENTO (E) -->
+                    <!-- TRATAMIENTO -->
                     <td>
                         <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
                     </td>
                     
-                    <!-- FECHA DE REGISTRO TRATAMIENTO (F) -->
+                    <!-- FECHA REGISTRO TRATAMIENTO -->
                     <td class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
                     
-                    <!-- NOMBRE PARCELA (G) -->
+                    <!-- NOMBRE PARCELA -->
                     <td>
                         <textarea class="input-nombre" readonly>${p.nombre}</textarea>
                     </td>
@@ -225,7 +224,7 @@
     }
 
     function normalizarFechaTexto(textoFecha) {
-        if (!textoFecha || textoFecha === "FALSE") return "";
+        if (!textoFecha || textoFecha === "FALSE" || textoFecha === "-") return "";
         
         if (textoFecha.includes(',')) {
             return textoFecha.split(',').map(f => normalizarFechaTexto(f.trim())).join(', ');
