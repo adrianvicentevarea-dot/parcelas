@@ -77,13 +77,13 @@
         }
         tr:nth-child(even) { background-color: #f8f9fa; }
         
-        .w-pol { width: 9%; }
-        .w-num { width: 9%; font-weight: bold; }
-        .w-hecho { width: 13%; }
-        .w-fecha-d { width: 20%; }
-        .w-trat { width: 11%; }
+        .w-pol { width: 10%; }
+        .w-num { width: 10%; font-weight: bold; }
+        .w-hecho { width: 14%; }
+        .w-fecha-d { width: 18%; }
+        .w-trat { width: 12%; }
         .w-fecha-f { width: 18%; }
-        .w-nombre { width: 20%; }
+        .w-nombre { width: 18%; }
 
         .flex-checks { 
             display: flex; 
@@ -108,22 +108,6 @@
             line-height: 1.2;
             word-wrap: break-word;
             white-space: normal;
-        }
-        
-        .input-nombre { 
-            width: 100%; 
-            min-height: 32px; 
-            padding: 4px; 
-            border: transparent; 
-            border-radius: 4px; 
-            outline: none; 
-            resize: none; 
-            font-size: 11px;
-            background-color: transparent; 
-            color: #3c4043; 
-            cursor: not-allowed; 
-            text-align: center;
-            word-break: break-word;
         }
 
         @media (max-width: 600px) {
@@ -186,6 +170,8 @@
 
                 const tr = document.createElement('tr');
                 tr.id = `fila-${index}`;
+                tr.dataset.numFila = p.numFila; 
+
                 tr.innerHTML = `
                     <td class="col-poligono">${p.poligono}</td>
                     <td class="col-parcela">${p.id}</td>
@@ -211,9 +197,7 @@
                     <td class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
                     
                     <!-- NOMBRE PARCELA -->
-                    <td>
-                        <textarea class="input-nombre" readonly>${p.nombre}</textarea>
-                    </td>
+                    <td class="col-nombre">${p.nombre}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -259,7 +243,7 @@
 
         celdaD.textContent = fechasArray.length > 0 ? fechasArray.join(", ") : "";
 
-        enviarDatosANube();
+        guardarFilaIndividual(index);
     }
 
     function cambiarFechaTratamiento(index) {
@@ -277,37 +261,38 @@
             celdaF.textContent = "";
         }
 
-        enviarDatosANube();
+        guardarFilaIndividual(index);
     }
 
-    function enviarDatosANube() {
-        mostrarEstado("Guardando en Google Sheets...");
-        const datos = [];
-        
-        const filas = document.querySelectorAll('#tabla-parcelas tr');
-        
-        filas.forEach((tr, index) => {
-            const celdas = tr.querySelectorAll('td');
-            if (celdas.length >= 7) {
-                datos.push({
-                    poligono: celdas[0].textContent.trim(),
-                    id: celdas[1].textContent.trim(),
-                    c1: tr.querySelector('.chk-c1') ? tr.querySelector('.chk-c1').checked : false,
-                    c2: tr.querySelector('.chk-c2') ? tr.querySelector('.chk-c2').checked : false,
-                    c3: tr.querySelector('.chk-c3') ? tr.querySelector('.chk-c3').checked : false,
-                    fechaD: document.getElementById(`fechaD-${index}`) ? document.getElementById(`fechaD-${index}`).textContent : "",
-                    tratamientoCheck: tr.querySelector('.chk-tratamiento') ? tr.querySelector('.chk-tratamiento').checked : false,
-                    fechaF: document.getElementById(`fechaF-${index}`) ? document.getElementById(`fechaF-${index}`).textContent : "",
-                    nombre: tr.querySelector('.input-nombre') ? tr.querySelector('.input-nombre').value : ""
-                });
-            }
-        });
+    function guardarFilaIndividual(index) {
+        const tr = document.getElementById(`fila-${index}`);
+        if (!tr) return;
+
+        mostrarEstado("Guardando en la nube...");
+
+        const numFilaReal = parseInt(tr.dataset.numFila);
+        const c1 = tr.querySelector('.chk-c1').checked;
+        const c2 = tr.querySelector('.chk-c2').checked;
+        const c3 = tr.querySelector('.chk-c3').checked;
+        const fechaD = document.getElementById(`fechaD-${index}`).textContent.trim();
+        const tratamientoCheck = tr.querySelector('.chk-tratamiento').checked;
+        const fechaF = document.getElementById(`fechaF-${index}`).textContent.trim();
+
+        const datosFila = {
+            numFila: numFilaReal,
+            c1: c1,
+            c2: c2,
+            c3: c3,
+            fechaD: fechaD,
+            tratamientoCheck: tratamientoCheck,
+            fechaF: fechaF
+        };
 
         fetch(URL_API, { 
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos) 
+            body: JSON.stringify(datosFila) 
         })
         .then(() => mostrarEstado("Datos guardados en la nube ✔️"))
         .catch(() => mostrarEstado("❌ Error al guardar"));
