@@ -26,6 +26,8 @@
             padding: 10px; 
             box-shadow: 0 1px 2px 0 rgba(60,64,67,0.15); 
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         h2 { 
             margin-top: 0; 
@@ -110,6 +112,100 @@
             white-space: normal;
         }
 
+        /* ESTILOS DEL BOTÓN DE BORRADO Y MODAL DE CONFIRMACIÓN */
+        .footer-action {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e8eaed;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-reset {
+            background-color: #d93025;
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-reset:hover {
+            background-color: #b31412;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            color: #d93025;
+            font-size: 16px;
+        }
+
+        .modal-box p {
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-modal {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-cancelar {
+            background-color: #f1f3f4;
+            color: #3c4043;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #e8eaed;
+        }
+
+        .btn-aceptar {
+            background-color: #d93025;
+            color: #ffffff;
+        }
+
+        .btn-aceptar:hover {
+            background-color: #b31412;
+        }
+
         @media (max-width: 600px) {
             body { padding: 4px; }
             .container { padding: 6px; }
@@ -141,6 +237,23 @@
                 <tr><td colspan="7" style="text-align:center; padding:20px; color:#5f6368;">Cargando datos...</td></tr>
             </tbody>
         </table>
+    </div>
+
+    <!-- BOTÓN INFERIOR DE BORRADO -->
+    <div class="footer-action">
+        <button class="btn-reset" onclick="abrirModalConfirmacion()">Borrar todos los ticks</button>
+    </div>
+</div>
+
+<!-- VENTANA MODAL DE CONFIRMACIÓN -->
+<div id="modalConfirmacion" class="modal-overlay">
+    <div class="modal-box">
+        <h3>¿Estás seguro?</h3>
+        <p>Se desmarcarán todos los cuadraditos de la tabla y se borrarán sus fechas registradas.</p>
+        <div class="modal-buttons">
+            <button class="btn-modal btn-cancelar" onclick="cerrarModalConfirmacion()">Cancelar</button>
+            <button class="btn-modal btn-aceptar" onclick="confirmarBorradoTicks()">Aceptar</button>
+        </div>
     </div>
 </div>
 
@@ -296,6 +409,60 @@
         })
         .then(() => mostrarEstado("Datos guardados en la nube ✔️"))
         .catch(() => mostrarEstado("❌ Error al guardar"));
+    }
+
+    // LÓGICA DEL BOTÓN Y VENTANA DE CONFIRMACIÓN
+    function abrirModalConfirmacion() {
+        document.getElementById('modalConfirmacion').style.display = 'flex';
+    }
+
+    function cerrarModalConfirmacion() {
+        document.getElementById('modalConfirmacion').style.display = 'none';
+    }
+
+    function confirmarBorradoTicks() {
+        cerrarModalConfirmacion();
+        mostrarEstado("Borrando todos los ticks...");
+
+        const filas = document.querySelectorAll('#tabla-parcelas tr');
+        let paquetePayload = [];
+
+        filas.forEach(tr => {
+            const index = tr.id.replace('fila-', '');
+            const numFilaReal = parseInt(tr.dataset.numFila);
+
+            if (!isNaN(numFilaReal)) {
+                // Desmarcar todos los elementos HTML
+                tr.querySelector('.chk-c1').checked = false;
+                tr.querySelector('.chk-c2').checked = false;
+                tr.querySelector('.chk-c3').checked = false;
+                tr.querySelector('.chk-tratamiento').checked = false;
+
+                document.getElementById(`fechaD-${index}`).textContent = '';
+                document.getElementById(`fechaF-${index}`).textContent = '';
+
+                // Preparar datos para actualizar la hoja
+                paquetePayload.push({
+                    numFila: numFilaReal,
+                    c1: false,
+                    c2: false,
+                    c3: false,
+                    fechaD: '',
+                    tratamientoCheck: false,
+                    fechaF: ''
+                });
+            }
+        });
+
+        // Guardar la actualización completa en Google Sheets
+        fetch(URL_API, { 
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(paquetePayload) 
+        })
+        .then(() => mostrarEstado("Se borraron todos los ticks ✔️"))
+        .catch(() => mostrarEstado("❌ Error al limpiar los ticks"));
     }
 
     function mostrarEstado(msg) {
