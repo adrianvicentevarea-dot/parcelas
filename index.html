@@ -318,7 +318,9 @@
     let autoUpdateTimer = null;
 
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
-    const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'recolección', 'poda'];
+    
+    // Lista de encabezados que deben renderizarse como botones de acción
+    const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda'];
 
     function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('closed');
@@ -443,7 +445,7 @@
     }
 
     function renderizarFechasHTML(rowIndex, listaFechas) {
-      if (!listaFechas || listaFechas.length === 0) return '<span style="color:#94a3b8;">Sin registros</span>';
+      if (!listaFechas || listaFechas.length === 0) return '';
       
       let html = '<div class="fechas-grid">';
       listaFechas.forEach((f, idx) => {
@@ -462,9 +464,11 @@
       const encabezadosOriginales = data[0];
       const totalColumnas = encabezadosOriginales.length;
       const filasData = data.slice(1);
+      
+      const esIdentificacion = pestaña.toLowerCase().trim() === 'identificación de parcelas' || pestaña.toLowerCase().trim() === 'identificacion de parcelas';
       const esSeccionLaboreos = pestaña.toLowerCase().trim() === 'laboreos';
 
-      // Reemplaza solo la columna 3 en Laboreos manteniendo el resto exactos a Google Sheets
+      // Corregir encabezado para "Laboreos" en la columna del desplegable
       const encabezadosProcesados = encabezadosOriginales.map((enc, idx) => {
         if (esSeccionLaboreos && idx === 3) return 'Tipo de cultivo';
         return enc;
@@ -487,10 +491,15 @@
           const esTipoCultivo = esSeccionLaboreos && colIndex === 3;
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
           
-          // La columna de registro de fecha siempre es la última columna (Columna F / Índice 5)
-          const esColumnaFecha = colIndex === 5 || (colIndex === totalColumnas - 1 && totalColumnas >= 6);
+          // La columna de fecha es la última o la que contenga "fecha" en el encabezado
+          const esColumnaFecha = !esIdentificacion && (headerLower.includes('fecha') || colIndex === totalColumnas - 1);
 
-          if (esTipoCultivo) {
+          // Pestaña "Identificación de Parcelas": vista de solo lectura estricta
+          if (esIdentificacion) {
+            html += `<td>${valor}</td>`;
+          } 
+          // Desplegable en Laboreos
+          else if (esTipoCultivo) {
             html += `<td>
               <select class="select-cultivo" onchange="cambiarTipoCultivo(this, ${rowIndex}, ${colIndex})">
                 <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
@@ -502,19 +511,25 @@
 
             html += `</select></td>`;
 
-          } else if (esColumnaTarea) {
+          } 
+          // Botón de acción para registrar tareas (Poda, Tratamientos, Laboreo, Recolección)
+          else if (esColumnaTarea) {
             const textoBoton = valor ? valor : 'Marcar / Fecha';
             html += `<td>
               <button class="btn-accion-tarea" onclick="registrarFechaAccion(${rowIndex})">
                 📅 ${textoBoton}
               </button>
             </td>`;
-          } else if (esColumnaFecha) {
+          } 
+          // Columna de fechas de registro dinámicas
+          else if (esColumnaFecha) {
             const key = `${pestaña}_fila_${rowIndex}`;
             memoriaFechas[key] = valor ? valor.split(' | ').map(s => s.trim()) : [];
 
             html += `<td id="celda_fecha_${rowIndex}">${renderizarFechasHTML(rowIndex, memoriaFechas[key])}</td>`;
-          } else {
+          } 
+          // Cualquier otra columna de datos normales
+          else {
             html += `<td>${valor}</td>`;
           }
         }
