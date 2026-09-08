@@ -397,7 +397,6 @@
 
     function cambiarTipoCultivo(selectElement, rowIndex, colIndex) {
       const nuevoValor = selectElement.value;
-      // rowIndex 0 en la vista es la fila 2 en Google Sheets (fila 1 = cabecera)
       guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, nuevoValor);
     }
 
@@ -463,10 +462,11 @@
       const encabezadosOriginales = data[0];
       const totalColumnas = encabezadosOriginales.length;
       const filasData = data.slice(1);
+      const esSeccionLaboreos = pestaña.toLowerCase().trim() === 'laboreos';
 
-      // Bloqueamos los nombres de columna en pantalla para que la cabecera sea estática
+      // Únicamente si estamos en "Laboreos", fijamos el nombre de la cuarta columna a "Tipo de cultivo"
       const encabezadosProcesados = encabezadosOriginales.map((enc, idx) => {
-        if (idx === 3) return 'Tipo de cultivo';
+        if (esSeccionLaboreos && idx === 3) return 'Tipo de cultivo';
         return enc;
       });
 
@@ -484,7 +484,8 @@
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
 
-          const esTipoCultivo = (colIndex === 3) || headerLower.includes('tipo de cultivo') || headerLower.includes('cultivo');
+          // El desplegable de tipo de cultivo SOLO aplica en la sección Laboreos y columna 3
+          const esTipoCultivo = esSeccionLaboreos && colIndex === 3;
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
           const esColumnaFecha = headerLower.includes('fecha');
 
