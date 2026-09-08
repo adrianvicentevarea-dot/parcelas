@@ -180,22 +180,6 @@
       font-style: italic;
     }
 
-    .btn-refresh {
-      background-color: #2ec4b6;
-      color: #0d1b2a;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 5px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 12px;
-      transition: background 0.2s;
-    }
-
-    .btn-refresh:hover {
-      background-color: #25a094;
-    }
-
     .btn-accion-tarea {
       background-color: #10b981;
       color: white;
@@ -303,7 +287,6 @@
       <div class="card">
         <div class="section-title">
           <h2 id="titulo-seccion">IDENTIFICACIÓN DE PARCELAS</h2>
-          <button class="btn-refresh" onclick="recargarDatosActuales()">🔄 Actualizar Datos</button>
         </div>
 
         <div id="contenedor-tabla" class="table-responsive">
@@ -315,11 +298,11 @@
 
   <script>
     const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
-    // URL de tu Apps Script configurado
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
 
     let pestañaActual = 'Identificación de Parcelas';
     const memoriaFechas = {};
+    let autoUpdateTimer = null;
 
     function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('closed');
@@ -331,18 +314,16 @@
 
       pestañaActual = nombrePestaña;
       document.getElementById('titulo-seccion').innerText = element.innerText.replace(/^[^\s]+\s+/, '');
-      obtenerDatosGoogleSheets(nombrePestaña);
-    }
-
-    function recargarDatosActuales() {
-      obtenerDatosGoogleSheets(pestañaActual);
-    }
-
-    async function obtenerDatosGoogleSheets(pestaña) {
+      
+      // Limpiar datos y cargar inmediatamente la nueva sección
       const contenedor = document.getElementById('contenedor-tabla');
       contenedor.innerHTML = '<div class="loading">Cargando datos actualizados de Google Sheets...</div>';
+      obtenerDatosGoogleSheets(nombrePestaña, false);
+    }
 
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pestaña)}`;
+    async function obtenerDatosGoogleSheets(pestaña, esEnSegundoPlano = true) {
+      const contenedor = document.getElementById('contenedor-tabla');
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pestaña)}&t=${Date.now()}`;
 
       try {
         const response = await fetch(url);
@@ -352,15 +333,17 @@
         const filas = parseCSV(textData);
 
         if (filas.length === 0) {
-          contenedor.innerHTML = '<div class="loading">La hoja seleccionada está vacía.</div>';
+          if (!esEnSegundoPlano) contenedor.innerHTML = '<div class="loading">La hoja seleccionada está vacía.</div>';
           return;
         }
 
         construirTablaHTML(filas, pestaña);
 
       } catch (error) {
-        console.error(error);
-        contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar datos de Google Sheets.</div>`;
+        console.error("Error cargando datos:", error);
+        if (!esEnSegundoPlano) {
+          contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar datos de Google Sheets.</div>`;
+        }
       }
     }
 
@@ -397,7 +380,6 @@
       }
     }
 
-    // Enviar cambios a Google Sheets mediante Apps Script
     async function guardarEnGoogleSheets(rowIndex, listaFechas) {
       try {
         await fetch(WEB_APP_URL, {
@@ -406,7 +388,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sheet: pestañaActual,
-            row: rowIndex + 1, // Fila real en la hoja (después del encabezado)
+            row: rowIndex + 1,
             fechas: listaFechas
           })
         });
@@ -422,7 +404,6 @@
       }
     }
 
-    // Dibujar fechas distribuidas en 2 columnas
     function renderizarFechasHTML(rowIndex, listaFechas) {
       if (!listaFechas || listaFechas.length === 0) return '<span style="color:#94a3b8;">Sin registros</span>';
       
@@ -468,11 +449,7 @@
             </td>`;
           } else if (esColumnaFecha) {
             const key = `${pestaña}_fila_${rowIndex}`;
-            
-            if (!memoriaFechas[key]) {
-              // Separa valores previa guardados con "|" en la hoja Excel
-              memoriaFechas[key] = valor ? valor.split(' | ').map(s => s.trim()) : [];
-            }
+            memoriaFechas[key] = valor ? valor.split(' | ').map(s => s.trim()) : [];
 
             html += `<td id="celda_fecha_${rowIndex}">${renderizarFechasHTML(rowIndex, memoriaFechas[key])}</td>`;
           } else {
@@ -487,8 +464,18 @@
       contenedor.innerHTML = html;
     }
 
+    // Iniciar auto-actualización periódica (cada 10 segundos)
+    function iniciarAutoActualizacion() {
+      obtenerDatosGoogleSheets(pestañaActual, false);
+      
+      if (autoUpdateTimer) clearInterval(autoUpdateTimer);
+      autoUpdateTimer = setInterval(() => {
+        obtenerDatosGoogleSheets(pestañaActual, true);
+      }, 10000); // 10000 ms = 10 segundos
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      obtenerDatosGoogleSheets(pestañaActual);
+      iniciarAutoActualizacion();
     });
   </script>
 </body>
