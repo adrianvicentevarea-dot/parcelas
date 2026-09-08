@@ -338,6 +338,10 @@
       tituloVistaActual = tituloVisual;
       document.getElementById('header-title').innerText = tituloVisual;
       
+      // Guardar en sessionStorage para mantener la pestaña al recargar
+      sessionStorage.setItem('ultimaPestaña', pestaña);
+      sessionStorage.setItem('ultimoTitulo', tituloVisual);
+
       const subTitulo = document.getElementById('section-subtitle');
 
       if (pestaña === 'Inicio') {
@@ -809,10 +813,10 @@
           body: JSON.stringify({ action: 'clearUserEnteredData', sheet: pestañaActual })
         });
 
-        // Recargar la página automáticamente para limpiar la vista al instante
+        // Recargar la página manteniendo la pestaña actual
         setTimeout(() => {
           location.reload();
-        }, 1000);
+        }, 800);
 
       } catch (e) {
         console.error("Error al borrar datos:", e);
@@ -840,10 +844,13 @@
         }
       }
 
-      // Recarga automática de la página general
+      // Guardar que al recargar volvemos al Inicio (o mantenemos Inicio)
+      sessionStorage.setItem('ultimaPestaña', 'Inicio');
+      sessionStorage.setItem('ultimoTitulo', 'Inicio');
+
       setTimeout(() => {
         location.reload();
-      }, 1000);
+      }, 800);
     }
 
     function actualizarCeldaFecha(rowIndex, key) {
@@ -868,7 +875,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      renderizarInicio();
+      // Recuperar la última pestaña activa al recargar la página
+      const ultimaPestaña = sessionStorage.getItem('ultimaPestaña');
+      const ultimoTitulo = sessionStorage.getItem('ultimoTitulo');
+
+      if (ultimaPestaña && ultimaPestaña !== 'Inicio') {
+        navegar(ultimaPestaña, ultimoTitulo);
+      } else {
+        renderizarInicio();
+      }
     });
   </script>
 </body>
