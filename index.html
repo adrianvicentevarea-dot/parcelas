@@ -167,7 +167,7 @@
       font-style: italic;
     }
 
-    /* BOTONES ACCIÓN (INICIO Y TABLAS) */
+    /* BOTONES ACCIÓN */
     .acciones-inferior-container {
       display: flex;
       gap: 12px;
@@ -396,10 +396,10 @@
 
         <div class="acciones-inferior-container">
           <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDFTodoElExcel()">
-            📄 Descargar PDF Completo (Todo el Excel)
+            📄 Descargar PDF Completo
           </button>
           <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarTodasLasPestañas()">
-            🗑️ Borrar Todos los Datos del Excel
+            🗑️ Borrar Fechas, Cultivos y Kilos
           </button>
         </div>
       `;
@@ -660,7 +660,6 @@
       }
     }
 
-    /* DESCARGAR PDF COMPLETO (DESDE EL INICIO) */
     async function descargarPDFTodoElExcel() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -722,7 +721,6 @@
       doc.save(nombreArchivo);
     }
 
-    /* DESCARGAR PDF DE LA PESTAÑA ACTUAL */
     function descargarPDFTablaActual() {
       const tabla = document.getElementById('tabla-datos');
       if (!tabla) {
@@ -796,23 +794,19 @@
       doc.save(nombreArchivo);
     }
 
-    /* CONFIRMAR Y BORRAR DATOS EN PESTAÑA ACTUAL */
     async function confirmarBorrarDatosPestañaActual() {
-      const primeraConfirmacion = confirm(`⚠️ ¿Estás seguro de que deseas BORRAR TODOS los registros ingresados en "${tituloVistaActual}"?`);
+      const primeraConfirmacion = confirm(`⚠️ ¿Estás seguro de que deseas BORRAR los registros ingresados en "${tituloVistaActual}"?`);
       if (!primeraConfirmacion) return;
 
-      const segundaConfirmacion = confirm(`🔴 ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n¿Confirmar la eliminación definitiva de los datos en "${tituloVistaActual}"?`);
-      if (!segundaConfirmacion) return;
-
       const contenedor = document.getElementById('contenedor-tabla');
-      if(contenedor) contenedor.innerHTML = `<div class="loading" style="color: #ef4444;">Borrando datos en Google Sheets...</div>`;
+      if(contenedor) contenedor.innerHTML = `<div class="loading" style="color: #ef4444;">Borrando datos...</div>`;
 
       try {
         await fetch(WEB_APP_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'clearSheet', sheet: pestañaActual })
+          body: JSON.stringify({ action: 'clearUserEnteredData', sheet: pestañaActual })
         });
 
         setTimeout(() => {
@@ -827,12 +821,12 @@
       }
     }
 
-    /* BORRAR TODAS LAS PESTAÑAS (DESDE EL INICIO) */
+    /* BORRAR FECHAS, CULTIVOS Y KILOS DE TODAS LAS PESTAÑAS */
     async function confirmarBorrarTodasLasPestañas() {
-      const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR LOS DATOS DE TODO EL EXCEL (Todas las pestañas)?`);
+      const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR TODAS LAS FECHAS, TIPOS DE CULTIVO Y KILOS de todo el Excel?`);
       if (!primeraConfirmacion) return;
 
-      const segundaConfirmacion = confirm(`🔴 ACCIÓN EXTREMA: Se borrarán Parcelas, Laboreos, Poda, Tratamientos y Recolección.\n\n¿Estás completamente seguro?`);
+      const segundaConfirmacion = confirm(`🔴 ACCIÓN DEFINITIVA:\nSe vaciarán los campos de fechas, cultivos y kilos en Parcelas, Laboreos, Poda, Tratamientos y Recolección.\n\n¿Estás completamente seguro?`);
       if (!segundaConfirmacion) return;
 
       for (let item of TODAS_LAS_PESTAÑAS) {
@@ -841,14 +835,14 @@
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'clearSheet', sheet: item.id })
+            body: JSON.stringify({ action: 'clearUserEnteredData', sheet: item.id })
           });
         } catch (e) {
           console.error("Error borrando " + item.id, e);
         }
       }
 
-      alert("Se han borrado los datos de todas las secciones del Excel.");
+      alert("Se han borrado todas las fechas, tipos de cultivo y kilos de las secciones.");
       renderizarInicio();
     }
 
