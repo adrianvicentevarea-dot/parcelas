@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gestión Agrícola</title>
+  
+  <!-- Librerías para exportar a PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -68,7 +73,7 @@
       margin-bottom: 15px;
     }
 
-    /* TARJETAS DE INICIO (ESTILO APP) */
+    /* TARJETAS DE INICIO */
     .cards-container {
       display: flex;
       flex-direction: column;
@@ -160,6 +165,45 @@
       color: #64748b;
       font-size: 14px;
       font-style: italic;
+    }
+
+    /* BOTONES INFERIORES DE ACCIÓN */
+    .acciones-tabla-footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn-accion-inferior {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .btn-accion-inferior:active {
+      transform: scale(0.97);
+    }
+
+    .btn-descargar-pdf {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-borrar-todo {
+      background-color: #ef4444;
+      color: #ffffff;
     }
 
     /* CONTROLES EDITABLES */
@@ -266,7 +310,7 @@
     <div class="section-title" id="section-subtitle">Opciones Principales</div>
     
     <div id="contenedor-vista">
-      <!-- Carga dinámica de la vista -->
+      <!-- Vistas dinámicas -->
     </div>
   </main>
 
@@ -275,6 +319,7 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
 
     let pestañaActual = 'Inicio';
+    let tituloVistaActual = 'Inicio';
     const memoriaFechas = {};
 
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
@@ -282,6 +327,7 @@
 
     function navegar(pestaña, tituloVisual) {
       pestañaActual = pestaña;
+      tituloVistaActual = tituloVisual;
       document.getElementById('header-title').innerText = tituloVisual;
       
       const subTitulo = document.getElementById('section-subtitle');
@@ -360,6 +406,14 @@
             <div class="loading">Cargando datos de Google Sheets...</div>
           </div>
         </div>
+        <div class="acciones-tabla-footer">
+          <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDF()">
+            📄 Descargar PDF
+          </button>
+          <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarDatos()">
+            🗑️ Borrar Datos
+          </button>
+        </div>
       `;
       obtenerDatosGoogleSheets(pestaña, false);
     }
@@ -417,7 +471,7 @@
         return enc;
       });
 
-      let html = '<table><thead><tr>';
+      let html = '<table id="tabla-datos"><thead><tr>';
       encabezadosProcesados.forEach(enc => { 
         html += `<th>${enc || '&nbsp;'}</th>`;
       });
@@ -597,6 +651,111 @@
       } catch (e) {
         console.error("Error al guardar:", e);
       }
+    }
+
+    /* CONFIRMAR Y BORRAR DATOS */
+    async function confirmarBorrarDatos() {
+      const primeraConfirmacion = confirm(`⚠️ ¿Estás seguro de que deseas BORRAR TODOS los registros ingresados en "${tituloVistaActual}"?`);
+      if (!primeraConfirmacion) return;
+
+      const segundaConfirmacion = confirm(`🔴 ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n¿Confirmar la eliminación definitiva de los datos en "${tituloVistaActual}"?`);
+      if (!segundaConfirmacion) return;
+
+      const contenedor = document.getElementById('contenedor-tabla');
+      contenedor.innerHTML = `<div class="loading" style="color: #ef4444;">Borrando datos en Google Sheets...</div>`;
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'clearSheet', sheet: pestañaActual })
+        });
+
+        setTimeout(() => {
+          obtenerDatosGoogleSheets(pestañaActual, false);
+          alert(`Los datos de "${tituloVistaActual}" han sido borrados correctamente.`);
+        }, 1500);
+
+      } catch (e) {
+        console.error("Error al borrar datos:", e);
+        alert("Ocurrió un error al intentar borrar los datos.");
+        obtenerDatosGoogleSheets(pestañaActual, false);
+      }
+    }
+
+    /* DESCARGAR TABLA EN PDF */
+    function descargarPDF() {
+      const tabla = document.getElementById('tabla-datos');
+      if (!tabla) {
+        alert("No hay datos disponibles para exportar a PDF.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      doc.setFontSize(16);
+      doc.setTextColor(11, 30, 40);
+      doc.text(`Reporte de Gestión Agrícola - ${tituloVistaActual}`, 14, 15);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      const fechaActual = new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      doc.text(`Fecha de exportación: ${fechaActual}`, 14, 22);
+
+      const filasProcesadas = [];
+      const filasTabla = tabla.querySelectorAll('tr');
+
+      filasTabla.forEach((fila) => {
+        const celdas = fila.querySelectorAll('th, td');
+        const datosFila = [];
+
+        celdas.forEach(celda => {
+          const input = celda.querySelector('input');
+          if (input) {
+            datosFila.push(input.value || '');
+            return;
+          }
+
+          const select = celda.querySelector('select');
+          if (select) {
+            datosFila.push(select.options[select.selectedIndex]?.text || '');
+            return;
+          }
+
+          const fechaItems = celda.querySelectorAll('.fecha-item span');
+          if (fechaItems.length > 0) {
+            const fechasTxt = Array.from(fechaItems).map(item => item.innerText.replace('📅', '').trim()).join(', ');
+            datosFila.push(fechasTxt);
+            return;
+          }
+
+          datosFila.push(celda.innerText.replace(/📅|✏️|💾|−/g, '').trim());
+        });
+
+        if (datosFila.length > 0) {
+          filasProcesadas.push(datosFila);
+        }
+      });
+
+      if (filasProcesadas.length <= 1) {
+        alert("La tabla no contiene datos para exportar.");
+        return;
+      }
+
+      doc.autoTable({
+        head: [filasProcesadas[0]],
+        body: filasProcesadas.slice(1),
+        startY: 28,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [13, 27, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+
+      const nombreArchivo = `Reporte_${tituloVistaActual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+      doc.save(nombreArchivo);
     }
 
     function actualizarCeldaFecha(rowIndex, key) {
