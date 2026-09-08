@@ -459,13 +459,18 @@
 
     function construirTablaHTML(data, pestaña) {
       const contenedor = document.getElementById('contenedor-tabla');
-      const encabezados = data[0];
-      const totalColumnas = encabezados.length;
+      const encabezadosOriginales = data[0];
+      const totalColumnas = encabezadosOriginales.length;
       const filasData = data.slice(1);
 
-      // Mantenemos los encabezados de Google Sheets de manera exacta e intacta
+      // Mapeo seguro para que la cuarta columna SIEMPRE se llame "Tipo de cultivo" en el HTML
+      const encabezadosProcesados = encabezadosOriginales.map((enc, idx) => {
+        if (idx === 3) return 'Tipo de cultivo'; 
+        return enc;
+      });
+
       let html = '<table><thead><tr>';
-      encabezados.forEach(enc => { 
+      encabezadosProcesados.forEach(enc => { 
         html += `<th>${enc}</th>`;
       });
       html += '</tr></thead><tbody>';
@@ -474,22 +479,15 @@
         html += '<tr>';
         
         for (let colIndex = 0; colIndex < totalColumnas; colIndex++) {
-          const header = encabezados[colIndex] || '';
+          const header = encabezadosProcesados[colIndex] || '';
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
 
-          // Detección estricta de las columnas de tipo de cultivo
-          const esTipoCultivo = headerLower.includes('tipo de cultivo') || 
-                                headerLower.includes('cultivo') || 
-                                headerLower === 'barbecho' || 
-                                headerLower === 'frutales' || 
-                                headerLower === 'almendros';
-
+          const esTipoCultivo = (colIndex === 3) || headerLower.includes('tipo de cultivo') || headerLower.includes('cultivo');
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
           const esColumnaFecha = headerLower.includes('fecha');
 
           if (esTipoCultivo) {
-            // Renderizamos siempre el elemento <select> dentro de la celda de cada fila
             html += `<td>
               <select class="select-cultivo" onchange="cambiarTipoCultivo(this, ${rowIndex}, ${colIndex})">
                 <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
