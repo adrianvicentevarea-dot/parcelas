@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión Agrícola - Control de Parcela</title>
   <style>
-    /* Reset básico y tipografía */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -19,7 +18,6 @@
       overflow-x: hidden;
     }
 
-    /* Barra Superior */
     .top-bar {
       background-color: #0d1b2a;
       padding: 12px 20px;
@@ -30,7 +28,6 @@
       z-index: 10;
     }
 
-    /* Botón MENÚ */
     .btn-menu {
       background-color: transparent;
       color: #ffffff;
@@ -52,13 +49,11 @@
       border-color: #3ae2d2;
     }
 
-    /* Contenedor Principal */
     .main-container {
       display: flex;
       min-height: calc(100vh - 58px);
     }
 
-    /* Menú Lateral (Sidebar) */
     .sidebar {
       width: 270px;
       background-color: #0d1b2a;
@@ -67,7 +62,6 @@
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
     }
 
-    /* Ocultar barra lateral */
     .sidebar.closed {
       margin-left: -270px;
     }
@@ -88,7 +82,6 @@
       padding-top: 10px;
     }
 
-    /* Opciones del Menú */
     .nav-item {
       background: transparent;
       border: none;
@@ -112,7 +105,6 @@
       color: #ffffff;
     }
 
-    /* Opción Seleccionada */
     .nav-item.active {
       background-color: #2ec4b6;
       color: #0d1b2a;
@@ -124,7 +116,6 @@
       font-size: 18px;
     }
 
-    /* Contenido Principal */
     .content {
       flex: 1;
       padding: 25px;
@@ -147,7 +138,6 @@
       justify-content: space-between;
     }
 
-    /* Tabla de Datos de Google Sheets */
     .table-responsive {
       width: 100%;
       overflow-x: auto;
@@ -171,6 +161,7 @@
       padding: 12px 15px;
       border-bottom: 1px solid #e2e8f0;
       white-space: nowrap;
+      vertical-align: middle;
     }
 
     tbody tr:nth-child(even) {
@@ -203,6 +194,43 @@
 
     .btn-refresh:hover {
       background-color: #25a094;
+    }
+
+    /* Estilo del botón de registrar fecha */
+    .btn-registrar-fecha {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s;
+    }
+
+    .btn-registrar-fecha:hover {
+      background-color: #059669;
+    }
+
+    .fechas-contenedor {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+
+    .fecha-tag {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      width: fit-content;
     }
   </style>
 </head>
@@ -256,10 +284,11 @@
   </div>
 
   <script>
-    // ID extraído de tu enlace de Google Sheets
     const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
-
     let pestañaActual = 'Identificación de Parcelas';
+
+    // Almacenamiento local para mantener las fechas registradas durante la sesión del usuario
+    const registroFechasLocal = {};
 
     function toggleMenu() {
       const sidebar = document.getElementById('sidebar');
@@ -299,14 +328,13 @@
           return;
         }
 
-        construirTablaHTML(filas);
+        construirTablaHTML(filas, pestaña);
 
       } catch (error) {
         console.error(error);
         contenedor.innerHTML = `
           <div class="loading" style="color: #e63946;">
-            Error al cargar los datos. Asegúrate de haber realizado en tu Google Sheet: 
-            <strong>Archivo > Compartir > Publicar en la web</strong>.
+            Error al cargar los datos. Asegúrate de haber publicado la hoja en la web.
           </div>`;
       }
     }
@@ -320,10 +348,43 @@
       }).filter(row => row.length > 0 && row.some(cell => cell !== ""));
     }
 
-    function construirTablaHTML(data) {
+    function registrarFecha(idFila, colIndex) {
+      const ahora = new Date();
+      const fechaFormateada = ahora.toLocaleDateString('es-ES') + ' ' + ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+      // Clave única para cada casilla
+      const key = `${pestañaActual}_${idFila}_${colIndex}`;
+
+      if (!registroFechasLocal[key]) {
+        registroFechasLocal[key] = [];
+      }
+
+      // Acumular la fecha sin borrar las anteriores
+      registroFechasLocal[key].push(fechaFormateada);
+
+      // Actualizar vista en pantalla
+      const cellElement = document.getElementById(`celda_${key}`);
+      if (cellElement) {
+        cellElement.innerHTML = generarHTMLFechas(key, registroFechasLocal[key]);
+      }
+    }
+
+    function generarHTMLFechas(key, listaFechas) {
+      let html = `<div class="fechas-contenedor">`;
+      listaFechas.forEach(f => {
+        html += `<span class="fecha-tag">📅 ${f}</span>`;
+      });
+      html += `</div>`;
+      html += `<button class="btn-registrar-fecha" style="margin-top:6px;" onclick="registrarFecha('${key.split('_')[1]}', '${key.split('_')[2]}')">➕ Registrar otra fecha</button>`;
+      return html;
+    }
+
+    function construirTablaHTML(data, pestaña) {
       const contenedor = document.getElementById('contenedor-tabla');
       const encabezados = data[0];
       const filasData = data.slice(1);
+
+      const requiereBotonFecha = ['Laboreos', 'Poda', 'Tratamientos', 'Recolección'].includes(pestaña);
 
       let html = '<table><thead><tr>';
       
@@ -332,11 +393,33 @@
       });
       html += '</tr></thead><tbody>';
 
-      filasData.forEach(fila => {
+      filasData.forEach((fila, rowIndex) => {
         html += '<tr>';
-        encabezados.forEach((_, colIndex) => {
-          const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
-          html += `<td>${valor}</td>`;
+        encabezados.forEach((header, colIndex) => {
+          let valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
+          
+          // Verificar si esta columna corresponde a la fecha de registro
+          const esColumnaFecha = header.toLowerCase().includes('fecha');
+
+          if (requiereBotonFecha && esColumnaFecha) {
+            const key = `${pestaña}_${rowIndex}_${colIndex}`;
+            
+            // Si ya hay fechas registradas acumuladas
+            const fechas = registroFechasLocal[key] || (valor ? [valor] : []);
+            if (fechas.length > 0 && !registroFechasLocal[key]) {
+              registroFechasLocal[key] = fechas;
+            }
+
+            html += `<td id="celda_${key}">`;
+            if (fechas.length > 0) {
+              html += generarHTMLFechas(rowIndex, colIndex);
+            } else {
+              html += `<button class="btn-registrar-fecha" onclick="registrarFecha(${rowIndex}, ${colIndex})">📅 Registrar Fecha</button>`;
+            }
+            html += `</td>`;
+          } else {
+            html += `<td>${valor}</td>`;
+          }
         });
         html += '</tr>';
       });
