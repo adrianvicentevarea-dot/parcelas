@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gestión Agrícola - Control de Parcela</title>
   <style>
     * {
@@ -18,14 +18,17 @@
       overflow-x: hidden;
     }
 
+    /* BARRA SUPERIOR */
     .top-bar {
       background-color: #0d1b2a;
-      padding: 12px 20px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      position: relative;
-      z-index: 10;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .btn-menu {
@@ -33,7 +36,7 @@
       color: #ffffff;
       border: 2px solid #2ec4b6;
       border-radius: 6px;
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-weight: 700;
       font-size: 14px;
       cursor: pointer;
@@ -44,26 +47,25 @@
       letter-spacing: 0.5px;
     }
 
-    .btn-menu:hover {
+    .btn-menu:hover, .btn-menu:active {
       background-color: rgba(46, 196, 182, 0.15);
       border-color: #3ae2d2;
     }
 
+    /* CONTENEDOR PRINCIPAL Y SIDEBAR */
     .main-container {
       display: flex;
       min-height: calc(100vh - 58px);
+      position: relative;
     }
 
     .sidebar {
       width: 270px;
       background-color: #0d1b2a;
-      transition: all 0.3s ease;
+      transition: transform 0.3s ease;
       flex-shrink: 0;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
-    }
-
-    .sidebar.closed {
-      margin-left: -270px;
+      z-index: 90;
     }
 
     .sidebar-header {
@@ -100,7 +102,7 @@
       text-transform: uppercase;
     }
 
-    .nav-item:hover {
+    .nav-item:hover, .nav-item:active {
       background-color: rgba(255, 255, 255, 0.05);
       color: #ffffff;
     }
@@ -116,31 +118,33 @@
       font-size: 18px;
     }
 
+    /* CONTENIDO Y TABLA RESPONSIVA */
     .content {
       flex: 1;
-      padding: 25px;
-      overflow-x: auto;
+      padding: 15px;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
     }
 
     .card {
       background: #ffffff;
       border-radius: 10px;
-      padding: 25px;
+      padding: 15px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
 
-    .section-title {
+    .section-title h2 {
       color: #0d1b2a;
-      margin-bottom: 20px;
-      font-size: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 18px;
+      font-weight: 700;
     }
 
     .table-responsive {
       width: 100%;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
     }
@@ -149,7 +153,7 @@
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     thead {
@@ -158,7 +162,7 @@
     }
 
     th, td {
-      padding: 12px 15px;
+      padding: 10px 12px;
       border-bottom: 1px solid #e2e8f0;
       white-space: nowrap;
       vertical-align: middle;
@@ -168,59 +172,48 @@
       background-color: #f8fafc;
     }
 
-    tbody tr:hover {
-      background-color: #f1f5f9;
-    }
-
     .loading {
       padding: 30px;
       text-align: center;
       color: #64748b;
-      font-size: 16px;
+      font-size: 14px;
       font-style: italic;
     }
 
+    /* BOTONES Y CONTROLES ADAPTADOS A TOUCH */
     .btn-accion-tarea {
       background-color: #10b981;
       color: white;
       border: none;
-      padding: 7px 14px;
-      border-radius: 5px;
+      padding: 8px 12px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .btn-accion-tarea:hover {
-      background-color: #059669;
+      transition: background 0.2s;
+      touch-action: manipulation;
     }
 
     .btn-accion-tarea:active {
-      transform: scale(0.96);
+      background-color: #059669;
+      transform: scale(0.97);
     }
 
     .select-cultivo {
-      padding: 6px 10px;
+      padding: 8px;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
       background-color: #ffffff;
       color: #0d1b2a;
       font-size: 13px;
       font-weight: 600;
-      cursor: pointer;
       outline: none;
-      transition: border-color 0.2s;
     }
 
-    .select-cultivo:focus {
-      border-color: #2ec4b6;
-    }
-
-    /* Estilos para Kilos */
+    /* ESTILOS DE KILOS */
     .kilos-container {
       display: inline-flex;
       align-items: center;
@@ -228,68 +221,53 @@
     }
 
     .input-kilos {
-      width: 85px;
-      padding: 6px 8px;
+      width: 80px;
+      padding: 7px 8px;
       border: 1.5px solid #0284c7;
-      border-radius: 5px;
+      border-radius: 6px;
       font-size: 13px;
       font-weight: 700;
       color: #0f172a;
       outline: none;
       background-color: #ffffff;
-      transition: all 0.2s;
     }
 
     .input-kilos:focus {
       border-color: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
 
     .input-kilos:disabled {
       background-color: #f1f5f9;
       color: #334155;
       border-color: #cbd5e1;
-      cursor: not-allowed;
-      font-weight: 600;
     }
 
     .btn-edit-kilos {
-      background-color: transparent;
-      border: none;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
       font-size: 14px;
       cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
-
-    .btn-edit-kilos:hover {
-      opacity: 1;
-      background-color: #e2e8f0;
+      padding: 6px;
+      border-radius: 6px;
     }
 
     .btn-guardar-kilos {
       background-color: #2563eb;
       color: white;
       border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
+      padding: 7px 10px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
-    .btn-guardar-kilos:hover {
-      background-color: #1d4ed8;
-    }
-
+    /* LISTA DE FECHAS */
     .fechas-grid {
-      display: grid;
-      grid-template-columns: repeat(2, auto);
-      gap: 6px 10px;
-      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       width: fit-content;
     }
 
@@ -303,7 +281,7 @@
       border: 1px solid #bae6fd;
       padding: 4px 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
     }
 
@@ -316,28 +294,70 @@
       height: 18px;
       font-size: 12px;
       font-weight: bold;
-      line-height: 1;
-      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
+      cursor: pointer;
     }
 
-    .btn-quitar-fecha:hover {
-      background-color: #dc2626;
+    /* CAPA DE FONDO PARA MÓVIL AL ABRIR MENÚ */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 80;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+    /* REGLAS ESPECÍFICAS PARA MÓVILES Y TABLETS (< 768px) */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .content {
+        padding: 10px;
+      }
+
+      .card {
+        padding: 12px;
+      }
+
+      .section-title h2 {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- BARRA SUPERIOR -->
   <header class="top-bar">
     <button class="btn-menu" onclick="toggleMenu()">
       <span>☰</span> MENÚ
     </button>
   </header>
 
+  <!-- CAPA OSCURA PARA CERRAR EL MENÚ EN MÓVIL AL TOCAR FUERA -->
+  <div id="overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
+
   <div class="main-container">
+    <!-- MENÚ LATERAL -->
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
         GESTIÓN AGRÍCOLA
@@ -361,6 +381,7 @@
       </nav>
     </aside>
 
+    <!-- CONTENIDO -->
     <main class="content">
       <div class="card">
         <div class="section-title">
@@ -386,7 +407,10 @@
     const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda'];
 
     function toggleMenu() {
-      document.getElementById('sidebar').classList.toggle('closed');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
     }
 
     function cargarSeccion(element, nombrePestaña) {
@@ -398,6 +422,11 @@
       
       const contenedor = document.getElementById('contenedor-tabla');
       contenedor.innerHTML = '<div class="loading">Cargando datos actualizados de Google Sheets...</div>';
+
+      // Cerrar menú si está en móvil
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('active');
+
       obtenerDatosGoogleSheets(nombrePestaña, false);
     }
 
@@ -465,13 +494,12 @@
       guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, nuevoValor);
     }
 
-    // Al escribir por primera vez y hacer blur / enter, guarda y bloquea
     function guardarKilosAuto(input, rowIndex, colIndex) {
       if (input.disabled) return;
       
       const valor = input.value.trim();
       if (valor !== '') {
-        input.disabled = true; // Bloqueo automático
+        input.disabled = true;
         const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
         const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
         
@@ -482,7 +510,6 @@
       }
     }
 
-    // Habilitar la edición: Muestra el botón 'Guardar' y oculta el 'Lápiz'
     function habilitarEdicionKilos(rowIndex) {
       const input = document.getElementById(`input_kilos_${rowIndex}`);
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
@@ -498,7 +525,6 @@
       }
     }
 
-    // Confirmar edición pulsando en el botón 'Guardar'
     function confirmarGuardarKilos(rowIndex, colIndex) {
       const input = document.getElementById(`input_kilos_${rowIndex}`);
       if (input) {
@@ -619,7 +645,6 @@
 
             html += `</select></td>`;
           } 
-          // Campo para Entrada Rápida de Kilos + Lápiz + Botón Guardar
           else if (esKilos) {
             const tieneValor = valor !== '' && valor !== null && valor !== undefined;
             const disabledAttr = tieneValor ? 'disabled' : '';
@@ -630,7 +655,7 @@
                 <input type="number" 
                        id="input_kilos_${rowIndex}" 
                        class="input-kilos" 
-                       placeholder="Escribir..." 
+                       placeholder="Cant..." 
                        value="${valor}" 
                        ${disabledAttr} 
                        min="0" 
@@ -640,7 +665,7 @@
                 
                 <button id="btn_edit_${rowIndex}" 
                         class="btn-edit-kilos" 
-                        title="Modificar cantidad" 
+                        title="Modificar" 
                         style="display: ${displayEdit};" 
                         onclick="habilitarEdicionKilos(${rowIndex})">✏️</button>
 
@@ -682,7 +707,6 @@
       
       if (autoUpdateTimer) clearInterval(autoUpdateTimer);
       autoUpdateTimer = setInterval(() => {
-        // Evita recargar automáticamente mientras haya un input de kilos en edición activo
         const inputActivo = document.querySelector('.input-kilos:not(:disabled)');
         if (!inputActivo) {
           obtenerDatosGoogleSheets(pestañaActual, true);
