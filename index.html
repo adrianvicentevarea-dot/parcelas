@@ -203,9 +203,8 @@
       transform: scale(0.96);
     }
 
-    /* ESTILO PARA EL DESPLEGABLE / SELECT DE TIPO DE CULTIVO */
     .select-cultivo {
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
       background-color: #ffffff;
@@ -214,15 +213,13 @@
       font-weight: 600;
       cursor: pointer;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s;
     }
 
     .select-cultivo:focus {
       border-color: #2ec4b6;
-      box-shadow: 0 0 0 3px rgba(46, 196, 182, 0.2);
     }
 
-    /* GRID PARA COLOCAR 2 FECHAS POR FILA */
     .fechas-grid {
       display: grid;
       grid-template-columns: repeat(2, auto);
@@ -269,7 +266,6 @@
 </head>
 <body>
 
-  <!-- Barra Superior -->
   <header class="top-bar">
     <button class="btn-menu" onclick="toggleMenu()">
       <span>☰</span> MENÚ
@@ -277,7 +273,6 @@
   </header>
 
   <div class="main-container">
-    <!-- Menú Lateral -->
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
         GESTIÓN AGRÍCOLA
@@ -301,7 +296,6 @@
       </nav>
     </aside>
 
-    <!-- Área de Contenido Principal -->
     <main class="content">
       <div class="card">
         <div class="section-title">
@@ -324,6 +318,7 @@
     let autoUpdateTimer = null;
 
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
+    const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'recolección', 'poda'];
 
     function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('closed');
@@ -462,25 +457,27 @@
       return html;
     }
 
-    const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'recolección', 'trataminetos'];
-
     function construirTablaHTML(data, pestaña) {
       const contenedor = document.getElementById('contenedor-tabla');
       const encabezados = data[0];
+      const totalColumnas = encabezados.length;
       const filasData = data.slice(1);
 
       let html = '<table><thead><tr>';
-      encabezados.forEach(enc => { html += `<th>${enc}</th>`; });
+      encabezados.forEach(enc => { 
+        html += `<th>${enc}</th>`;
+      });
       html += '</tr></thead><tbody>';
 
       filasData.forEach((fila, rowIndex) => {
         html += '<tr>';
         
-        encabezados.forEach((header, colIndex) => {
-          let valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
+        for (let colIndex = 0; colIndex < totalColumnas; colIndex++) {
+          const header = encabezados[colIndex] || '';
+          const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
 
-          const esTipoCultivo = headerLower.includes('tipo de cultivo') || headerLower.includes('cultivo');
+          const esTipoCultivo = headerLower.includes('tipo de cultivo') || headerLower === 'cultivo';
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
           const esColumnaFecha = headerLower.includes('fecha');
 
@@ -490,7 +487,7 @@
                 <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
             
             OPCIONES_CULTIVO.forEach(opcion => {
-              const selected = (valor.toLowerCase() === opcion.toLowerCase()) ? 'selected' : '';
+              const selected = (valor.toLowerCase().trim() === opcion.toLowerCase().trim()) ? 'selected' : '';
               html += `<option value="${opcion}" ${selected}>${opcion}</option>`;
             });
 
@@ -511,7 +508,7 @@
           } else {
             html += `<td>${valor}</td>`;
           }
-        });
+        }
 
         html += '</tr>';
       });
