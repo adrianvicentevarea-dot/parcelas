@@ -220,7 +220,7 @@
       border-color: #2ec4b6;
     }
 
-    /* Estilos para la gestión de Kilos */
+    /* Estilos ultra rápidos para Kilos */
     .kilos-container {
       display: inline-flex;
       align-items: center;
@@ -228,45 +228,45 @@
     }
 
     .input-kilos {
-      width: 90px;
+      width: 85px;
       padding: 6px 8px;
-      border: 1px solid #cbd5e1;
+      border: 1.5px solid #0284c7;
       border-radius: 5px;
       font-size: 13px;
-      font-weight: 600;
-      color: #0d1b2a;
+      font-weight: 700;
+      color: #0f172a;
       outline: none;
+      background-color: #ffffff;
+      transition: all 0.2s;
+    }
+
+    .input-kilos:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
     }
 
     .input-kilos:disabled {
       background-color: #f1f5f9;
-      color: #475569;
-      border-color: #e2e8f0;
-      cursor: not-allowed;
-    }
-
-    .btn-kilos-toggle {
-      background-color: #3b82f6;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      font-size: 12px;
-      font-weight: 600;
+      color: #334155;
+      border-color: #cbd5e1;
       cursor: pointer;
-      transition: background 0.2s;
+      font-weight: 600;
     }
 
-    .btn-kilos-toggle:hover {
-      background-color: #2563eb;
+    .btn-edit-kilos {
+      background-color: transparent;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      opacity: 0.6;
+      transition: opacity 0.2s;
     }
 
-    .btn-kilos-toggle.locked {
-      background-color: #64748b;
-    }
-
-    .btn-kilos-toggle.locked:hover {
-      background-color: #475569;
+    .btn-edit-kilos:hover {
+      opacity: 1;
+      background-color: #e2e8f0;
     }
 
     .fechas-grid {
@@ -449,24 +449,30 @@
       guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, nuevoValor);
     }
 
-    function toggleKilosEdit(rowIndex, colIndex) {
-      const input = document.getElementById(`input_kilos_${rowIndex}`);
-      const btn = document.getElementById(`btn_kilos_${rowIndex}`);
+    // Auto-guardar kilos al salir del input o pulsar Enter
+    function guardarKilosAuto(input, rowIndex, colIndex) {
+      if (input.disabled) return;
+      
+      const valor = input.value.trim();
+      if (valor !== '') {
+        input.disabled = true; // Bloqueo automático para no editar sin querer
+        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+        if (btnEdit) btnEdit.style.display = 'inline-block';
+        
+        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
+      }
+    }
 
-      if (input.disabled) {
-        // Habilitar para edición
+    // Habilitar edición al hacer clic en el lápiz
+    function habilitarEdicionKilos(rowIndex) {
+      const input = document.getElementById(`input_kilos_${rowIndex}`);
+      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+      
+      if (input) {
         input.disabled = false;
         input.focus();
-        btn.innerText = '💾 Guardar';
-        btn.classList.remove('locked');
-      } else {
-        // Bloquear y Guardar datos en Google Sheets
-        input.disabled = true;
-        btn.innerText = '✏️ Editar';
-        btn.classList.add('locked');
-
-        const valorKilos = input.value;
-        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valorKilos);
+        input.select();
+        if (btnEdit) btnEdit.style.display = 'none';
       }
     }
 
@@ -575,17 +581,30 @@
 
             html += `</select></td>`;
           } 
-          // Campo para agregar Kilos / Quilos con opción de bloqueo / edición
+          // Campo para la entrada rápida de Kilos
           else if (esKilos) {
             const tieneValor = valor !== '' && valor !== null && valor !== undefined;
-            const disabledState = tieneValor ? 'disabled' : '';
-            const btnText = tieneValor ? '✏️ Editar' : '💾 Guardar';
-            const btnClass = tieneValor ? 'locked' : '';
+            const disabledAttr = tieneValor ? 'disabled' : '';
+            const displayBtn = tieneValor ? 'inline-block' : 'none';
 
             html += `<td>
               <div class="kilos-container">
-                <input type="number" id="input_kilos_${rowIndex}" class="input-kilos" placeholder="0 kg" value="${valor}" ${disabledState} min="0" step="any" />
-                <button id="btn_kilos_${rowIndex}" class="btn-kilos-toggle ${btnClass}" onclick="toggleKilosEdit(${rowIndex}, ${colIndex})">${btnText}</button>
+                <input type="number" 
+                       id="input_kilos_${rowIndex}" 
+                       class="input-kilos" 
+                       placeholder="Escribir..." 
+                       value="${valor}" 
+                       ${disabledAttr} 
+                       min="0" 
+                       step="any"
+                       onblur="guardarKilosAuto(this, ${rowIndex}, ${colIndex})"
+                       onkeydown="if(event.key==='Enter') { this.blur(); }" />
+                
+                <button id="btn_edit_${rowIndex}" 
+                        class="btn-edit-kilos" 
+                        title="Modificar cantidad" 
+                        style="display: ${displayBtn};" 
+                        onclick="habilitarEdicionKilos(${rowIndex})">✏️</button>
               </div>
             </td>`;
           }
@@ -620,7 +639,7 @@
       
       if (autoUpdateTimer) clearInterval(autoUpdateTimer);
       autoUpdateTimer = setInterval(() => {
-        // Evitar recargar mientras el usuario está escribiendo o editando kilos
+        // Evitar recargar mientras haya una casilla de kilos activa/desbloqueada
         const inputActivo = document.querySelector('.input-kilos:not(:disabled)');
         if (!inputActivo) {
           obtenerDatosGoogleSheets(pestañaActual, true);
