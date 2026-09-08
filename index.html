@@ -13,22 +13,41 @@
     }
 
     body {
-      background-color: #0b1e28; /* Fondo oscuro inspirado en la app */
+      background-color: #0b1e28;
       color: #333333;
-      padding-bottom: 75px; /* Espacio para la barra inferior */
+      padding-bottom: 30px;
       min-height: 100vh;
     }
 
-    /* ENCABEZADO */
+    /* CABECERA */
     .header {
       padding: 20px 20px 10px 20px;
       color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .header h1 {
       font-size: 28px;
       font-weight: 800;
-      margin-bottom: 15px;
+    }
+
+    .btn-volver {
+      background-color: #334155;
+      color: #ffffff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .btn-principal {
@@ -66,7 +85,7 @@
       margin-bottom: 15px;
     }
 
-    /* VISTA DE INICIO (TARJETAS ESTILO HISTORIAL) */
+    /* TARJETAS DE INICIO (ESTILO APP) */
     .cards-container {
       display: flex;
       flex-direction: column;
@@ -76,11 +95,17 @@
     .card-item {
       background: #ffffff;
       border-radius: 16px;
-      padding: 16px;
+      padding: 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .card-item:active {
+      transform: scale(0.98);
     }
 
     .card-info {
@@ -90,7 +115,7 @@
     }
 
     .card-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
       color: #0f172a;
     }
@@ -105,17 +130,10 @@
     }
 
     .card-badge-num {
-      font-size: 20px;
-      font-weight: 800;
-      color: #0f172a;
+      font-size: 22px;
     }
 
-    .card-badge-text {
-      font-size: 12px;
-      color: #64748b;
-    }
-
-    /* CONTENEDOR PARA LAS TABLAS DE EXCEL */
+    /* TABLA EXCEL */
     .table-card {
       background: #ffffff;
       border-radius: 16px;
@@ -161,7 +179,7 @@
       font-style: italic;
     }
 
-    /* ELEMENTOS EDITABLES DE LA TABLA */
+    /* CONTROLES EDITABLES */
     .btn-accion-tarea {
       background-color: #10b981;
       color: white;
@@ -248,92 +266,29 @@
       font-size: 10px;
       cursor: pointer;
     }
-
-    /* BARRA NAVEGACIÓN INFERIOR (BOTTOM NAV) */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 65px;
-      background-color: #ffffff;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-      z-index: 1000;
-    }
-
-    .nav-button {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      color: #64748b;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 16%;
-    }
-
-    .nav-button .icon {
-      font-size: 20px;
-    }
-
-    .nav-button.active {
-      color: #0b1e28;
-      font-weight: 800;
-    }
   </style>
 </head>
 <body>
 
   <!-- CABECERA -->
   <div class="header">
-    <h1 id="header-title">Sesiones</h1>
+    <div class="header-top">
+      <h1 id="header-title">Inicio</h1>
+      <button id="btn-volver" class="btn-volver" style="display: none;" onclick="navegar('Inicio', 'Inicio')">← Inicio</button>
+    </div>
     <button class="btn-principal" onclick="accionPrincipal()">
-      <span>+</span> <span id="btn-principal-texto">Nueva sesión</span>
+      <span>+</span> <span id="btn-principal-texto">Nuevo Registro</span>
     </button>
   </div>
 
-  <!-- CONTENIDO DINÁMICO -->
+  <!-- CONTENIDO PRINCIPAL -->
   <main class="main-content">
-    <div class="section-title" id="section-subtitle">Historial</div>
+    <div class="section-title" id="section-subtitle">Opciones Principales</div>
     
     <div id="contenedor-vista">
-      <!-- Aquí se cargará dinámicamente la vista de Inicio o la Tabla de Excel -->
+      <!-- Carga dinámica de la vista -->
     </div>
   </main>
-
-  <!-- BARRA DE NAVEGACIÓN INFERIOR -->
-  <nav class="bottom-nav">
-    <button class="nav-button active" onclick="navegar('Inicio', 'Inicio', this)">
-      <span class="icon">🏠</span>
-      <span>Inicio</span>
-    </button>
-    <button class="nav-button" onclick="navegar('Identificación de Parcelas', 'Parcelas', this)">
-      <span class="icon">📍</span>
-      <span>Parcelas</span>
-    </button>
-    <button class="nav-button" onclick="navegar('Laboreos', 'Laboreos', this)">
-      <span class="icon">🚜</span>
-      <span>Laboreos</span>
-    </button>
-    <button class="nav-button" onclick="navegar('Poda', 'Poda', this)">
-      <span class="icon">✂️</span>
-      <span>Poda</span>
-    </button>
-    <button class="nav-button" onclick="navegar('Tratamientos', 'Tratamientos', this)">
-      <span class="icon">🧪</span>
-      <span>Tratamientos</span>
-    </button>
-    <button class="nav-button" onclick="navegar('Recolección', 'Recolección', this)">
-      <span class="icon">🧺</span>
-      <span>Tareas</span>
-    </button>
-  </nav>
 
   <script>
     const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
@@ -341,28 +296,27 @@
 
     let pestañaActual = 'Inicio';
     const memoriaFechas = {};
-    let autoUpdateTimer = null;
 
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
     const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda'];
 
-    function navegar(pestaña, tituloVisual, element) {
-      document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-      element.classList.add('active');
-
+    function navegar(pestaña, tituloVisual) {
       pestañaActual = pestaña;
       document.getElementById('header-title').innerText = tituloVisual;
       
       const btnTexto = document.getElementById('btn-principal-texto');
       const subTitulo = document.getElementById('section-subtitle');
+      const btnVolver = document.getElementById('btn-volver');
 
       if (pestaña === 'Inicio') {
-        btnTexto.innerText = "Nueva sesión";
-        subTitulo.innerText = "Historial";
+        btnTexto.innerText = "Nuevo Registro";
+        subTitulo.innerText = "Opciones Principales";
+        btnVolver.style.display = "none";
         renderizarInicio();
       } else {
-        btnTexto.innerText = "Añadir Registro";
+        btnTexto.innerText = "Añadir a " + tituloVisual;
         subTitulo.innerText = "Registros de " + tituloVisual;
+        btnVolver.style.display = "block";
         cargarTablaExcel(pestaña);
       }
     }
@@ -371,58 +325,53 @@
       const contenedor = document.getElementById('contenedor-vista');
       contenedor.innerHTML = `
         <div class="cards-container">
-          <div class="card-item">
+          <div class="card-item" onclick="navegar('Identificación de Parcelas', 'Parcelas')">
             <div class="card-info">
-              <div class="card-title">S025</div>
-              <div class="card-subtitle">07/09/2026 · Recuperación jugadores, comienzo semana</div>
+              <div class="card-title">Parcelas</div>
+              <div class="card-subtitle">Identificación y control de parcelas</div>
             </div>
             <div class="card-badge">
-              <div class="card-badge-num">313</div>
-              <div class="card-badge-text">64 min</div>
+              <div class="card-badge-num">📍</div>
             </div>
           </div>
 
-          <div class="card-item">
+          <div class="card-item" onclick="navegar('Laboreos', 'Laboreos')">
             <div class="card-info">
-              <div class="card-title">S022</div>
-              <div class="card-subtitle">04/09/2026 · Preparación ABP partido</div>
+              <div class="card-title">Laboreos</div>
+              <div class="card-subtitle">Gestión de trabajos de laboreo</div>
             </div>
             <div class="card-badge">
-              <div class="card-badge-num">229</div>
-              <div class="card-badge-text">57 min</div>
+              <div class="card-badge-num">🚜</div>
             </div>
           </div>
 
-          <div class="card-item">
+          <div class="card-item" onclick="navegar('Poda', 'Poda')">
             <div class="card-info">
-              <div class="card-title">S021</div>
-              <div class="card-subtitle">03/09/2026 · Verticalidad tras robo</div>
+              <div class="card-title">Poda</div>
+              <div class="card-subtitle">Registros y control de poda</div>
             </div>
             <div class="card-badge">
-              <div class="card-badge-num">274</div>
-              <div class="card-badge-text">51 min</div>
+              <div class="card-badge-num">✂️</div>
             </div>
           </div>
 
-          <div class="card-item">
+          <div class="card-item" onclick="navegar('Tratamientos', 'Tratamientos')">
             <div class="card-info">
-              <div class="card-title">S020</div>
-              <div class="card-subtitle">02/09/2026 · Comportamiento MCB - Ubicaciones en SDB</div>
+              <div class="card-title">Tratamientos</div>
+              <div class="card-subtitle">Control de tratamientos aplicados</div>
             </div>
             <div class="card-badge">
-              <div class="card-badge-num">331</div>
-              <div class="card-badge-text">55 min</div>
+              <div class="card-badge-num">🧪</div>
             </div>
           </div>
 
-          <div class="card-item">
+          <div class="card-item" onclick="navegar('Recolección', 'Tareas')">
             <div class="card-info">
-              <div class="card-title">S019</div>
-              <div class="card-subtitle">31/08/2026 · Preparar debut liguero</div>
+              <div class="card-title">Tareas / Recolección</div>
+              <div class="card-subtitle">Control de tareas y kilos cosechados</div>
             </div>
             <div class="card-badge">
-              <div class="card-badge-num">243</div>
-              <div class="card-badge-text">54 min</div>
+              <div class="card-badge-num">🧺</div>
             </div>
           </div>
         </div>
@@ -698,7 +647,7 @@
     }
 
     function accionPrincipal() {
-      alert("Acción realizada desde el botón superior.");
+      alert("Selecciona una opción para ver sus datos.");
     }
 
     document.addEventListener('DOMContentLoaded', () => {
