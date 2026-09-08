@@ -25,29 +25,12 @@
       color: #ffffff;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 12px;
     }
 
     .header h1 {
       font-size: 28px;
       font-weight: 800;
-    }
-
-    .btn-volver {
-      background-color: #334155;
-      color: #ffffff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
     }
 
     .btn-principal {
@@ -272,12 +255,9 @@
 
   <!-- CABECERA -->
   <div class="header">
-    <div class="header-top">
-      <h1 id="header-title">Inicio</h1>
-      <button id="btn-volver" class="btn-volver" style="display: none;" onclick="navegar('Inicio', 'Inicio')">← Inicio</button>
-    </div>
-    <button class="btn-principal" onclick="accionPrincipal()">
-      <span>+</span> <span id="btn-principal-texto">Nuevo Registro</span>
+    <h1 id="header-title">Inicio</h1>
+    <button class="btn-principal" onclick="navegar('Inicio', 'Inicio')">
+      <span>🏠</span> <span>Inicio</span>
     </button>
   </div>
 
@@ -304,19 +284,13 @@
       pestañaActual = pestaña;
       document.getElementById('header-title').innerText = tituloVisual;
       
-      const btnTexto = document.getElementById('btn-principal-texto');
       const subTitulo = document.getElementById('section-subtitle');
-      const btnVolver = document.getElementById('btn-volver');
 
       if (pestaña === 'Inicio') {
-        btnTexto.innerText = "Nuevo Registro";
         subTitulo.innerText = "Opciones Principales";
-        btnVolver.style.display = "none";
         renderizarInicio();
       } else {
-        btnTexto.innerText = "Añadir a " + tituloVisual;
         subTitulo.innerText = "Registros de " + tituloVisual;
-        btnVolver.style.display = "block";
         cargarTablaExcel(pestaña);
       }
     }
@@ -644,10 +618,6 @@
       });
       html += '</div>';
       return html;
-    }
-
-    function accionPrincipal() {
-      alert("Selecciona una opción para ver sus datos.");
     }
 
     document.addEventListener('DOMContentLoaded', () => {
