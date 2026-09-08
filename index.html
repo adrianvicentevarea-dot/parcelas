@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión Agrícola</title>
   <style>
-    /* Reset básico y fuentes */
+    /* Reset básico y tipografía */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -25,13 +25,12 @@
       padding: 12px 20px;
       display: flex;
       align-items: center;
-      gap: 15px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
       position: relative;
       z-index: 10;
     }
 
-    /* Botón Menú con estilo similar a tu referencia */
+    /* Botón MENÚ */
     .btn-menu {
       background-color: transparent;
       color: #ffffff;
@@ -53,12 +52,6 @@
       border-color: #3ae2d2;
     }
 
-    .app-title {
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
     /* Contenedor Principal */
     .main-container {
       display: flex;
@@ -67,16 +60,16 @@
 
     /* Menú Lateral (Sidebar) */
     .sidebar {
-      width: 250px;
+      width: 270px;
       background-color: #0d1b2a;
       transition: all 0.3s ease;
       flex-shrink: 0;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
     }
 
-    /* Estado cuando se oculta el menú */
+    /* Ocultar barra lateral cuando se presiona MENÚ */
     .sidebar.closed {
-      margin-left: -250px;
+      margin-left: -270px;
     }
 
     .sidebar-header {
@@ -103,7 +96,7 @@
       padding: 15px 20px;
       text-align: left;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -111,6 +104,7 @@
       width: 100%;
       transition: background 0.2s, color 0.2s;
       border-left: 4px solid transparent;
+      text-transform: uppercase;
     }
 
     .nav-item:hover {
@@ -176,10 +170,13 @@
     <!-- Menú Lateral -->
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
-        Gestión Agrícola
+        GESTIÓN AGRÍCOLA
       </div>
       <nav class="sidebar-nav">
-        <button class="nav-item active" onclick="seleccionarOpcion(this, 'laboreos')">
+        <button class="nav-item active" onclick="seleccionarOpcion(this, 'parcelas')">
+          <span class="nav-icon">📍</span> IDENTIFICACIÓN DE PARCELAS
+        </button>
+        <button class="nav-item" onclick="seleccionarOpcion(this, 'laboreos')">
           <span class="nav-icon">🚜</span> LABOREOS
         </button>
         <button class="nav-item" onclick="seleccionarOpcion(this, 'poda')">
@@ -198,7 +195,12 @@
     <main class="content">
       <div class="card">
         
-        <section id="sec-laboreos" class="content-section active">
+        <section id="sec-parcelas" class="content-section active">
+          <h2>Sección: Identificación de Parcelas</h2>
+          <p>Aquí se cargará la información y delimitación de las parcelas guardadas en Google Sheets.</p>
+        </section>
+
+        <section id="sec-laboreos" class="content-section">
           <h2>Sección: Laboreos</h2>
           <p>Aquí se cargará el formulario o los datos de Laboreos vinculados con tu Google Sheets.</p>
         </section>
@@ -223,22 +225,22 @@
   </div>
 
   <script>
-    // Alternar visibilidad del menú lateral
+    // Mostrar u ocultar menú lateral
     function toggleMenu() {
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('closed');
     }
 
-    // Cambiar entre pestañas
+    // Cambiar de pestaña al hacer clic en las opciones del menú
     function seleccionarOpcion(element, idSeccion) {
-      // Quitar clase activa de los botones
+      // Desmarcar todos los botones
       const items = document.querySelectorAll('.nav-item');
       items.forEach(item => item.classList.remove('active'));
 
-      // Activar el botón seleccionado
+      // Marcar el botón presionado
       element.classList.add('active');
 
-      // Ocultar todas las secciones
+      // Ocultar todas las secciones de contenido
       const secciones = document.querySelectorAll('.content-section');
       secciones.forEach(sec => sec.classList.remove('active'));
 
