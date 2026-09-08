@@ -463,6 +463,7 @@
       const totalColumnas = encabezados.length;
       const filasData = data.slice(1);
 
+      // Mantenemos los encabezados de Google Sheets de manera exacta e intacta
       let html = '<table><thead><tr>';
       encabezados.forEach(enc => { 
         html += `<th>${enc}</th>`;
@@ -477,11 +478,18 @@
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
 
-          const esTipoCultivo = headerLower.includes('tipo de cultivo') || headerLower === 'cultivo';
+          // Detección estricta de las columnas de tipo de cultivo
+          const esTipoCultivo = headerLower.includes('tipo de cultivo') || 
+                                headerLower.includes('cultivo') || 
+                                headerLower === 'barbecho' || 
+                                headerLower === 'frutales' || 
+                                headerLower === 'almendros';
+
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
           const esColumnaFecha = headerLower.includes('fecha');
 
           if (esTipoCultivo) {
+            // Renderizamos siempre el elemento <select> dentro de la celda de cada fila
             html += `<td>
               <select class="select-cultivo" onchange="cambiarTipoCultivo(this, ${rowIndex}, ${colIndex})">
                 <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
