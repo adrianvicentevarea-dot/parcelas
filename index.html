@@ -855,7 +855,6 @@
     function renderizarFechasHTML(rowIndex, listaFechas) {
       if (!listaFechas || listaFechas.length === 0) return '';
       let html = '<div class="fechas-grid">';
-      listaFechas.exports((f, idx) => {}); // placeholder
       listaFechas.forEach((f, idx) => {
         html += `
           <div class="fecha-item">
