@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión Agrícola</title>
+  <title>Gestión Agrícola - Control de Parcela</title>
   <style>
     /* Reset básico y tipografía */
     * {
@@ -67,7 +67,7 @@
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
     }
 
-    /* Ocultar barra lateral cuando se presiona MENÚ */
+    /* Ocultar barra lateral */
     .sidebar.closed {
       margin-left: -270px;
     }
@@ -112,7 +112,7 @@
       color: #ffffff;
     }
 
-    /* Opción Seleccionada (Destacada) */
+    /* Opción Seleccionada */
     .nav-item.active {
       background-color: #2ec4b6;
       color: #0d1b2a;
@@ -127,7 +127,8 @@
     /* Contenido Principal */
     .content {
       flex: 1;
-      padding: 30px;
+      padding: 25px;
+      overflow-x: auto;
     }
 
     .card {
@@ -137,23 +138,71 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
 
-    .content-section {
-      display: none;
-    }
-
-    .content-section.active {
-      display: block;
-    }
-
-    .content-section h2 {
+    .section-title {
       color: #0d1b2a;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .content-section p {
+    /* Tabla de Datos de Google Sheets */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    thead {
+      background-color: #0d1b2a;
+      color: #ffffff;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    tbody tr:hover {
+      background-color: #f1f5f9;
+    }
+
+    .loading {
+      padding: 30px;
+      text-align: center;
       color: #64748b;
-      line-height: 1.6;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    .btn-refresh {
+      background-color: #2ec4b6;
+      color: #0d1b2a;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+
+    .btn-refresh:hover {
+      background-color: #25a094;
     }
   </style>
 </head>
@@ -173,83 +222,132 @@
         GESTIÓN AGRÍCOLA
       </div>
       <nav class="sidebar-nav">
-        <button class="nav-item active" onclick="seleccionarOpcion(this, 'parcelas')">
+        <button class="nav-item active" onclick="cargarSeccion(this, 'Identificación de Parcelas')">
           <span class="nav-icon">📍</span> IDENTIFICACIÓN DE PARCELAS
         </button>
-        <button class="nav-item" onclick="seleccionarOpcion(this, 'laboreos')">
+        <button class="nav-item" onclick="cargarSeccion(this, 'Laboreos')">
           <span class="nav-icon">🚜</span> LABOREOS
         </button>
-        <button class="nav-item" onclick="seleccionarOpcion(this, 'poda')">
+        <button class="nav-item" onclick="cargarSeccion(this, 'Poda')">
           <span class="nav-icon">✂️</span> PODA
         </button>
-        <button class="nav-item" onclick="seleccionarOpcion(this, 'tratamientos')">
+        <button class="nav-item" onclick="cargarSeccion(this, 'Tratamientos')">
           <span class="nav-icon">🧪</span> TRATAMIENTOS
         </button>
-        <button class="nav-item" onclick="seleccionarOpcion(this, 'recoleccion')">
+        <button class="nav-item" onclick="cargarSeccion(this, 'Recolección')">
           <span class="nav-icon">🧺</span> RECOLECCIÓN
         </button>
       </nav>
     </aside>
 
-    <!-- Área de Contenido -->
+    <!-- Área de Contenido Principal -->
     <main class="content">
       <div class="card">
-        
-        <section id="sec-parcelas" class="content-section active">
-          <h2>Sección: Identificación de Parcelas</h2>
-          <p>Aquí se cargará la información y delimitación de las parcelas guardadas en Google Sheets.</p>
-        </section>
+        <div class="section-title">
+          <h2 id="titulo-seccion">IDENTIFICACIÓN DE PARCELAS</h2>
+          <button class="btn-refresh" onclick="recargarDatosActuales()">🔄 Actualizar Datos</button>
+        </div>
 
-        <section id="sec-laboreos" class="content-section">
-          <h2>Sección: Laboreos</h2>
-          <p>Aquí se cargará el formulario o los datos de Laboreos vinculados con tu Google Sheets.</p>
-        </section>
-
-        <section id="sec-poda" class="content-section">
-          <h2>Sección: Poda</h2>
-          <p>Aquí se cargarán los registros y la información de la Poda.</p>
-        </section>
-
-        <section id="sec-tratamientos" class="content-section">
-          <h2>Sección: Tratamientos</h2>
-          <p>Aquí se visualizarán los tratamientos aplicados en el campo.</p>
-        </section>
-
-        <section id="sec-recoleccion" class="content-section">
-          <h2>Sección: Recolección</h2>
-          <p>Aquí se gestionarán las fechas y cantidades de la recolección.</p>
-        </section>
-
+        <div id="contenedor-tabla" class="table-responsive">
+          <div class="loading">Cargando datos desde Google Sheets...</div>
+        </div>
       </div>
     </main>
   </div>
 
   <script>
-    // Mostrar u ocultar menú lateral
+    // ID extraído de tu enlace de Google Sheets
+    const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
+
+    let pestañaActual = 'Identificación de Parcelas';
+
     function toggleMenu() {
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('closed');
     }
 
-    // Cambiar de pestaña al hacer clic en las opciones del menú
-    function seleccionarOpcion(element, idSeccion) {
-      // Desmarcar todos los botones
+    function cargarSeccion(element, nombrePestaña) {
       const items = document.querySelectorAll('.nav-item');
       items.forEach(item => item.classList.remove('active'));
-
-      // Marcar el botón presionado
       element.classList.add('active');
 
-      // Ocultar todas las secciones de contenido
-      const secciones = document.querySelectorAll('.content-section');
-      secciones.forEach(sec => sec.classList.remove('active'));
+      pestañaActual = nombrePestaña;
+      document.getElementById('titulo-seccion').innerText = element.innerText.replace(/^[^\s]+\s+/, '');
+      
+      obtenerDatosGoogleSheets(nombrePestaña);
+    }
 
-      // Mostrar la sección correspondiente
-      const seccionActiva = document.getElementById(`sec-${idSeccion}`);
-      if (seccionActiva) {
-        seccionActiva.classList.add('active');
+    function recargarDatosActuales() {
+      obtenerDatosGoogleSheets(pestañaActual);
+    }
+
+    async function obtenerDatosGoogleSheets(pestaña) {
+      const contenedor = document.getElementById('contenedor-tabla');
+      contenedor.innerHTML = '<div class="loading">Cargando datos actualizados de Google Sheets...</div>';
+
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pestaña)}`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("No se pudo conectar a Google Sheets");
+        
+        const textData = await response.text();
+        const filas = parseCSV(textData);
+
+        if (filas.length === 0) {
+          contenedor.innerHTML = '<div class="loading">La hoja seleccionada está vacía.</div>';
+          return;
+        }
+
+        construirTablaHTML(filas);
+
+      } catch (error) {
+        console.error(error);
+        contenedor.innerHTML = `
+          <div class="loading" style="color: #e63946;">
+            Error al cargar los datos. Asegúrate de haber realizado en tu Google Sheet: 
+            <strong>Archivo > Compartir > Publicar en la web</strong>.
+          </div>`;
       }
     }
+
+    function parseCSV(text) {
+      const lines = text.split('\n');
+      return lines.map(line => {
+        const matches = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g);
+        if (!matches) return line.split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
+        return matches.map(cell => cell.replace(/^"|"$/g, '').trim());
+      }).filter(row => row.length > 0 && row.some(cell => cell !== ""));
+    }
+
+    function construirTablaHTML(data) {
+      const contenedor = document.getElementById('contenedor-tabla');
+      const encabezados = data[0];
+      const filasData = data.slice(1);
+
+      let html = '<table><thead><tr>';
+      
+      encabezados.forEach(enc => {
+        html += `<th>${enc}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      filasData.forEach(fila => {
+        html += '<tr>';
+        encabezados.forEach((_, colIndex) => {
+          const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
+          html += `<td>${valor}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      contenedor.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      obtenerDatosGoogleSheets(pestañaActual);
+    });
   </script>
 </body>
 </html>
