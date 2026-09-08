@@ -2,52 +2,63 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión Agrícola</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Navegación por pestañas -->
-  <nav class="tabs-nav">
-    <button class="tab-button active" onclick="openTab('gestion')">Gestión de Campo</button>
-    <button class="tab-button" onclick="openTab('resumen')">Resumen</button>
-  </nav>
+  <!-- Botón superior para abrir/cerrar el menú -->
+  <header class="top-bar">
+    <button id="menu-toggle" class="btn-menu" onclick="toggleMenu()">
+      <span class="icon-hamburger">☰</span> MENÚ
+    </button>
+  </header>
 
-  <!-- Pestaña 1: Menús Principales -->
-  <div id="gestion" class="tab-content active">
-    <h2>Menú de Operaciones</h2>
-    
-    <div class="menu-grid">
-      <!-- Menú Laboreos -->
-      <div class="card">
-        <h3>Laboreos</h3>
-        <button onclick="ejecutarAccion('Laboreos')">Ver / Añadir Registro</button>
+  <div class="main-container">
+    <!-- Menú Lateral Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        GESTIÓN AGRÍCOLA
       </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="seleccionarOpcion(this, 'laboreos')">
+          <span class="nav-icon">🚜</span> LABOREOS
+        </button>
+        <button class="nav-item" onclick="seleccionarOpcion(this, 'poda')">
+          <span class="nav-icon">✂️</span> PODA
+        </button>
+        <button class="nav-item" onclick="seleccionarOpcion(this, 'tratamientos')">
+          <span class="nav-icon">🧪</span> TRATAMIENTOS
+        </button>
+        <button class="nav-item" onclick="seleccionarOpcion(this, 'recoleccion')">
+          <span class="nav-icon">🧺</span> RECOLECCIÓN
+        </button>
+      </nav>
+    </aside>
 
-      <!-- Menú Poda -->
-      <div class="card">
-        <h3>Poda</h3>
-        <button onclick="ejecutarAccion('Poda')">Ver / Añadir Registro</button>
-      </div>
+    <!-- Áreas de contenido -->
+    <main class="content">
+      <section id="sec-laboreos" class="content-section active">
+        <h2>Sección: Laboreos</h2>
+        <p>Aquí se cargará el formulario o los datos de Laboreos desde Google Sheets.</p>
+      </section>
 
-      <!-- Menú Tratamientos -->
-      <div class="card">
-        <h3>Tratamientos</h3>
-        <button onclick="ejecutarAccion('Tratamientos')">Ver / Añadir Registro</button>
-      </div>
+      <section id="sec-poda" class="content-section">
+        <h2>Sección: Poda</h2>
+        <p>Aquí se cargarán los datos de Poda.</p>
+      </section>
 
-      <!-- Menú Recolección -->
-      <div class="card">
-        <h3>Recolección</h3>
-        <button onclick="ejecutarAccion('Recolección')">Ver / Añadir Registro</button>
-      </div>
-    </div>
-  </div>
+      <section id="sec-tratamientos" class="content-section">
+        <h2>Sección: Tratamientos</h2>
+        <p>Aquí se cargarán los datos de Tratamientos.</p>
+      </section>
 
-  <!-- Pestaña 2: Resumen -->
-  <div id="resumen" class="tab-content">
-    <h2>Resumen General</h2>
-    <p>Aquí se mostrarán los datos cargados desde Google Sheets.</p>
+      <section id="sec-recoleccion" class="content-section">
+        <h2>Sección: Recolección</h2>
+        <p>Aquí se cargarán los datos de Recolección.</p>
+      </section>
+    </main>
   </div>
 
   <script src="script.js"></script>
