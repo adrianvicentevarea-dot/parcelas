@@ -220,6 +220,55 @@
       border-color: #2ec4b6;
     }
 
+    /* Estilos para la gestión de Kilos */
+    .kilos-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-kilos {
+      width: 90px;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0d1b2a;
+      outline: none;
+    }
+
+    .input-kilos:disabled {
+      background-color: #f1f5f9;
+      color: #475569;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+    }
+
+    .btn-kilos-toggle {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-kilos-toggle:hover {
+      background-color: #2563eb;
+    }
+
+    .btn-kilos-toggle.locked {
+      background-color: #64748b;
+    }
+
+    .btn-kilos-toggle.locked:hover {
+      background-color: #475569;
+    }
+
     .fechas-grid {
       display: grid;
       grid-template-columns: repeat(2, auto);
@@ -318,8 +367,6 @@
     let autoUpdateTimer = null;
 
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
-    
-    // Lista de encabezados que deben renderizarse como botones de acción
     const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda'];
 
     function toggleMenu() {
@@ -402,6 +449,27 @@
       guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, nuevoValor);
     }
 
+    function toggleKilosEdit(rowIndex, colIndex) {
+      const input = document.getElementById(`input_kilos_${rowIndex}`);
+      const btn = document.getElementById(`btn_kilos_${rowIndex}`);
+
+      if (input.disabled) {
+        // Habilitar para edición
+        input.disabled = false;
+        input.focus();
+        btn.innerText = '💾 Guardar';
+        btn.classList.remove('locked');
+      } else {
+        // Bloquear y Guardar datos en Google Sheets
+        input.disabled = true;
+        btn.innerText = '✏️ Editar';
+        btn.classList.add('locked');
+
+        const valorKilos = input.value;
+        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valorKilos);
+      }
+    }
+
     async function guardarEnGoogleSheets(rowIndex, listaFechas) {
       try {
         await fetch(WEB_APP_URL, {
@@ -468,7 +536,6 @@
       const esIdentificacion = pestaña.toLowerCase().trim() === 'identificación de parcelas' || pestaña.toLowerCase().trim() === 'identificacion de parcelas';
       const esSeccionLaboreos = pestaña.toLowerCase().trim() === 'laboreos';
 
-      // Corregir encabezado para "Laboreos" en la columna del desplegable
       const encabezadosProcesados = encabezadosOriginales.map((enc, idx) => {
         if (esSeccionLaboreos && idx === 3) return 'Tipo de cultivo';
         return enc;
@@ -489,16 +556,13 @@
           const headerLower = header.toLowerCase().trim();
 
           const esTipoCultivo = esSeccionLaboreos && colIndex === 3;
+          const esKilos = headerLower.includes('kilo') || headerLower.includes('quilo');
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
-          
-          // La columna de fecha es la última o la que contenga "fecha" en el encabezado
           const esColumnaFecha = !esIdentificacion && (headerLower.includes('fecha') || colIndex === totalColumnas - 1);
 
-          // Pestaña "Identificación de Parcelas": vista de solo lectura estricta
           if (esIdentificacion) {
             html += `<td>${valor}</td>`;
           } 
-          // Desplegable en Laboreos
           else if (esTipoCultivo) {
             html += `<td>
               <select class="select-cultivo" onchange="cambiarTipoCultivo(this, ${rowIndex}, ${colIndex})">
@@ -510,9 +574,21 @@
             });
 
             html += `</select></td>`;
-
           } 
-          // Botón de acción para registrar tareas (Poda, Tratamientos, Laboreo, Recolección)
+          // Campo para agregar Kilos / Quilos con opción de bloqueo / edición
+          else if (esKilos) {
+            const tieneValor = valor !== '' && valor !== null && valor !== undefined;
+            const disabledState = tieneValor ? 'disabled' : '';
+            const btnText = tieneValor ? '✏️ Editar' : '💾 Guardar';
+            const btnClass = tieneValor ? 'locked' : '';
+
+            html += `<td>
+              <div class="kilos-container">
+                <input type="number" id="input_kilos_${rowIndex}" class="input-kilos" placeholder="0 kg" value="${valor}" ${disabledState} min="0" step="any" />
+                <button id="btn_kilos_${rowIndex}" class="btn-kilos-toggle ${btnClass}" onclick="toggleKilosEdit(${rowIndex}, ${colIndex})">${btnText}</button>
+              </div>
+            </td>`;
+          }
           else if (esColumnaTarea) {
             const textoBoton = valor ? valor : 'Marcar / Fecha';
             html += `<td>
@@ -521,14 +597,12 @@
               </button>
             </td>`;
           } 
-          // Columna de fechas de registro dinámicas
           else if (esColumnaFecha) {
             const key = `${pestaña}_fila_${rowIndex}`;
             memoriaFechas[key] = valor ? valor.split(' | ').map(s => s.trim()) : [];
 
             html += `<td id="celda_fecha_${rowIndex}">${renderizarFechasHTML(rowIndex, memoriaFechas[key])}</td>`;
           } 
-          // Cualquier otra columna de datos normales
           else {
             html += `<td>${valor}</td>`;
           }
@@ -546,7 +620,11 @@
       
       if (autoUpdateTimer) clearInterval(autoUpdateTimer);
       autoUpdateTimer = setInterval(() => {
-        obtenerDatosGoogleSheets(pestañaActual, true);
+        // Evitar recargar mientras el usuario está escribiendo o editando kilos
+        const inputActivo = document.querySelector('.input-kilos:not(:disabled)');
+        if (!inputActivo) {
+          obtenerDatosGoogleSheets(pestañaActual, true);
+        }
       }, 10000);
     }
 
