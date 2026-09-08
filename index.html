@@ -25,7 +25,6 @@
             max-width: 1350px; 
             padding: 10px; 
             box-shadow: 0 1px 2px 0 rgba(60,64,67,0.15); 
-            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -38,6 +37,41 @@
             text-align: center;
         }
         
+        /* ESTILOS DE LAS PESTAÑAS */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #dadce0;
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background-color: #f1f3f4;
+            color: #5f6368;
+            border: 1px solid #dadce0;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: #e8eaed;
+            color: #3c4043;
+        }
+
+        .tab-btn.active {
+            background-color: #1a73e8;
+            color: #ffffff;
+            border-color: #1a73e8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
         .status-bar { 
             background: #e8f0fe; 
             color: #1a73e8; 
@@ -112,7 +146,6 @@
             white-space: normal;
         }
 
-        /* ESTILOS DEL BOTÓN DE BORRADO Y MODAL DE CONFIRMACIÓN */
         .footer-action {
             margin-top: 15px;
             padding-top: 10px;
@@ -211,6 +244,7 @@
             .container { padding: 6px; }
             th, td { font-size: 11px; padding: 4px 1px; }
             input[type="checkbox"] { width: 16px; height: 16px; }
+            .tab-btn { padding: 6px 10px; font-size: 12px; }
         }
     </style>
 </head>
@@ -218,6 +252,15 @@
 
 <div class="container">
     <h2>Control de Parcelas</h2>
+    
+    <!-- BARRA DE PESTAÑAS -->
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="cambiarPestana('laboreos', this)">Laboreos</button>
+        <button class="tab-btn" onclick="cambiarPestana('poda', this)">Poda</button>
+        <button class="tab-btn" onclick="cambiarPestana('tratamientos', this)">Tratamientos</button>
+        <button class="tab-btn" onclick="cambiarPestana('recoleccion', this)">Recolección</button>
+    </div>
+
     <div id="status" class="status-bar">Sincronizando con Google Sheets...</div>
     
     <div class="table-responsive">
@@ -239,17 +282,15 @@
         </table>
     </div>
 
-    <!-- BOTÓN INFERIOR DE BORRADO -->
     <div class="footer-action">
         <button class="btn-reset" onclick="abrirModalConfirmacion()">Borrar todos los ticks</button>
     </div>
 </div>
 
-<!-- VENTANA MODAL DE CONFIRMACIÓN -->
 <div id="modalConfirmacion" class="modal-overlay">
     <div class="modal-box">
         <h3>¿Estás seguro?</h3>
-        <p>Se desmarcarán todos los cuadraditos de la tabla y se borrarán sus fechas registradas.</p>
+        <p>Se desmarcarán todos los cuadraditos de la vista actual y se borrarán sus fechas registradas.</p>
         <div class="modal-buttons">
             <button class="btn-modal btn-cancelar" onclick="cerrarModalConfirmacion()">Cancelar</button>
             <button class="btn-modal btn-aceptar" onclick="confirmarBorradoTicks()">Aceptar</button>
@@ -258,14 +299,26 @@
 </div>
 
 <script>
-    const URL_API = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
+    const URL_API = 'TU_NUEVA_URL_DE_GOOGLE_APPS_SCRIPT_AQUI'; 
+    let pestanaActual = 'laboreos';
 
     window.onload = function() {
         cargarDatosDesdeNube();
     };
 
+    function cambiarPestana(nombrePestana, elementoBtn) {
+        pestanaActual = nombrePestana;
+        
+        // Cambiar estado visual de botones
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        elementoBtn.classList.add('active');
+
+        // Volver a cargar o recargar la vista correspondiente
+        cargarDatosDesdeNube();
+    }
+
     function cargarDatosDesdeNube() {
-        mostrarEstado("Sincronizando con Google Sheets...");
+        mostrarEstado(`Cargando datos de ${pestanaActual}...`);
         fetch(URL_API)
         .then(res => res.json())
         .then(lista => {
@@ -289,7 +342,6 @@
                     <td class="col-poligono">${p.poligono}</td>
                     <td class="col-parcela">${p.id}</td>
                     
-                    <!-- HECHO -->
                     <td>
                         <div class="flex-checks">
                             <input type="checkbox" class="chk-c1" ${p.c1 ? 'checked' : ''} onchange="calcularFechasColumnaD(${index})">
@@ -298,23 +350,19 @@
                         </div>
                     </td>
                     
-                    <!-- FECHA REGISTRO HECHO -->
                     <td class="col-fecha-d" id="fechaD-${index}">${fechaDFormateada}</td>
                     
-                    <!-- TRATAMIENTO -->
                     <td>
                         <input type="checkbox" class="chk-tratamiento" ${p.tratamientoCheck ? 'checked' : ''} onchange="cambiarFechaTratamiento(${index})">
                     </td>
                     
-                    <!-- FECHA REGISTRO TRATAMIENTO -->
                     <td class="col-fecha-f" id="fechaF-${index}">${fechaFFormateada}</td>
                     
-                    <!-- NOMBRE PARCELA -->
                     <td class="col-nombre">${p.nombre}</td>
                 `;
                 tbody.appendChild(tr);
             });
-            mostrarEstado("Datos cargados correctamente ✔️");
+            mostrarEstado(`Datos de ${pestanaActual.toUpperCase()} cargados correctamente ✔️`);
         })
         .catch(() => mostrarEstado("❌ No se pudo conectar con Google Sheets"));
     }
@@ -381,7 +429,7 @@
         const tr = document.getElementById(`fila-${index}`);
         if (!tr) return;
 
-        mostrarEstado("Guardando en la nube...");
+        mostrarEstado("Guardando cambios...");
 
         const numFilaReal = parseInt(tr.dataset.numFila);
         const c1 = tr.querySelector('.chk-c1').checked;
@@ -411,7 +459,6 @@
         .catch(() => mostrarEstado("❌ Error al guardar"));
     }
 
-    // LÓGICA DEL BOTÓN Y VENTANA DE CONFIRMACIÓN
     function abrirModalConfirmacion() {
         document.getElementById('modalConfirmacion').style.display = 'flex';
     }
@@ -432,7 +479,6 @@
             const numFilaReal = parseInt(tr.dataset.numFila);
 
             if (!isNaN(numFilaReal)) {
-                // Desmarcar todos los elementos HTML
                 tr.querySelector('.chk-c1').checked = false;
                 tr.querySelector('.chk-c2').checked = false;
                 tr.querySelector('.chk-c3').checked = false;
@@ -441,7 +487,6 @@
                 document.getElementById(`fechaD-${index}`).textContent = '';
                 document.getElementById(`fechaF-${index}`).textContent = '';
 
-                // Preparar datos para actualizar la hoja
                 paquetePayload.push({
                     numFila: numFilaReal,
                     c1: false,
@@ -454,7 +499,6 @@
             }
         });
 
-        // Guardar la actualización completa en Google Sheets
         fetch(URL_API, { 
             method: 'POST',
             mode: 'no-cors',
