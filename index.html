@@ -464,7 +464,7 @@
       const filasData = data.slice(1);
       const esSeccionLaboreos = pestaña.toLowerCase().trim() === 'laboreos';
 
-      // Únicamente si estamos en "Laboreos", fijamos el nombre de la cuarta columna a "Tipo de cultivo"
+      // Reemplaza solo la columna 3 en Laboreos manteniendo el resto exactos a Google Sheets
       const encabezadosProcesados = encabezadosOriginales.map((enc, idx) => {
         if (esSeccionLaboreos && idx === 3) return 'Tipo de cultivo';
         return enc;
@@ -472,7 +472,7 @@
 
       let html = '<table><thead><tr>';
       encabezadosProcesados.forEach(enc => { 
-        html += `<th>${enc}</th>`;
+        html += `<th>${enc || '&nbsp;'}</th>`;
       });
       html += '</tr></thead><tbody>';
 
@@ -484,10 +484,11 @@
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
 
-          // El desplegable de tipo de cultivo SOLO aplica en la sección Laboreos y columna 3
           const esTipoCultivo = esSeccionLaboreos && colIndex === 3;
           const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
-          const esColumnaFecha = headerLower.includes('fecha');
+          
+          // La columna de registro de fecha siempre es la última columna (Columna F / Índice 5)
+          const esColumnaFecha = colIndex === 5 || (colIndex === totalColumnas - 1 && totalColumnas >= 6);
 
           if (esTipoCultivo) {
             html += `<td>
