@@ -809,15 +809,14 @@
           body: JSON.stringify({ action: 'clearUserEnteredData', sheet: pestañaActual })
         });
 
+        // Recargar la página automáticamente para limpiar la vista al instante
         setTimeout(() => {
-          obtenerDatosGoogleSheets(pestañaActual, false);
-          alert(`Los datos de "${tituloVistaActual}" han sido borrados correctamente.`);
-        }, 1500);
+          location.reload();
+        }, 1000);
 
       } catch (e) {
         console.error("Error al borrar datos:", e);
-        alert("Ocurrió un error al intentar borrar los datos.");
-        obtenerDatosGoogleSheets(pestañaActual, false);
+        location.reload();
       }
     }
 
@@ -825,7 +824,7 @@
       const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR TODAS LAS FECHAS, TIPOS DE CULTIVO Y KILOS de todo el Excel?`);
       if (!primeraConfirmacion) return;
 
-      const segundaConfirmacion = confirm(`🔴 ACCIÓN DEFINITIVA:\nSe vaciarán los campos de fechas, cultivos y kilos en Parcelas, Laboreos, Poda, Tratamientos y Recolección.\n\n¿Estás completamente seguro?`);
+      const segundaConfirmacion = confirm(`🔴 ACCIÓN DEFINITIVA:\nSe vaciarán los campos de fechas, cultivos y kilos en todas las secciones.\n\n¿Estás completamente seguro?`);
       if (!segundaConfirmacion) return;
 
       for (let item of TODAS_LAS_PESTAÑAS) {
@@ -841,8 +840,10 @@
         }
       }
 
-      alert("Se han borrado todas las fechas, tipos de cultivo y kilos de las secciones.");
-      renderizarInicio();
+      // Recarga automática de la página general
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
     }
 
     function actualizarCeldaFecha(rowIndex, key) {
