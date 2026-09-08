@@ -167,28 +167,28 @@
       font-style: italic;
     }
 
-    /* BOTONES INFERIORES DE ACCIÓN */
-    .acciones-tabla-footer {
+    /* BOTONES ACCIÓN (INICIO Y TABLAS) */
+    .acciones-inferior-container {
       display: flex;
-      gap: 10px;
-      margin-top: 15px;
+      gap: 12px;
+      margin-top: 20px;
       flex-wrap: wrap;
     }
 
     .btn-accion-inferior {
       flex: 1;
-      min-width: 140px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 14px;
+      min-width: 150px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 15px;
       font-weight: 700;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
       transition: transform 0.1s, opacity 0.2s;
     }
 
@@ -322,6 +322,14 @@
     let tituloVistaActual = 'Inicio';
     const memoriaFechas = {};
 
+    const TODAS_LAS_PESTAÑAS = [
+      { id: 'Identificación de Parcelas', nombre: 'Parcelas' },
+      { id: 'Laboreos', nombre: 'Laboreos' },
+      { id: 'Poda', nombre: 'Poda' },
+      { id: 'Tratamientos', nombre: 'Tratamientos' },
+      { id: 'Recolección', nombre: 'Recolección / Tareas' }
+    ];
+
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
     const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda'];
 
@@ -350,9 +358,7 @@
               <div class="card-title">Parcelas</div>
               <div class="card-subtitle">Identificación y control de parcelas</div>
             </div>
-            <div class="card-badge">
-              <div class="card-badge-num">📍</div>
-            </div>
+            <div class="card-badge"><div class="card-badge-num">📍</div></div>
           </div>
 
           <div class="card-item" onclick="navegar('Laboreos', 'Laboreos')">
@@ -360,9 +366,7 @@
               <div class="card-title">Laboreos</div>
               <div class="card-subtitle">Gestión de trabajos de laboreo</div>
             </div>
-            <div class="card-badge">
-              <div class="card-badge-num">🚜</div>
-            </div>
+            <div class="card-badge"><div class="card-badge-num">🚜</div></div>
           </div>
 
           <div class="card-item" onclick="navegar('Poda', 'Poda')">
@@ -370,9 +374,7 @@
               <div class="card-title">Poda</div>
               <div class="card-subtitle">Registros y control de poda</div>
             </div>
-            <div class="card-badge">
-              <div class="card-badge-num">✂️</div>
-            </div>
+            <div class="card-badge"><div class="card-badge-num">✂️</div></div>
           </div>
 
           <div class="card-item" onclick="navegar('Tratamientos', 'Tratamientos')">
@@ -380,9 +382,7 @@
               <div class="card-title">Tratamientos</div>
               <div class="card-subtitle">Control de tratamientos aplicados</div>
             </div>
-            <div class="card-badge">
-              <div class="card-badge-num">🧪</div>
-            </div>
+            <div class="card-badge"><div class="card-badge-num">🧪</div></div>
           </div>
 
           <div class="card-item" onclick="navegar('Recolección', 'Tareas')">
@@ -390,10 +390,17 @@
               <div class="card-title">Tareas / Recolección</div>
               <div class="card-subtitle">Control de tareas y kilos cosechados</div>
             </div>
-            <div class="card-badge">
-              <div class="card-badge-num">🧺</div>
-            </div>
+            <div class="card-badge"><div class="card-badge-num">🧺</div></div>
           </div>
+        </div>
+
+        <div class="acciones-inferior-container">
+          <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDFTodoElExcel()">
+            📄 Descargar PDF Completo (Todo el Excel)
+          </button>
+          <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarTodasLasPestañas()">
+            🗑️ Borrar Todos los Datos del Excel
+          </button>
         </div>
       `;
     }
@@ -406,11 +413,11 @@
             <div class="loading">Cargando datos de Google Sheets...</div>
           </div>
         </div>
-        <div class="acciones-tabla-footer">
-          <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDF()">
+        <div class="acciones-inferior-container">
+          <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDFTablaActual()">
             📄 Descargar PDF
           </button>
-          <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarDatos()">
+          <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarDatosPestañaActual()">
             🗑️ Borrar Datos
           </button>
         </div>
@@ -653,39 +660,70 @@
       }
     }
 
-    /* CONFIRMAR Y BORRAR DATOS */
-    async function confirmarBorrarDatos() {
-      const primeraConfirmacion = confirm(`⚠️ ¿Estás seguro de que deseas BORRAR TODOS los registros ingresados en "${tituloVistaActual}"?`);
-      if (!primeraConfirmacion) return;
+    /* DESCARGAR PDF COMPLETO (DESDE EL INICIO) */
+    async function descargarPDFTodoElExcel() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-      const segundaConfirmacion = confirm(`🔴 ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n¿Confirmar la eliminación definitiva de los datos en "${tituloVistaActual}"?`);
-      if (!segundaConfirmacion) return;
+      doc.setFontSize(18);
+      doc.setTextColor(11, 30, 40);
+      doc.text("Reporte General - Gestión Agrícola Completa", 14, 15);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      const fechaActual = new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      doc.text(`Exportación completa: ${fechaActual}`, 14, 22);
 
-      const contenedor = document.getElementById('contenedor-tabla');
-      contenedor.innerHTML = `<div class="loading" style="color: #ef4444;">Borrando datos en Google Sheets...</div>`;
+      let posY = 28;
 
-      try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'clearSheet', sheet: pestañaActual })
-        });
+      for (let i = 0; i < TODAS_LAS_PESTAÑAS.length; i++) {
+        const item = TODAS_LAS_PESTAÑAS[i];
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(item.id)}&t=${Date.now()}`;
 
-        setTimeout(() => {
-          obtenerDatosGoogleSheets(pestañaActual, false);
-          alert(`Los datos de "${tituloVistaActual}" han sido borrados correctamente.`);
-        }, 1500);
+        try {
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const csvText = await resp.text();
+            const filas = parseCSV(csvText);
 
-      } catch (e) {
-        console.error("Error al borrar datos:", e);
-        alert("Ocurrió un error al intentar borrar los datos.");
-        obtenerDatosGoogleSheets(pestañaActual, false);
+            if (filas.length > 0) {
+              if (i > 0 && posY > 150) {
+                doc.addPage();
+                posY = 15;
+              }
+
+              doc.setFontSize(14);
+              doc.setTextColor(16, 185, 129);
+              doc.text(`Sección: ${item.nombre}`, 14, posY);
+              posY += 6;
+
+              const encabezados = filas[0];
+              const cuerpo = filas.slice(1);
+
+              doc.autoTable({
+                head: [encabezados],
+                body: cuerpo,
+                startY: posY,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [13, 27, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] }
+              });
+
+              posY = doc.lastAutoTable.finalY + 12;
+            }
+          }
+        } catch (e) {
+          console.error("Error cargando pestaña " + item.nombre, e);
+        }
       }
+
+      const nombreArchivo = `Reporte_General_Agricola_${new Date().toISOString().slice(0,10)}.pdf`;
+      doc.save(nombreArchivo);
     }
 
-    /* DESCARGAR TABLA EN PDF */
-    function descargarPDF() {
+    /* DESCARGAR PDF DE LA PESTAÑA ACTUAL */
+    function descargarPDFTablaActual() {
       const tabla = document.getElementById('tabla-datos');
       if (!tabla) {
         alert("No hay datos disponibles para exportar a PDF.");
@@ -756,6 +794,62 @@
 
       const nombreArchivo = `Reporte_${tituloVistaActual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
       doc.save(nombreArchivo);
+    }
+
+    /* CONFIRMAR Y BORRAR DATOS EN PESTAÑA ACTUAL */
+    async function confirmarBorrarDatosPestañaActual() {
+      const primeraConfirmacion = confirm(`⚠️ ¿Estás seguro de que deseas BORRAR TODOS los registros ingresados en "${tituloVistaActual}"?`);
+      if (!primeraConfirmacion) return;
+
+      const segundaConfirmacion = confirm(`🔴 ESTA ACCIÓN NO SE PUEDE DESHACER.\n\n¿Confirmar la eliminación definitiva de los datos en "${tituloVistaActual}"?`);
+      if (!segundaConfirmacion) return;
+
+      const contenedor = document.getElementById('contenedor-tabla');
+      if(contenedor) contenedor.innerHTML = `<div class="loading" style="color: #ef4444;">Borrando datos en Google Sheets...</div>`;
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'clearSheet', sheet: pestañaActual })
+        });
+
+        setTimeout(() => {
+          obtenerDatosGoogleSheets(pestañaActual, false);
+          alert(`Los datos de "${tituloVistaActual}" han sido borrados correctamente.`);
+        }, 1500);
+
+      } catch (e) {
+        console.error("Error al borrar datos:", e);
+        alert("Ocurrió un error al intentar borrar los datos.");
+        obtenerDatosGoogleSheets(pestañaActual, false);
+      }
+    }
+
+    /* BORRAR TODAS LAS PESTAÑAS (DESDE EL INICIO) */
+    async function confirmarBorrarTodasLasPestañas() {
+      const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR LOS DATOS DE TODO EL EXCEL (Todas las pestañas)?`);
+      if (!primeraConfirmacion) return;
+
+      const segundaConfirmacion = confirm(`🔴 ACCIÓN EXTREMA: Se borrarán Parcelas, Laboreos, Poda, Tratamientos y Recolección.\n\n¿Estás completamente seguro?`);
+      if (!segundaConfirmacion) return;
+
+      for (let item of TODAS_LAS_PESTAÑAS) {
+        try {
+          await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'clearSheet', sheet: item.id })
+          });
+        } catch (e) {
+          console.error("Error borrando " + item.id, e);
+        }
+      }
+
+      alert("Se han borrado los datos de todas las secciones del Excel.");
+      renderizarInicio();
     }
 
     function actualizarCeldaFecha(rowIndex, key) {
