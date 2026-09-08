@@ -219,7 +219,7 @@
       transform: scale(0.96);
     }
 
-    /* MATRIZ DE 2 COLUMNAS PARA MOSTRAR 2 FECHAS POR FILA */
+    /* GRID PARA COLOCAR 2 FECHAS POR FILA Y LUEGO BAJAR */
     .fechas-grid {
       display: grid;
       grid-template-columns: repeat(2, auto);
@@ -266,6 +266,7 @@
 </head>
 <body>
 
+  <!-- Barra Superior -->
   <header class="top-bar">
     <button class="btn-menu" onclick="toggleMenu()">
       <span>☰</span> MENÚ
@@ -273,6 +274,7 @@
   </header>
 
   <div class="main-container">
+    <!-- Menú Lateral -->
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
         GESTIÓN AGRÍCOLA
@@ -296,6 +298,7 @@
       </nav>
     </aside>
 
+    <!-- Área de Contenido Principal -->
     <main class="content">
       <div class="card">
         <div class="section-title">
@@ -312,7 +315,7 @@
 
   <script>
     const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
-    // PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT
+    // URL de tu Apps Script configurado
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
 
     let pestañaActual = 'Identificación de Parcelas';
@@ -343,7 +346,7 @@
 
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Error de conexión");
+        if (!response.ok) throw new Error("Error al conectar con Google Sheets");
         
         const textData = await response.text();
         const filas = parseCSV(textData);
@@ -357,7 +360,7 @@
 
       } catch (error) {
         console.error(error);
-        contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar datos.</div>`;
+        contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar datos de Google Sheets.</div>`;
       }
     }
 
@@ -394,10 +397,8 @@
       }
     }
 
-    // Sincronización en segundo plano con Google Sheets
+    // Enviar cambios a Google Sheets mediante Apps Script
     async function guardarEnGoogleSheets(rowIndex, listaFechas) {
-      if (WEB_APP_URL.includes('TU_SCRIPT_ID_AQUI')) return;
-
       try {
         await fetch(WEB_APP_URL, {
           method: 'POST',
@@ -405,7 +406,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sheet: pestañaActual,
-            row: rowIndex + 1, // Fila real en la hoja
+            row: rowIndex + 1, // Fila real en la hoja (después del encabezado)
             fechas: listaFechas
           })
         });
@@ -421,7 +422,7 @@
       }
     }
 
-    // RENDERIZADO EN FILAS DE A 2
+    // Dibujar fechas distribuidas en 2 columnas
     function renderizarFechasHTML(rowIndex, listaFechas) {
       if (!listaFechas || listaFechas.length === 0) return '<span style="color:#94a3b8;">Sin registros</span>';
       
@@ -469,7 +470,7 @@
             const key = `${pestaña}_fila_${rowIndex}`;
             
             if (!memoriaFechas[key]) {
-              // Convertir valores existentes separados por '|' en lista de fechas
+              // Separa valores previa guardados con "|" en la hoja Excel
               memoriaFechas[key] = valor ? valor.split(' | ').map(s => s.trim()) : [];
             }
 
