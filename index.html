@@ -3,142 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gestión Agrícola - Control de Parcela</title>
+  <title>Gestión Agrícola</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-      background-color: #f4f6f8;
-      color: #333;
-      overflow-x: hidden;
+      background-color: #0b1e28; /* Fondo oscuro inspirado en la app */
+      color: #333333;
+      padding-bottom: 75px; /* Espacio para la barra inferior */
+      min-height: 100vh;
     }
 
-    /* BARRA SUPERIOR */
-    .top-bar {
-      background-color: #0d1b2a;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .btn-menu {
-      background-color: transparent;
+    /* ENCABEZADO */
+    .header {
+      padding: 20px 20px 10px 20px;
       color: #ffffff;
-      border: 2px solid #2ec4b6;
-      border-radius: 6px;
-      padding: 8px 14px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 15px;
+    }
+
+    .btn-principal {
+      width: 100%;
+      background-color: #10b981;
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
       font-weight: 700;
-      font-size: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      transition: all 0.2s ease;
-      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      transition: transform 0.1s, background 0.2s;
     }
 
-    .btn-menu:hover, .btn-menu:active {
-      background-color: rgba(46, 196, 182, 0.15);
-      border-color: #3ae2d2;
+    .btn-principal:active {
+      transform: scale(0.98);
+      background-color: #059669;
     }
 
-    /* CONTENEDOR PRINCIPAL Y SIDEBAR */
-    .main-container {
-      display: flex;
-      min-height: calc(100vh - 58px);
-      position: relative;
+    /* CONTENEDOR PRINCIPAL */
+    .main-content {
+      padding: 15px 20px;
     }
 
-    .sidebar {
-      width: 270px;
-      background-color: #0d1b2a;
-      transition: transform 0.3s ease;
-      flex-shrink: 0;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
-      z-index: 90;
+    .section-title {
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 15px;
     }
 
-    .sidebar-header {
-      color: #2ec4b6;
-      font-weight: 800;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      padding: 20px 20px 10px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .sidebar-nav {
+    /* VISTA DE INICIO (TARJETAS ESTILO HISTORIAL) */
+    .cards-container {
       display: flex;
       flex-direction: column;
-      padding-top: 10px;
-    }
-
-    .nav-item {
-      background: transparent;
-      border: none;
-      color: #cbd5e1;
-      padding: 15px 20px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
       gap: 12px;
-      width: 100%;
-      transition: background 0.2s, color 0.2s;
-      border-left: 4px solid transparent;
-      text-transform: uppercase;
     }
 
-    .nav-item:hover, .nav-item:active {
-      background-color: rgba(255, 255, 255, 0.05);
-      color: #ffffff;
-    }
-
-    .nav-item.active {
-      background-color: #2ec4b6;
-      color: #0d1b2a;
-      font-weight: 700;
-      border-left: 4px solid #ffffff;
-    }
-
-    .nav-icon {
-      font-size: 18px;
-    }
-
-    /* CONTENIDO Y TABLA RESPONSIVA */
-    .content {
-      flex: 1;
-      padding: 15px;
-      width: 100%;
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
-    .card {
+    .card-item {
       background: #ffffff;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
-    .section-title h2 {
-      color: #0d1b2a;
-      margin-bottom: 15px;
-      font-size: 18px;
-      font-weight: 700;
+    .card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .card-badge {
+      text-align: right;
+    }
+
+    .card-badge-num {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .card-badge-text {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* CONTENEDOR PARA LAS TABLAS DE EXCEL */
+    .table-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
     .table-responsive {
@@ -146,7 +128,6 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       border-radius: 8px;
-      border: 1px solid #e2e8f0;
     }
 
     table {
@@ -180,7 +161,7 @@
       font-style: italic;
     }
 
-    /* BOTONES Y CONTROLES ADAPTADOS A TOUCH */
+    /* ELEMENTOS EDITABLES DE LA TABLA */
     .btn-accion-tarea {
       background-color: #10b981;
       color: white;
@@ -190,30 +171,15 @@
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s;
-      touch-action: manipulation;
-    }
-
-    .btn-accion-tarea:active {
-      background-color: #059669;
-      transform: scale(0.97);
     }
 
     .select-cultivo {
-      padding: 8px;
+      padding: 6px 8px;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
-      background-color: #ffffff;
-      color: #0d1b2a;
       font-size: 13px;
-      font-weight: 600;
-      outline: none;
     }
 
-    /* ESTILOS DE KILOS */
     .kilos-container {
       display: inline-flex;
       align-items: center;
@@ -221,65 +187,52 @@
     }
 
     .input-kilos {
-      width: 80px;
-      padding: 7px 8px;
+      width: 75px;
+      padding: 6px;
       border: 1.5px solid #0284c7;
       border-radius: 6px;
       font-size: 13px;
       font-weight: 700;
-      color: #0f172a;
-      outline: none;
-      background-color: #ffffff;
-    }
-
-    .input-kilos:focus {
-      border-color: #10b981;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
 
     .input-kilos:disabled {
       background-color: #f1f5f9;
-      color: #334155;
       border-color: #cbd5e1;
     }
 
     .btn-edit-kilos {
-      background-color: #f1f5f9;
+      background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      font-size: 14px;
-      cursor: pointer;
-      padding: 6px;
+      padding: 5px;
       border-radius: 6px;
+      cursor: pointer;
     }
 
     .btn-guardar-kilos {
       background-color: #2563eb;
       color: white;
       border: none;
-      padding: 7px 10px;
+      padding: 6px 10px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
     }
 
-    /* LISTA DE FECHAS */
     .fechas-grid {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      width: fit-content;
     }
 
     .fecha-item {
       display: inline-flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       background-color: #e0f2fe;
       color: #0369a1;
-      border: 1px solid #bae6fd;
-      padding: 4px 8px;
+      padding: 3px 6px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 600;
@@ -290,148 +243,208 @@
       color: #ffffff;
       border: none;
       border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      font-size: 12px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 16px;
+      height: 16px;
+      font-size: 10px;
       cursor: pointer;
     }
 
-    /* CAPA DE FONDO PARA MÓVIL AL ABRIR MENÚ */
-    .sidebar-overlay {
-      display: none;
+    /* BARRA NAVEGACIÓN INFERIOR (BOTTOM NAV) */
+    .bottom-nav {
       position: fixed;
-      top: 0;
+      bottom: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 80;
+      width: 100%;
+      height: 65px;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
     }
 
-    .sidebar-overlay.active {
-      display: block;
+    .nav-button {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 16%;
     }
 
-    /* REGLAS ESPECÍFICAS PARA MÓVILES Y TABLETS (< 768px) */
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        transform: translateX(-100%);
-      }
+    .nav-button .icon {
+      font-size: 20px;
+    }
 
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .content {
-        padding: 10px;
-      }
-
-      .card {
-        padding: 12px;
-      }
-
-      .section-title h2 {
-        font-size: 16px;
-      }
+    .nav-button.active {
+      color: #0b1e28;
+      font-weight: 800;
     }
   </style>
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
-  <header class="top-bar">
-    <button class="btn-menu" onclick="toggleMenu()">
-      <span>☰</span> MENÚ
+  <!-- CABECERA -->
+  <div class="header">
+    <h1 id="header-title">Sesiones</h1>
+    <button class="btn-principal" onclick="accionPrincipal()">
+      <span>+</span> <span id="btn-principal-texto">Nueva sesión</span>
     </button>
-  </header>
-
-  <!-- CAPA OSCURA PARA CERRAR EL MENÚ EN MÓVIL AL TOCAR FUERA -->
-  <div id="overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
-
-  <div class="main-container">
-    <!-- MENÚ LATERAL -->
-    <aside id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        GESTIÓN AGRÍCOLA
-      </div>
-      <nav class="sidebar-nav">
-        <button class="nav-item active" onclick="cargarSeccion(this, 'Identificación de Parcelas')">
-          <span class="nav-icon">📍</span> IDENTIFICACIÓN DE PARCELAS
-        </button>
-        <button class="nav-item" onclick="cargarSeccion(this, 'Laboreos')">
-          <span class="nav-icon">🚜</span> LABOREOS
-        </button>
-        <button class="nav-item" onclick="cargarSeccion(this, 'Poda')">
-          <span class="nav-icon">✂️</span> PODA
-        </button>
-        <button class="nav-item" onclick="cargarSeccion(this, 'Tratamientos')">
-          <span class="nav-icon">🧪</span> TRATAMIENTOS
-        </button>
-        <button class="nav-item" onclick="cargarSeccion(this, 'Recolección')">
-          <span class="nav-icon">🧺</span> RECOLECCIÓN
-        </button>
-      </nav>
-    </aside>
-
-    <!-- CONTENIDO -->
-    <main class="content">
-      <div class="card">
-        <div class="section-title">
-          <h2 id="titulo-seccion">IDENTIFICACIÓN DE PARCELAS</h2>
-        </div>
-
-        <div id="contenedor-tabla" class="table-responsive">
-          <div class="loading">Cargando datos desde Google Sheets...</div>
-        </div>
-      </div>
-    </main>
   </div>
+
+  <!-- CONTENIDO DINÁMICO -->
+  <main class="main-content">
+    <div class="section-title" id="section-subtitle">Historial</div>
+    
+    <div id="contenedor-vista">
+      <!-- Aquí se cargará dinámicamente la vista de Inicio o la Tabla de Excel -->
+    </div>
+  </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+  <nav class="bottom-nav">
+    <button class="nav-button active" onclick="navegar('Inicio', 'Inicio', this)">
+      <span class="icon">🏠</span>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-button" onclick="navegar('Identificación de Parcelas', 'Parcelas', this)">
+      <span class="icon">📍</span>
+      <span>Parcelas</span>
+    </button>
+    <button class="nav-button" onclick="navegar('Laboreos', 'Laboreos', this)">
+      <span class="icon">🚜</span>
+      <span>Laboreos</span>
+    </button>
+    <button class="nav-button" onclick="navegar('Poda', 'Poda', this)">
+      <span class="icon">✂️</span>
+      <span>Poda</span>
+    </button>
+    <button class="nav-button" onclick="navegar('Tratamientos', 'Tratamientos', this)">
+      <span class="icon">🧪</span>
+      <span>Tratamientos</span>
+    </button>
+    <button class="nav-button" onclick="navegar('Recolección', 'Recolección', this)">
+      <span class="icon">🧺</span>
+      <span>Tareas</span>
+    </button>
+  </nav>
 
   <script>
     const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
 
-    let pestañaActual = 'Identificación de Parcelas';
+    let pestañaActual = 'Inicio';
     const memoriaFechas = {};
     let autoUpdateTimer = null;
 
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
     const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda'];
 
-    function toggleMenu() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('overlay');
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('active');
-    }
-
-    function cargarSeccion(element, nombrePestaña) {
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    function navegar(pestaña, tituloVisual, element) {
+      document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
 
-      pestañaActual = nombrePestaña;
-      document.getElementById('titulo-seccion').innerText = element.innerText.replace(/^[^\s]+\s+/, '');
+      pestañaActual = pestaña;
+      document.getElementById('header-title').innerText = tituloVisual;
       
-      const contenedor = document.getElementById('contenedor-tabla');
-      contenedor.innerHTML = '<div class="loading">Cargando datos actualizados de Google Sheets...</div>';
+      const btnTexto = document.getElementById('btn-principal-texto');
+      const subTitulo = document.getElementById('section-subtitle');
 
-      // Cerrar menú si está en móvil
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('overlay').classList.remove('active');
+      if (pestaña === 'Inicio') {
+        btnTexto.innerText = "Nueva sesión";
+        subTitulo.innerText = "Historial";
+        renderizarInicio();
+      } else {
+        btnTexto.innerText = "Añadir Registro";
+        subTitulo.innerText = "Registros de " + tituloVisual;
+        cargarTablaExcel(pestaña);
+      }
+    }
 
-      obtenerDatosGoogleSheets(nombrePestaña, false);
+    function renderizarInicio() {
+      const contenedor = document.getElementById('contenedor-vista');
+      contenedor.innerHTML = `
+        <div class="cards-container">
+          <div class="card-item">
+            <div class="card-info">
+              <div class="card-title">S025</div>
+              <div class="card-subtitle">07/09/2026 · Recuperación jugadores, comienzo semana</div>
+            </div>
+            <div class="card-badge">
+              <div class="card-badge-num">313</div>
+              <div class="card-badge-text">64 min</div>
+            </div>
+          </div>
+
+          <div class="card-item">
+            <div class="card-info">
+              <div class="card-title">S022</div>
+              <div class="card-subtitle">04/09/2026 · Preparación ABP partido</div>
+            </div>
+            <div class="card-badge">
+              <div class="card-badge-num">229</div>
+              <div class="card-badge-text">57 min</div>
+            </div>
+          </div>
+
+          <div class="card-item">
+            <div class="card-info">
+              <div class="card-title">S021</div>
+              <div class="card-subtitle">03/09/2026 · Verticalidad tras robo</div>
+            </div>
+            <div class="card-badge">
+              <div class="card-badge-num">274</div>
+              <div class="card-badge-text">51 min</div>
+            </div>
+          </div>
+
+          <div class="card-item">
+            <div class="card-info">
+              <div class="card-title">S020</div>
+              <div class="card-subtitle">02/09/2026 · Comportamiento MCB - Ubicaciones en SDB</div>
+            </div>
+            <div class="card-badge">
+              <div class="card-badge-num">331</div>
+              <div class="card-badge-text">55 min</div>
+            </div>
+          </div>
+
+          <div class="card-item">
+            <div class="card-info">
+              <div class="card-title">S019</div>
+              <div class="card-subtitle">31/08/2026 · Preparar debut liguero</div>
+            </div>
+            <div class="card-badge">
+              <div class="card-badge-num">243</div>
+              <div class="card-badge-text">54 min</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function cargarTablaExcel(pestaña) {
+      const contenedor = document.getElementById('contenedor-vista');
+      contenedor.innerHTML = `
+        <div class="table-card">
+          <div id="contenedor-tabla" class="table-responsive">
+            <div class="loading">Cargando datos de Google Sheets...</div>
+          </div>
+        </div>
+      `;
+      obtenerDatosGoogleSheets(pestaña, false);
     }
 
     async function obtenerDatosGoogleSheets(pestaña, esEnSegundoPlano = true) {
       const contenedor = document.getElementById('contenedor-tabla');
+      if (!contenedor) return;
+
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pestaña)}&t=${Date.now()}`;
 
       try {
@@ -451,7 +464,7 @@
       } catch (error) {
         console.error("Error cargando datos:", error);
         if (!esEnSegundoPlano) {
-          contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar datos de Google Sheets.</div>`;
+          contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar los datos.</div>`;
         }
       }
     }
@@ -465,145 +478,15 @@
       }).filter(row => row.length > 0 && row.some(cell => cell !== ""));
     }
 
-    function registrarFechaAccion(rowIndex) {
-      const ahora = new Date();
-      const fechaFormateada = ahora.toLocaleDateString('es-ES') + ' ' + ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      const key = `${pestañaActual}_fila_${rowIndex}`;
-
-      if (!memoriaFechas[key]) {
-        memoriaFechas[key] = [];
-      }
-
-      memoriaFechas[key].push(fechaFormateada);
-      actualizarCeldaFecha(rowIndex, key);
-      guardarEnGoogleSheets(rowIndex, memoriaFechas[key]);
-    }
-
-    function eliminarFechaIndex(rowIndex, fechaIndex) {
-      const key = `${pestañaActual}_fila_${rowIndex}`;
-
-      if (memoriaFechas[key]) {
-        memoriaFechas[key].splice(fechaIndex, 1);
-        actualizarCeldaFecha(rowIndex, key);
-        guardarEnGoogleSheets(rowIndex, memoriaFechas[key]);
-      }
-    }
-
-    function cambiarTipoCultivo(selectElement, rowIndex, colIndex) {
-      const nuevoValor = selectElement.value;
-      guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, nuevoValor);
-    }
-
-    function guardarKilosAuto(input, rowIndex, colIndex) {
-      if (input.disabled) return;
-      
-      const valor = input.value.trim();
-      if (valor !== '') {
-        input.disabled = true;
-        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
-        
-        if (btnEdit) btnEdit.style.display = 'inline-block';
-        if (btnGuardar) btnGuardar.style.display = 'none';
-        
-        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
-      }
-    }
-
-    function habilitarEdicionKilos(rowIndex) {
-      const input = document.getElementById(`input_kilos_${rowIndex}`);
-      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-      const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
-
-      if (input) {
-        input.disabled = false;
-        input.focus();
-        input.select();
-        
-        if (btnEdit) btnEdit.style.display = 'none';
-        if (btnGuardar) btnGuardar.style.display = 'inline-block';
-      }
-    }
-
-    function confirmarGuardarKilos(rowIndex, colIndex) {
-      const input = document.getElementById(`input_kilos_${rowIndex}`);
-      if (input) {
-        input.disabled = true;
-        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
-
-        if (btnEdit) btnEdit.style.display = 'inline-block';
-        if (btnGuardar) btnGuardar.style.display = 'none';
-
-        const valor = input.value.trim();
-        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
-      }
-    }
-
-    async function guardarEnGoogleSheets(rowIndex, listaFechas) {
-      try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sheet: pestañaActual,
-            row: rowIndex + 2,
-            fechas: listaFechas
-          })
-        });
-      } catch (e) {
-        console.error("Error al guardar en Google Sheets:", e);
-      }
-    }
-
-    async function guardarValorEspecificoGoogleSheets(rowInSheet, colInSheet, valor) {
-      try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sheet: pestañaActual,
-            row: rowInSheet,
-            column: colInSheet,
-            valor: valor
-          })
-        });
-      } catch (e) {
-        console.error("Error al guardar en Google Sheets:", e);
-      }
-    }
-
-    function actualizarCeldaFecha(rowIndex, key) {
-      const celdaFecha = document.getElementById(`celda_fecha_${rowIndex}`);
-      if (celdaFecha) {
-        celdaFecha.innerHTML = renderizarFechasHTML(rowIndex, memoriaFechas[key]);
-      }
-    }
-
-    function renderizarFechasHTML(rowIndex, listaFechas) {
-      if (!listaFechas || listaFechas.length === 0) return '';
-      
-      let html = '<div class="fechas-grid">';
-      listaFechas.forEach((f, idx) => {
-        html += `
-          <div class="fecha-item">
-            <span>📅 ${f}</span>
-            <button class="btn-quitar-fecha" title="Eliminar fecha" onclick="eliminarFechaIndex(${rowIndex}, ${idx})">−</button>
-          </div>`;
-      });
-      html += '</div>';
-      return html;
-    }
-
     function construirTablaHTML(data, pestaña) {
       const contenedor = document.getElementById('contenedor-tabla');
+      if (!contenedor) return;
+
       const encabezadosOriginales = data[0];
       const totalColumnas = encabezadosOriginales.length;
       const filasData = data.slice(1);
       
-      const esIdentificacion = pestaña.toLowerCase().trim() === 'identificación de parcelas' || pestaña.toLowerCase().trim() === 'identificacion de parcelas';
+      const esIdentificacion = pestaña.toLowerCase().trim().includes('identificación') || pestaña.toLowerCase().trim().includes('identificacion');
       const esSeccionLaboreos = pestaña.toLowerCase().trim() === 'laboreos';
 
       const encabezadosProcesados = encabezadosOriginales.map((enc, idx) => {
@@ -702,20 +585,124 @@
       contenedor.innerHTML = html;
     }
 
-    function iniciarAutoActualizacion() {
-      obtenerDatosGoogleSheets(pestañaActual, false);
-      
-      if (autoUpdateTimer) clearInterval(autoUpdateTimer);
-      autoUpdateTimer = setInterval(() => {
-        const inputActivo = document.querySelector('.input-kilos:not(:disabled)');
-        if (!inputActivo) {
-          obtenerDatosGoogleSheets(pestañaActual, true);
-        }
-      }, 10000);
+    function registrarFechaAccion(rowIndex) {
+      const ahora = new Date();
+      const fechaFormateada = ahora.toLocaleDateString('es-ES') + ' ' + ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      const key = `${pestañaActual}_fila_${rowIndex}`;
+
+      if (!memoriaFechas[key]) memoriaFechas[key] = [];
+
+      memoriaFechas[key].push(fechaFormateada);
+      actualizarCeldaFecha(rowIndex, key);
+      guardarEnGoogleSheets(rowIndex, memoriaFechas[key]);
+    }
+
+    function eliminarFechaIndex(rowIndex, fechaIndex) {
+      const key = `${pestañaActual}_fila_${rowIndex}`;
+
+      if (memoriaFechas[key]) {
+        memoriaFechas[key].splice(fechaIndex, 1);
+        actualizarCeldaFecha(rowIndex, key);
+        guardarEnGoogleSheets(rowIndex, memoriaFechas[key]);
+      }
+    }
+
+    function cambiarTipoCultivo(selectElement, rowIndex, colIndex) {
+      guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, selectElement.value);
+    }
+
+    function guardarKilosAuto(input, rowIndex, colIndex) {
+      if (input.disabled) return;
+      const valor = input.value.trim();
+      if (valor !== '') {
+        input.disabled = true;
+        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+        if (btnEdit) btnEdit.style.display = 'inline-block';
+        if (btnGuardar) btnGuardar.style.display = 'none';
+        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
+      }
+    }
+
+    function habilitarEdicionKilos(rowIndex) {
+      const input = document.getElementById(`input_kilos_${rowIndex}`);
+      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+      const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+
+      if (input) {
+        input.disabled = false;
+        input.focus();
+        input.select();
+        if (btnEdit) btnEdit.style.display = 'none';
+        if (btnGuardar) btnGuardar.style.display = 'inline-block';
+      }
+    }
+
+    function confirmarGuardarKilos(rowIndex, colIndex) {
+      const input = document.getElementById(`input_kilos_${rowIndex}`);
+      if (input) {
+        input.disabled = true;
+        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+        if (btnEdit) btnEdit.style.display = 'inline-block';
+        if (btnGuardar) btnGuardar.style.display = 'none';
+        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, input.value.trim());
+      }
+    }
+
+    async function guardarEnGoogleSheets(rowIndex, listaFechas) {
+      try {
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sheet: pestañaActual, row: rowIndex + 2, fechas: listaFechas })
+        });
+      } catch (e) {
+        console.error("Error al guardar:", e);
+      }
+    }
+
+    async function guardarValorEspecificoGoogleSheets(rowInSheet, colInSheet, valor) {
+      try {
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colInSheet, valor: valor })
+        });
+      } catch (e) {
+        console.error("Error al guardar:", e);
+      }
+    }
+
+    function actualizarCeldaFecha(rowIndex, key) {
+      const celdaFecha = document.getElementById(`celda_fecha_${rowIndex}`);
+      if (celdaFecha) {
+        celdaFecha.innerHTML = renderizarFechasHTML(rowIndex, memoriaFechas[key]);
+      }
+    }
+
+    function renderizarFechasHTML(rowIndex, listaFechas) {
+      if (!listaFechas || listaFechas.length === 0) return '';
+      let html = '<div class="fechas-grid">';
+      listaFechas.forEach((f, idx) => {
+        html += `
+          <div class="fecha-item">
+            <span>📅 ${f}</span>
+            <button class="btn-quitar-fecha" onclick="eliminarFechaIndex(${rowIndex}, ${idx})">−</button>
+          </div>`;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    function accionPrincipal() {
+      alert("Acción realizada desde el botón superior.");
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      iniciarAutoActualizacion();
+      renderizarInicio();
     });
   </script>
 </body>
