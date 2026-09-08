@@ -220,7 +220,7 @@
       border-color: #2ec4b6;
     }
 
-    /* Estilos ultra rápidos para Kilos */
+    /* Estilos para Kilos */
     .kilos-container {
       display: inline-flex;
       align-items: center;
@@ -249,7 +249,7 @@
       background-color: #f1f5f9;
       color: #334155;
       border-color: #cbd5e1;
-      cursor: pointer;
+      cursor: not-allowed;
       font-weight: 600;
     }
 
@@ -260,13 +260,29 @@
       cursor: pointer;
       padding: 4px;
       border-radius: 4px;
-      opacity: 0.6;
+      opacity: 0.7;
       transition: opacity 0.2s;
     }
 
     .btn-edit-kilos:hover {
       opacity: 1;
       background-color: #e2e8f0;
+    }
+
+    .btn-guardar-kilos {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-guardar-kilos:hover {
+      background-color: #1d4ed8;
     }
 
     .fechas-grid {
@@ -449,30 +465,52 @@
       guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, nuevoValor);
     }
 
-    // Auto-guardar kilos al salir del input o pulsar Enter
+    // Al escribir por primera vez y hacer blur / enter, guarda y bloquea
     function guardarKilosAuto(input, rowIndex, colIndex) {
       if (input.disabled) return;
       
       const valor = input.value.trim();
       if (valor !== '') {
-        input.disabled = true; // Bloqueo automático para no editar sin querer
+        input.disabled = true; // Bloqueo automático
         const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+        
         if (btnEdit) btnEdit.style.display = 'inline-block';
+        if (btnGuardar) btnGuardar.style.display = 'none';
         
         guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
       }
     }
 
-    // Habilitar edición al hacer clic en el lápiz
+    // Habilitar la edición: Muestra el botón 'Guardar' y oculta el 'Lápiz'
     function habilitarEdicionKilos(rowIndex) {
       const input = document.getElementById(`input_kilos_${rowIndex}`);
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-      
+      const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+
       if (input) {
         input.disabled = false;
         input.focus();
         input.select();
+        
         if (btnEdit) btnEdit.style.display = 'none';
+        if (btnGuardar) btnGuardar.style.display = 'inline-block';
+      }
+    }
+
+    // Confirmar edición pulsando en el botón 'Guardar'
+    function confirmarGuardarKilos(rowIndex, colIndex) {
+      const input = document.getElementById(`input_kilos_${rowIndex}`);
+      if (input) {
+        input.disabled = true;
+        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+
+        if (btnEdit) btnEdit.style.display = 'inline-block';
+        if (btnGuardar) btnGuardar.style.display = 'none';
+
+        const valor = input.value.trim();
+        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
       }
     }
 
@@ -581,11 +619,11 @@
 
             html += `</select></td>`;
           } 
-          // Campo para la entrada rápida de Kilos
+          // Campo para Entrada Rápida de Kilos + Lápiz + Botón Guardar
           else if (esKilos) {
             const tieneValor = valor !== '' && valor !== null && valor !== undefined;
             const disabledAttr = tieneValor ? 'disabled' : '';
-            const displayBtn = tieneValor ? 'inline-block' : 'none';
+            const displayEdit = tieneValor ? 'inline-block' : 'none';
 
             html += `<td>
               <div class="kilos-container">
@@ -603,8 +641,13 @@
                 <button id="btn_edit_${rowIndex}" 
                         class="btn-edit-kilos" 
                         title="Modificar cantidad" 
-                        style="display: ${displayBtn};" 
+                        style="display: ${displayEdit};" 
                         onclick="habilitarEdicionKilos(${rowIndex})">✏️</button>
+
+                <button id="btn_guardar_${rowIndex}" 
+                        class="btn-guardar-kilos" 
+                        style="display: none;" 
+                        onclick="confirmarGuardarKilos(${rowIndex}, ${colIndex})">💾 Guardar</button>
               </div>
             </td>`;
           }
@@ -639,7 +682,7 @@
       
       if (autoUpdateTimer) clearInterval(autoUpdateTimer);
       autoUpdateTimer = setInterval(() => {
-        // Evitar recargar mientras haya una casilla de kilos activa/desbloqueada
+        // Evita recargar automáticamente mientras haya un input de kilos en edición activo
         const inputActivo = document.querySelector('.input-kilos:not(:disabled)');
         if (!inputActivo) {
           obtenerDatosGoogleSheets(pestañaActual, true);
