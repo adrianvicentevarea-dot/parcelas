@@ -283,13 +283,17 @@
     }
 
     .btn-fecha-auto {
-      background-color: #f3f4f6;
-      border: 1px solid #d1d5db;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
-      margin-left: 4px;
+      margin-left: 6px;
+      display: none; /* Se muestra solo al editar la fila */
+      box-shadow: 0 2px 5px rgba(16,185,129,0.3);
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -569,7 +573,8 @@
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          const esFechaRegistro = headerLower.includes('fecha');
+          // Detectar columnas de fecha por palabra clave
+          const esFecha = headerLower.includes('fecha') || headerLower.includes('día') || headerLower.includes('dia');
 
           if (esTipoCultivo) {
             html += `<td>
@@ -582,11 +587,11 @@
             });
 
             html += `</select></td>`;
-          } else if (esFechaRegistro) {
+          } else if (esFecha) {
             html += `<td>
               <div style="display: flex; align-items: center;">
                 <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
-                <button type="button" class="btn-fecha-auto" id="btn_fecha_${rowIndex}_${colIndex}" style="display:none;" onclick="ponerFechaActual(${rowIndex}, ${colIndex})">📅 Hoy</button>
+                <button type="button" class="btn-fecha-auto" id="btn_fecha_${rowIndex}_${colIndex}" onclick="ponerFechaActual(${rowIndex}, ${colIndex})">📅 Fecha Hoy</button>
               </div>
             </td>`;
           } else {
@@ -610,7 +615,7 @@
       const inputs = filaElem.querySelectorAll('input, select');
       inputs.forEach(el => el.disabled = false);
 
-      // Mostrar botones de fecha rápida si existen en la fila
+      // Mostrar los botones de fecha rápida en esta fila
       const botonesFecha = filaElem.querySelectorAll('.btn-fecha-auto');
       botonesFecha.forEach(b => b.style.display = 'inline-block');
 
@@ -680,7 +685,6 @@
       const nuevaFilaVacia = new Array(encabezadosGlobales.length).fill('');
       datosMemoriaGlobal.push(nuevaFilaVacia);
       construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
-      // Habilitar directamente la nueva fila añadida
       const ultimoIndice = datosMemoriaGlobal.length - 1;
       habilitarFila(ultimoIndice);
     }
@@ -823,7 +827,7 @@
             return;
           }
 
-          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅 Hoy/g, '').trim());
+          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅 Fecha Hoy/g, '').trim());
         });
 
         if (datosFila.length > 0) {
