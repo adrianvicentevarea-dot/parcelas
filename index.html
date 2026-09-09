@@ -233,7 +233,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto; /* Permite que las columnas se adapten mejor al contenido */
+            table-layout: auto;
         }
 
         th {
@@ -260,7 +260,7 @@
             border-radius: 4px;
             font-size: 0.85rem;
             width: 100%;
-            min-width: 180px; /* Asegura espacio suficiente para nombres largos */
+            min-width: 180px;
             outline: none;
             transition: background 0.2s, border 0.2s;
         }
@@ -327,7 +327,7 @@
             font-size: 0.9rem;
             padding: 0 2px;
             line-height: 1;
-            display: none; 
+            display: inline-block; /* Siempre visible */
         }
         .date-chip button:hover {
             color: #dc2626;
@@ -346,8 +346,6 @@
             align-items: center;
             gap: 6px;
             white-space: nowrap;
-            opacity: 0.5;
-            pointer-events: none; 
         }
         .btn-action-date:hover {
             background-color: #2563eb;
@@ -585,7 +583,7 @@
                     htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
                 } else if (isDateCol) {
                     htmlContent += `<td data-col="${actualColIndex}" data-is-date-col="true">`;
-                    htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue, false)}</div>`;
+                    htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue)}</div>`;
                     htmlContent += `</td>`;
                 } else {
                     let val = String(cellValue);
@@ -599,16 +597,16 @@
         });
     }
 
-    function renderDatesHTML(rawValue, editable = false) {
+    function renderDatesHTML(rawValue) {
         if (!rawValue || String(rawValue).trim() === "") return "";
         let dates = String(rawValue).split(',').map(d => d.trim()).filter(d => d !== "");
         
         let html = "";
         for (let i = 0; i < dates.length; i += 2) {
             html += `<div class="dates-row">`;
-            html += `<span class="date-chip"><span>${dates[i]}</span><button type="button" onclick="removeDate(this, ${i})" ${!editable ? 'style="display:none;"' : ''}>&times;</button></span>`;
+            html += `<span class="date-chip"><span>${dates[i]}</span><button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
             if (i + 1 < dates.length) {
-                html += `<span class="date-chip"><span>${dates[i+1]}</span><button type="button" onclick="removeDate(this, ${i+1})" ${!editable ? 'style="display:none;"' : ''}>&times;</button></span>`;
+                html += `<span class="date-chip"><span>${dates[i+1]}</span><button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
             }
             html += `</div>`;
         }
@@ -622,16 +620,6 @@
 
         tr.querySelectorAll('input[type="text"]').forEach(input => {
             input.disabled = false;
-        });
-
-        const dateBtn = tr.querySelector('.btn-action-date');
-        if (dateBtn) {
-            dateBtn.style.opacity = '1';
-            dateBtn.style.pointerEvents = 'auto';
-        }
-
-        tr.querySelectorAll('.date-chip button').forEach(delBtn => {
-            delBtn.style.display = 'inline-block';
         });
 
         editBtn.style.display = 'none';
@@ -650,16 +638,6 @@
             input.disabled = true;
         });
 
-        const dateBtn = tr.querySelector('.btn-action-date');
-        if (dateBtn) {
-            dateBtn.style.opacity = '0.5';
-            dateBtn.style.pointerEvents = 'none';
-        }
-
-        tr.querySelectorAll('.date-chip button').forEach(delBtn => {
-            delBtn.style.display = 'none';
-        });
-
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-flex';
 
@@ -669,21 +647,9 @@
             const colIndex = parseInt(td.getAttribute('data-col'));
             await sendDataToSheet(sheetName, rowIndex, colIndex, input.value);
         }
-
-        const dateTd = tr.querySelector('td[data-is-date-col="true"]');
-        if (dateTd) {
-            let currentDates = [];
-            dateTd.querySelectorAll('.date-chip span span').forEach(span => {
-                let text = span.textContent.trim();
-                if (text) currentDates.push(text);
-            });
-            const combinedValue = currentDates.join(', ');
-            const colIndex = parseInt(dateTd.getAttribute('data-col'));
-            await sendDataToSheet(sheetName, rowIndex, colIndex, combinedValue);
-        }
     }
 
-    function triggerDateAction(btn) {
+    async function triggerDateAction(btn) {
         const tr = btn.closest('tr');
         const dateTd = tr.querySelector('td[data-is-date-col="true"]');
         if (!dateTd) return;
@@ -703,11 +669,19 @@
         });
 
         currentDates.push(dateStr);
-        container.innerHTML = renderDatesHTML(currentDates.join(', '), true);
+        container.innerHTML = renderDatesHTML(currentDates.join(', '));
+
+        // Guardar automáticamente los cambios en Google Sheets
+        const table = tr.closest('table');
+        const sheetName = table.getAttribute('data-sheet');
+        const rowIndex = tr.rowIndex + 1;
+        const colIndex = parseInt(dateTd.getAttribute('data-col'));
+        await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
     }
 
-    function removeDate(closeBtn, indexToRemove) {
+    async function removeDate(closeBtn, indexToRemove) {
         const td = closeBtn.closest('td');
+        const tr = closeBtn.closest('tr');
         const container = td.querySelector('.dates-container');
         
         let currentDates = [];
@@ -717,7 +691,14 @@
         });
 
         currentDates.splice(indexToRemove, 1);
-        container.innerHTML = renderDatesHTML(currentDates.join(', '), true);
+        container.innerHTML = renderDatesHTML(currentDates.join(', '));
+
+        // Guardar automáticamente los cambios en Google Sheets
+        const table = tr.closest('table');
+        const sheetName = table.getAttribute('data-sheet');
+        const rowIndex = tr.rowIndex + 1;
+        const colIndex = parseInt(td.getAttribute('data-col'));
+        await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
     }
 
     async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
@@ -771,12 +752,6 @@
         const saveBtn = newRow.querySelector('.btn-icon.save');
         if(editBtn) editBtn.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'inline-flex';
-
-        const dateBtn = newRow.querySelector('.btn-action-date');
-        if(dateBtn) {
-            dateBtn.style.opacity = '1';
-            dateBtn.style.pointerEvents = 'auto';
-        }
 
         tbody.appendChild(newRow);
     }
