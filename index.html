@@ -233,6 +233,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: auto; /* Permite que las columnas se adapten mejor al contenido */
         }
 
         th {
@@ -242,6 +243,7 @@
             font-size: 0.85rem;
             text-align: left;
             border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
         }
 
         td {
@@ -258,6 +260,7 @@
             border-radius: 4px;
             font-size: 0.85rem;
             width: 100%;
+            min-width: 180px; /* Asegura espacio suficiente para nombres largos */
             outline: none;
             transition: background 0.2s, border 0.2s;
         }
@@ -324,7 +327,7 @@
             font-size: 0.9rem;
             padding: 0 2px;
             line-height: 1;
-            display: none; /* Oculto por defecto hasta activar modo edición */
+            display: none; 
         }
         .date-chip button:hover {
             color: #dc2626;
@@ -344,7 +347,7 @@
             gap: 6px;
             white-space: nowrap;
             opacity: 0.5;
-            pointer-events: none; /* Deshabilitado por defecto hasta activar edición */
+            pointer-events: none; 
         }
         .btn-action-date:hover {
             background-color: #2563eb;
@@ -573,7 +576,7 @@
             headers.slice(1).forEach((th, index) => {
                 const colIndexAdjusted = index; 
                 const cellValue = (rowData[colIndexAdjusted] !== undefined && rowData[colIndexAdjusted] !== null) ? rowData[colIndexAdjusted] : '';
-                const actualColIndex = colIndexAdjusted + 1; // Columna en Excel (1-based: Col A = 1, B = 2, etc.)
+                const actualColIndex = colIndexAdjusted + 1; 
 
                 const isBtnCol = (actualColIndex === btnColIndex);
                 const isDateCol = (actualColIndex === dateColIndex);
@@ -617,24 +620,20 @@
         const editBtn = tr.querySelector('.btn-icon.edit');
         const saveBtn = tr.querySelector('.btn-icon.save');
 
-        // Habilitar todos los inputs de la fila
         tr.querySelectorAll('input[type="text"]').forEach(input => {
             input.disabled = false;
         });
 
-        // Habilitar botones de fecha de la fila
         const dateBtn = tr.querySelector('.btn-action-date');
         if (dateBtn) {
             dateBtn.style.opacity = '1';
             dateBtn.style.pointerEvents = 'auto';
         }
 
-        // Mostrar botones de borrar en las fechas si las hay
         tr.querySelectorAll('.date-chip button').forEach(delBtn => {
             delBtn.style.display = 'inline-block';
         });
 
-        // Alternar visibilidad de botones editar/guardar
         editBtn.style.display = 'none';
         saveBtn.style.display = 'inline-flex';
     }
@@ -647,28 +646,23 @@
         const sheetName = table.getAttribute('data-sheet');
         const rowIndex = tr.rowIndex + 1;
 
-        // Deshabilitar de nuevo los inputs
         tr.querySelectorAll('input[type="text"]').forEach(input => {
             input.disabled = true;
         });
 
-        // Deshabilitar botón de fecha
         const dateBtn = tr.querySelector('.btn-action-date');
         if (dateBtn) {
             dateBtn.style.opacity = '0.5';
             dateBtn.style.pointerEvents = 'none';
         }
 
-        // Ocultar botones de borrar en las fechas
         tr.querySelectorAll('.date-chip button').forEach(delBtn => {
             delBtn.style.display = 'none';
         });
 
-        // Alternar visibilidad de botones editar/guardar
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-flex';
 
-        // Recopilar y enviar todas las celdas modificables de esta fila al servidor
         const inputs = tr.querySelectorAll('input[type="text"]');
         for (let input of inputs) {
             const td = input.closest('td');
@@ -676,7 +670,6 @@
             await sendDataToSheet(sheetName, rowIndex, colIndex, input.value);
         }
 
-        // También guardar la celda de fechas si existe
         const dateTd = tr.querySelector('td[data-is-date-col="true"]');
         if (dateTd) {
             let currentDates = [];
@@ -770,11 +763,10 @@
         const newRow = firstRow.cloneNode(true);
         newRow.querySelectorAll('input').forEach(input => { 
             input.value = ''; 
-            input.disabled = false; // Las filas nuevas empiezan editables
+            input.disabled = false; 
         });
         newRow.querySelectorAll('.dates-container').forEach(container => { container.innerHTML = ''; });
 
-        // Ajustar botones para que aparezcan en modo edición directamente
         const editBtn = newRow.querySelector('.btn-icon.edit');
         const saveBtn = newRow.querySelector('.btn-icon.save');
         if(editBtn) editBtn.style.display = 'none';
@@ -796,7 +788,6 @@
         if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
             if (tbody.rows.length > 1) {
                 row.remove();
-                // Opcional: Aquí podrías mandar una petición al Apps Script para limpiar la fila en el Excel si lo deseas
             } else {
                 alert("Debe mantenerse al menos una fila en la tabla.");
             }
