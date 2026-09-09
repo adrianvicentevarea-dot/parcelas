@@ -163,7 +163,7 @@
             margin-bottom: 24px;
         }
 
-        /* Tarjetas grandes (tipo banner) y adaptables a móviles */
+        /* Tarjetas grandes */
         .menu-card {
             background-color: white;
             color: #1e293b;
@@ -183,11 +183,12 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        /* Laboreos: altura grande, imagen posicionada al 75% para que se vea el tractor completo */
+        /* Laboreos: usamos contain y un fondo oscuro de respaldo para que se vea el tractor completo sin recortarse */
         .menu-card-laboreos {
-            background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
-            background-size: cover;
-            background-position: center 75%;
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: right center;
         }
 
         .menu-card-laboreos h3, 
