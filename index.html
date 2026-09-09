@@ -672,6 +672,9 @@
         const sheetName = table.getAttribute('data-sheet');
         const rowIndex = tr.rowIndex + 1; 
 
+        const headers = Array.from(table.querySelectorAll('th'));
+        const headerTitle = headers[colIndex - 1] ? headers[colIndex - 1].textContent : "Fecha de Registro";
+
         try {
             await fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -681,6 +684,7 @@
                     sheet: sheetName,
                     row: rowIndex,
                     col: colIndex, 
+                    colName: headerTitle,
                     value: value
                 })
             });
