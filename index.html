@@ -575,7 +575,6 @@
           const headerLower = header.toLowerCase().trim();
           
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          const esFechaRegistro = headerLower === 'fecha de registro' || headerLower.includes('fecha de registro');
           const esBotonEspecial = ['laboreo', 'podado', 'trataminetos', 'recolección'].includes(headerLower);
 
           if (esTipoCultivo) {
@@ -589,21 +588,15 @@
             });
 
             html += `</select></td>`;
-          } else if (esFechaRegistro) {
-            html += `<td>
-              <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
-              <button type="button" id="btn_fecha_${rowIndex}_${colIndex}" class="btn-accion-custom" onclick="marcarFechaHoy(${rowIndex}, ${colIndex})">
-                ${valor ? '📅 ' + valor : '📅 Poner Fecha Hoy'}
-              </button>
-            </td>`;
           } else if (esBotonEspecial) {
+            // Columnas Laboreo, Podado, Trataminetos y Recolección -> Muestran el botón que al pulsarlo rellena la Fecha de registro
             html += `<td>
-              <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
-              <button type="button" id="btn_custom_${rowIndex}_${colIndex}" class="btn-accion-custom" onclick="accionBotonEspecial(${rowIndex}, ${colIndex}, '${header}')">
-                ${valor ? '📅 ' + valor : '👉 ' + header}
+              <button type="button" class="btn-accion-custom" onclick="pulsarBotonAccionFecha(${rowIndex}, '${header}')">
+                👉 ${header}
               </button>
             </td>`;
           } else {
+            // Resto de columnas normales (incluyendo Fecha de registro, que se comporta como texto normal editable/guardable)
             html += `<td>
               <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
             </td>`;
@@ -632,29 +625,32 @@
       if (inputs.length > 0) inputs[0].focus();
     }
 
-    function marcarFechaHoy(rowIndex, colIndex) {
+    // Función que se ejecuta al pulsar el botón de Laboreo, Podado, Trataminetos o Recolección
+    function pulsarBotonAccionFecha(rowIndex, nombreBoton) {
       habilitarFila(rowIndex);
+      
       const hoy = new Date().toLocaleDateString('es-ES');
-      
-      const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      const btnFecha = document.getElementById(`btn_fecha_${rowIndex}_${colIndex}`);
-      
-      if (inputHidden) inputHidden.value = hoy;
-      if (btnFecha) btnFecha.innerText = `📅 ${hoy}`;
+      const filaElem = document.getElementById(`row_${rowIndex}`);
+      if (!filaElem) return;
 
-      intentarGuardarFila(rowIndex);
-    }
+      // Buscamos dentro de la misma fila la columna que tenga como título "Fecha de registro"
+      let colFechaIndex = -1;
+      encabezadosGlobales.forEach((enc, idx) => {
+        const encL = enc.toLowerCase().trim();
+        if (encL === 'fecha de registro' || encL.includes('fecha de registro')) {
+          colFechaIndex = idx;
+        }
+      });
 
-    function accionBotonEspecial(rowIndex, colIndex, nombreColumna) {
-      habilitarFila(rowIndex);
-      const hoy = new Date().toLocaleDateString('es-ES');
-      
-      const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      const btnCustom = document.getElementById(`btn_custom_${rowIndex}_${colIndex}`);
-      
-      if (inputHidden) inputHidden.value = hoy;
-      if (btnCustom) btnCustom.innerText = `📅 ${hoy}`;
+      if (colFechaIndex !== -1) {
+        // La celda de la tabla corresponde al colIndex + 1 en los inputs normales
+        const inputFecha = document.getElementById(`cell_${rowIndex}_${colFechaIndex}`);
+        if (inputFecha) {
+          inputFecha.value = hoy;
+        }
+      }
 
+      // Guardamos automáticamente la fila con la nueva fecha colocada
       intentarGuardarFila(rowIndex);
     }
 
@@ -689,19 +685,24 @@
       if (btnSave) btnSave.style.display = 'none';
 
       const rowInSheet = rowIndex + 2;
-      inputs.forEach(async (el, colIndex) => {
-        const valor = el.value.trim();
-        try {
-          await fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colIndex + 1, valor: valor })
-          });
-        } catch (e) {
-          console.error("Error al guardar celda:", e);
+      
+      // Mapeamos y guardamos cada campo basándonos en su posición real de columna
+      for (let colIndex = 0; colIndex < encabezadosGlobales.length; colIndex++) {
+        const cellInput = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+        if (cellInput) {
+          const valor = cellInput.value.trim();
+          try {
+            await fetch(WEB_APP_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colIndex + 1, valor: valor })
+            });
+          } catch (e) {
+            console.error("Error al guardar celda:", e);
+          }
         }
-      });
+      }
     }
 
     function agregarNuevaFila() {
