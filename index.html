@@ -284,7 +284,6 @@
         .btn-icon.edit { background-color: #f59e0b; }
         .btn-icon.delete { background-color: var(--accent-red); }
 
-        /* ESTILOS PARA LOS BLOQUES DE FECHAS (De dos en dos por fila) */
         .dates-container {
             display: flex;
             flex-direction: column;
@@ -388,7 +387,6 @@
         </div>
     </div>
 
-
     <!-- ================= VISTA: PARCELAS ================= -->
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
@@ -410,7 +408,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- ================= VISTA: LABOREOS ================= -->
     <div id="view-laboreos" class="view-section">
@@ -434,7 +431,6 @@
         </div>
     </div>
 
-
     <!-- ================= VISTA: PODA ================= -->
     <div id="view-poda" class="view-section">
         <div class="top-nav">
@@ -457,7 +453,6 @@
         </div>
     </div>
 
-
     <!-- ================= VISTA: TRATAMIENTOS ================= -->
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
@@ -479,7 +474,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- ================= VISTA: RECOLECCIÓN ================= -->
     <div id="view-recoleccion" class="view-section">
@@ -510,7 +504,7 @@
 
     async function loadDataFromExcel() {
         try {
-            const response = await fetch(WEB_APP_URL + '?action=getData', { method: 'GET', redirect: 'follow' });
+            const response = await fetch(WEB_APP_URL, { method: 'GET', redirect: 'follow' });
             if (!response.ok) throw new Error("Error en red: " + response.status);
             
             const data = await response.json();
@@ -570,7 +564,7 @@
             headers.slice(1).forEach((th, index) => {
                 const colIndexAdjusted = index; 
                 const cellValue = (rowData[colIndexAdjusted] !== undefined && rowData[colIndexAdjusted] !== null) ? rowData[colIndexAdjusted] : '';
-                const actualColIndex = colIndexAdjusted + 1; 
+                const actualColIndex = colIndexAdjusted + 1; // Columna en Excel (1-based: Col A = 1, B = 2, etc.)
 
                 const isBtnCol = (actualColIndex === btnColIndex);
                 const isDateCol = (actualColIndex === dateColIndex);
@@ -652,7 +646,7 @@
 
     function saveCellChange(input, colIndex) {
         const td = input.closest('td');
-        sendDataToSheet(td, input.value);
+        sendDataToSheet(td, input.value, colIndex);
     }
 
     function syncCellData(td) {
@@ -662,30 +656,30 @@
             if (text) currentDates.push(text);
         });
         const combinedValue = currentDates.join(', ');
-        sendDataToSheet(td, combinedValue);
+        const colIndex = parseInt(td.getAttribute('data-col'));
+        sendDataToSheet(td, combinedValue, colIndex);
     }
 
-    async function sendDataToSheet(td, value) {
+    async function sendDataToSheet(td, value, colIndex) {
         const tr = td.closest('tr');
         const table = tr.closest('table');
         const sheetName = table.getAttribute('data-sheet');
+        
+        // tr.rowIndex incluye la cabecera, por lo que sumamos 2 (1 por índice base 0 y 1 por la cabecera de la hoja de cálculo)
         const rowIndex = tr.rowIndex + 1; 
 
         try {
-            const response = await fetch(WEB_APP_URL, {
+            await fetch(WEB_APP_URL, {
                 method: 'POST',
                 redirect: 'follow',
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({
                     sheet: sheetName,
                     row: rowIndex,
+                    col: colIndex,
                     value: value
                 })
             });
-            const result = await response.json();
-            if (result.status !== "success") {
-                console.error("El servidor indicó un fallo al guardar:", result.message);
-            }
         } catch (err) {
             console.error("Error de red al actualizar el Excel:", err);
         }
