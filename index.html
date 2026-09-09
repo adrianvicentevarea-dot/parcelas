@@ -299,7 +299,7 @@
     /* CONTENEDOR DE FECHAS EN GRID (EXACTAMENTE 2 POR FILA) */
     .fechas-grid-container {
       display: grid;
-      grid-template-columns: repeat(2, minmax(85px, max-content));
+      grid-template-columns: repeat(2, minmax(100px, max-content));
       gap: 6px;
       align-items: center;
       justify-content: start;
@@ -313,8 +313,28 @@
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
       white-space: nowrap;
-      text-align: center;
+    }
+
+    .btn-eliminar-fecha {
+      background: none;
+      border: none;
+      color: #0369a1;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+      border-radius: 4px;
+    }
+
+    .btn-eliminar-fecha:hover {
+      background-color: #bae6fd;
+      color: #dc2626;
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -616,12 +636,15 @@
               </button>
             </td>`;
           } else if (esFechaRegistro) {
-            // Celda de Fecha de registro sin cuadro de texto: muestra las fechas acumuladas en grid de 2 en 2
             let arrayFechas = valor ? valor.split(',').map(f => f.trim()).filter(f => f !== '') : [];
             
             let badgesHtml = `<div class="fechas-grid-container" id="cell_${rowIndex}_${colIndex}_grid">`;
-            arrayFechas.forEach(f => {
-              badgesHtml += `<div class="badge-fecha-item">${f}</div>`;
+            arrayFechas.forEach((f, fIdx) => {
+              badgesHtml += `
+                <div class="badge-fecha-item">
+                  <span>${f}</span>
+                  <button type="button" class="btn-eliminar-fecha" onclick="eliminarFechaEspecifica(${rowIndex}, ${colIndex}, ${fIdx})" title="Quitar fecha">×</button>
+                </div>`;
             });
             badgesHtml += `</div>`;
 
@@ -658,7 +681,7 @@
       if (inputs.length > 0) inputs[0].focus();
     }
 
-    // Al pulsar el botón de acción, añade de forma ilimitada la fecha de hoy
+    // Al pulsar el botón de acción, añade la fecha actual de forma ilimitada
     function pulsarBotonAccionFecha(rowIndex, nombreBoton) {
       habilitarFila(rowIndex);
       
@@ -680,17 +703,49 @@
         
         if (inputHidden && gridContainer) {
           let fechasActuales = inputHidden.value ? inputHidden.value.split(',').map(f => f.trim()).filter(f => f !== '') : [];
-          fechasActuales.push(hoy); // Añade una nueva fecha ilimitadamente
+          fechasActuales.push(hoy); 
 
           inputHidden.value = fechasActuales.join(', ');
 
-          // Reconstruir visualmente el grid de 2 en 2
           let badgesHtml = '';
-          fechasActuales.forEach(f => {
-            badgesHtml += `<div class="badge-fecha-item">${f}</div>`;
+          fechasActuales.forEach((f, fIdx) => {
+            badgesHtml += `
+              <div class="badge-fecha-item">
+                <span>${f}</span>
+                <button type="button" class="btn-eliminar-fecha" onclick="eliminarFechaEspecifica(${rowIndex}, ${colIndex}, ${fIdx})" title="Quitar fecha">×</button>
+              </div>`;
           });
           gridContainer.innerHTML = badgesHtml;
         }
+      }
+
+      intentarGuardarFila(rowIndex);
+    }
+
+    // Permite eliminar una fecha concreta pulsando la "x"
+    function eliminarFechaEspecifica(rowIndex, colIndex, fechaIndex) {
+      habilitarFila(rowIndex);
+
+      const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      const gridContainer = document.getElementById(`cell_${rowIndex}_${colIndex}_grid`);
+
+      if (inputHidden && gridContainer) {
+        let fechasActuales = inputHidden.value ? inputHidden.value.split(',').map(f => f.trim()).filter(f => f !== '') : [];
+        
+        // Eliminar la fecha en el índice indicado
+        fechasActuales.splice(fechaIndex, 1);
+
+        inputHidden.value = fechasActuales.join(', ');
+
+        let badgesHtml = '';
+        fechasActuales.forEach((f, fIdx) => {
+          badgesHtml += `
+            <div class="badge-fecha-item">
+              <span>${f}</span>
+              <button type="button" class="btn-eliminar-fecha" onclick="eliminarFechaEspecifica(${rowIndex}, ${colIndex}, ${fIdx})" title="Quitar fecha">×</button>
+            </div>`;
+        });
+        gridContainer.innerHTML = badgesHtml;
       }
 
       intentarGuardarFila(rowIndex);
@@ -898,7 +953,8 @@
             return;
           }
 
-          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅|✅|👉/g, '').trim());
+          // Limpiar símbolos sobrantes, incluyendo las '×' de los botones de fecha
+          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅|✅|👉|×/g, '').trim());
         });
 
         if (datosFila.length > 0) {
