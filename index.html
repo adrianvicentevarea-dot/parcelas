@@ -1,47 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Agrícola - Aplicación de Parcelas</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ESTADO DE CARGA / MENSAJE */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 1.2rem;
+            gap: 15px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border-color);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* HEADER / NAVBAR */
+        .top-nav {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-nav h1 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-home {
+            background-color: white;
+            color: var(--primary);
+        }
+        .btn-home:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-red);
+            color: white;
+        }
+
+        /* VISTAS */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        /* HOME MENU GRID */
+        .home-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .menu-card {
+            background-color: white;
+            color: #1e293b;
+            padding: 16px 24px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .menu-card-info h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #0f172a;
+        }
+
+        .menu-card-info p {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .home-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .home-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 14px;
+            font-size: 1rem;
+        }
+
+        .btn-blue {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        /* TABLAS DE DATOS */
+        .table-container-wrapper {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .view-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .table-actions {
+            margin-bottom: 16px;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--text-main);
+            padding: 12px 10px;
+            font-size: 0.85rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        select {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            background: #334155;
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon.edit { background-color: #f59e0b; }
+        .btn-icon.delete { background-color: var(--accent-red); }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de carga mientras se conecta al Excel -->
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text">Conectando con Google Sheets...</div>
+</div>
+
+<div class="container">
+
+    <!-- ================= VISTA: INICIO ================= -->
+    <div id="view-home" class="view-section">
+        <div class="home-header">🏠 Inicio</div>
+        <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
+
+        <div class="menu-grid">
+            <div class="menu-card" onclick="switchView('parcelas')">
+                <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
+                <div>📍</div>
+            </div>
+            <div class="menu-card" onclick="switchView('laboreos')">
+                <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
+                <div>🚜</div>
+            </div>
+            <div class="menu-card" onclick="switchView('poda')">
+                <div class="menu-card-info"><h3>Poda</h3><p>Registros y control de poda</p></div>
+                <div>✂️</div>
+            </div>
+            <div class="menu-card" onclick="switchView('tratamientos')">
+                <div class="menu-card-info"><h3>Tratamientos</h3><p>Control de tratamientos aplicados</p></div>
+                <div>🧪</div>
+            </div>
+            <div class="menu-card" onclick="switchView('recoleccion')">
+                <div class="menu-card-info"><h3>Tareas / Recolección</h3><p>Control de tareas y kilos cosechados</p></div>
+                <div>📦</div>
+            </div>
+        </div>
+
+        <div class="home-actions">
+            <button class="btn btn-blue" onclick="alert('Descargar PDF')">📄 Descargar PDF Completo</button>
+            <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
+        </div>
+    </div>
+
+
+    <!-- ================= VISTA: PARCELAS ================= -->
+    <div id="view-parcelas" class="view-section">
+        <div class="top-nav">
+            <h1>📍 Parcelas</h1>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+        </div>
+        <div class="table-container-wrapper">
+            <div class="view-title">Registros de Parcelas</div>
+            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('parcelas-table')">+ Añadir Fila</button></div>
+            <div class="table-responsive">
+                <table id="parcelas-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Recinto</th><th>Nombre</th><th>Tipo de cultivo</th><th>Variedad</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= VISTA: LABOREOS ================= -->
+    <div id="view-laboreos" class="view-section">
+        <div class="top-nav">
+            <h1>🚜 Laboreos</h1>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+        </div>
+        <div class="table-container-wrapper">
+            <div class="view-title">Gestión de Trabajos de Laboreo</div>
+            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('laboreos-table')">+ Añadir Fila</button></div>
+            <div class="table-responsive">
+                <table id="laboreos-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tipo de cultivo</th><th>Tipo de trabajo realizado</th><th>Trabajo realizado por</th><th>Laboreo</th><th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= VISTA: PODA ================= -->
+    <div id="view-poda" class="view-section">
+        <div class="top-nav">
+            <h1>✂️ Poda</h1>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+        </div>
+        <div class="table-container-wrapper">
+            <div class="view-title">Registros y Control de Poda</div>
+            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('poda-table')">+ Añadir Fila</button></div>
+            <div class="table-responsive">
+                <table id="poda-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Trabajo realizado por</th><th>Podado</th><th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= VISTA: TRATAMIENTOS ================= -->
+    <div id="view-tratamientos" class="view-section">
+        <div class="top-nav">
+            <h1>🧪 Tratamientos</h1>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+        </div>
+        <div class="table-container-wrapper">
+            <div class="view-title">Control de Tratamientos Aplicados</div>
+            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('tratamientos-table')">+ Añadir Fila</button></div>
+            <div class="table-responsive">
+                <table id="tratamientos-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Trabajo realizado por</th><th>Tratamientos</th><th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= VISTA: RECOLECCIÓN ================= -->
+    <div id="view-recoleccion" class="view-section">
+        <div class="top-nav">
+            <h1>📦 Tareas / Recolección</h1>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+        </div>
+        <div class="table-container-wrapper">
+            <div class="view-title">Control de Tareas y Kilos Cosechados</div>
+            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('recoleccion-table')">+ Añadir Fila</button></div>
+            <div class="table-responsive">
+                <table id="recoleccion-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Variedad</th><th>Kilos</th><th>Trabajo realizado por</th><th>Recolección</th><th>Fecha de registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <script>
-    // Tu URL real de Google Apps Script
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
-    // Función para cargar los datos al iniciar la página
     async function loadDataFromExcel() {
+        const loadingText = document.getElementById('loading-text');
         try {
             const response = await fetch(WEB_APP_URL + '?action=getData');
             const data = await response.json();
             
-            console.log("Datos recibidos del Excel:", data);
+            // Poblar cada tabla de forma segura
+            populateTable('parcelas-table', data["Identificación de Parcelas"]);
+            populateTable('laboreos-table', data["Laboreos"]);
+            populateTable('poda-table', data["Poda"]);
+            populateTable('tratamientos-table', data["Tratamientos"]);
+            populateTable('recoleccion-table', data["Recolección"]);
             
-            // Poblar cada tabla según la pestaña correspondiente de Google Sheets
-            if (data["Identificación de Parcelas"] && data["Identificación de Parcelas"].length > 0) {
-                populateTable('parcelas-table', data["Identificación de Parcelas"]);
-            }
-            if (data["Laboreos"] && data["Laboreos"].length > 0) {
-                populateTable('laboreos-table', data["Laboreos"]);
-            }
-            if (data["Poda"] && data["Poda"].length > 0) {
-                populateTable('poda-table', data["Poda"]);
-            }
-            if (data["Tratamientos"] && data["Tratamientos"].length > 0) {
-                populateTable('tratamientos-table', data["Tratamientos"]);
-            }
-            if (data["Recolección"] && data["Recolección"].length > 0) {
-                populateTable('recoleccion-table', data["Recolección"]);
-            }
+            // Ocultar pantalla de carga y mostrar inicio
+            document.getElementById('loading-overlay').style.display = 'none';
+            switchView('home');
             
         } catch (error) {
-            console.error("Error al conectar con el Excel:", error);
+            console.error("Error al conectar:", error);
+            loadingText.innerHTML = "❌ Error al conectar con Google Sheets.<br><small>Revisa la consola (F12) o los permisos del Script.</small>";
         }
     }
 
-    // Función auxiliar para rellenar las filas dinámicamente manteniendo la estructura
     function populateTable(tableId, rowsData) {
         const table = document.getElementById(tableId);
         if (!table) return;
         const tbody = table.getElementsByTagName('tbody')[0];
-        tbody.innerHTML = ''; // Limpiar filas de ejemplo
+        tbody.innerHTML = ''; 
+
+        if (!rowsData || rowsData.length === 0) {
+            // Si la hoja está vacía, añadir una fila en blanco
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><div class="action-cell"><button class="btn-icon edit">✏️</button><button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button></div></td><td colspan="10" style="text-align:center; color:var(--text-muted);">Sin datos en el Excel</td>`;
+            tbody.appendChild(tr);
+            return;
+        }
 
         rowsData.forEach(rowData => {
             const tr = document.createElement('tr');
-            
             let htmlContent = `
                 <td>
                     <div class="action-cell">
@@ -52,7 +496,12 @@
             `;
 
             rowData.forEach(cellValue => {
-                htmlContent += `<td><input type="text" value="${cellValue !== undefined && cellValue !== null ? cellValue : ''}"></td>`;
+                let val = (cellValue !== undefined && cellValue !== null) ? cellValue : '';
+                // Formatear fecha si viene en formato largo de JavaScript
+                if (typeof val === 'string' && val.includes('T') && val.endsWith('Z')) {
+                    val = val.split('T')[0];
+                }
+                htmlContent += `<td><input type="text" value="${val}"></td>`;
             });
 
             tr.innerHTML = htmlContent;
@@ -60,7 +509,6 @@
         });
     }
 
-    // Ejecutar la carga al cargar la ventana
     window.onload = function() {
         loadDataFromExcel();
     };
@@ -85,14 +533,10 @@
 
         const newRow = firstRow.cloneNode(true);
         const inputs = newRow.querySelectorAll('input, select');
-        inputs.forEach(input => {
-            input.value = '';
-        });
+        inputs.forEach(input => { input.value = ''; });
 
         const deleteBtn = newRow.querySelector('.btn-icon.delete');
-        if(deleteBtn) {
-            deleteBtn.setAttribute('onclick', 'deleteRow(this)');
-        }
+        if(deleteBtn) { deleteBtn.setAttribute('onclick', 'deleteRow(this)'); }
 
         tbody.appendChild(newRow);
     }
@@ -113,3 +557,6 @@
         }
     }
 </script>
+
+</body>
+</html>
