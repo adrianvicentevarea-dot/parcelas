@@ -181,6 +181,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
+        /* Estilo especial con foto de fondo para Laboreos */
+        .menu-card-laboreos {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
+            background-size: cover;
+            background-position: center;
+        }
+
         .menu-card-info h3 {
             font-size: 1.1rem;
             font-weight: bold;
@@ -190,7 +197,7 @@
 
         .menu-card-info p {
             font-size: 0.85rem;
-            color: #64748b;
+            color: #475569;
         }
 
         .home-actions {
@@ -383,7 +390,8 @@
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
                 <div>📍</div>
             </div>
-            <div class="menu-card" onclick="switchView('laboreos')">
+            <!-- Tarjeta con la foto de fondo añadida -->
+            <div class="menu-card menu-card-laboreos" onclick="switchView('laboreos')">
                 <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
                 <div>🚜</div>
             </div>
@@ -530,7 +538,6 @@
             const data = await response.json();
             const keys = Object.keys(data);
 
-            // Coincidencia exacta con "Identificación de Parcelas" o la primera hoja del documento
             const parcelaKey = keys.find(k => k.trim() === "Identificación de Parcelas") || keys[0];
             const laboreoKey = keys.find(k => k.trim().toLowerCase().includes("laboreos"));
             const podaKey = keys.find(k => k.trim().toLowerCase().includes("poda"));
