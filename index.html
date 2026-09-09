@@ -282,20 +282,19 @@
       font-size: 14px;
     }
 
-    .btn-fecha-auto {
-      background-color: #10b981;
+    .btn-accion-custom {
+      background-color: #0284c7;
       color: white;
       border: none;
-      padding: 6px 8px;
+      padding: 6px 10px;
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      margin-left: 4px;
-      box-shadow: 0 2px 4px rgba(16,185,129,0.3);
+      box-shadow: 0 2px 4px rgba(2,132,199,0.3);
     }
-    .btn-fecha-auto:active {
-      background-color: #059669;
+    .btn-accion-custom:active {
+      background-color: #0369a1;
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -574,9 +573,12 @@
           const header = encabezadosOriginales[colIndex] || '';
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
+          
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          // Detección mejorada para cualquier columna de fecha
           const esFecha = headerLower.includes('fecha') || headerLower.includes('día') || headerLower.includes('dia');
+          
+          // Columnas específicas que llevan botón de acción sin cuadro de texto: Laboreo, Podado, Trataminetos, Recolección
+          const esBotonEspecial = ['laboreo', 'podado', 'trataminetos', 'recolección'].includes(headerLower);
 
           if (esTipoCultivo) {
             html += `<td>
@@ -591,10 +593,17 @@
             html += `</select></td>`;
           } else if (esFecha) {
             html += `<td>
-              <div style="display: flex; align-items: center;">
-                <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
-                <button type="button" class="btn-fecha-auto" onclick="ponerFechaActual(${rowIndex}, ${colIndex})">📅 Hoy</button>
-              </div>
+              <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
+              <button type="button" id="btn_fecha_${rowIndex}_${colIndex}" class="btn-accion-custom" onclick="marcarFechaHoy(${rowIndex}, ${colIndex})">
+                ${valor ? '📅 ' + valor : '📅 Poner Fecha Hoy'}
+              </button>
+            </td>`;
+          } else if (esBotonEspecial) {
+            html += `<td>
+              <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
+              <button type="button" id="btn_custom_${rowIndex}_${colIndex}" class="btn-accion-custom" onclick="accionBotonEspecial(${rowIndex}, ${colIndex}, '${header}')">
+                ${valor ? '✅ ' + valor : '👉 ' + header}
+              </button>
             </td>`;
           } else {
             html += `<td>
@@ -614,7 +623,7 @@
       const filaElem = document.getElementById(`row_${rowIndex}`);
       if (!filaElem) return;
 
-      const inputs = filaElem.querySelectorAll('input, select');
+      const inputs = filaElem.querySelectorAll('input:not([type="hidden"]), select');
       inputs.forEach(el => el.disabled = false);
 
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
@@ -625,14 +634,30 @@
       if (inputs.length > 0) inputs[0].focus();
     }
 
-    function ponerFechaActual(rowIndex, colIndex) {
-      // Aseguramos que al hacer clic en el botón de fecha, la fila se habilite automáticamente para poder guardar el cambio
+    function marcarFechaHoy(rowIndex, colIndex) {
       habilitarFila(rowIndex);
+      const hoy = new Date().toLocaleDateString('es-ES');
       
-      const input = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      if (input) {
-        const hoy = new Date().toLocaleDateString('es-ES');
-        input.value = hoy;
+      const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      const btnFecha = document.getElementById(`btn_fecha_${rowIndex}_${colIndex}`);
+      
+      if (inputHidden) inputHidden.value = hoy;
+      if (btnFecha) btnFecha.innerText = `📅 ${hoy}`;
+
+      intentarGuardarFila(rowIndex);
+    }
+
+    function accionBotonEspecial(rowIndex, colIndex, nombreColumna) {
+      habilitarFila(rowIndex);
+      const valorPrompt = prompt(`Introduce el valor para "${nombreColumna}":`, "");
+      if (valorPrompt !== null) {
+        const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+        const btnCustom = document.getElementById(`btn_custom_${rowIndex}_${colIndex}`);
+        
+        if (inputHidden) inputHidden.value = valorPrompt;
+        if (btnCustom) btnCustom.innerText = valorPrompt ? `✅ ${valorPrompt}` : `👉 ${nombreColumna}`;
+
+        intentarGuardarFila(rowIndex);
       }
     }
 
@@ -655,8 +680,11 @@
       const filaElem = document.getElementById(`row_${rowIndex}`);
       if (!filaElem) return;
 
-      const inputs = filaElem.querySelectorAll('input, select');
-      inputs.forEach(el => el.disabled = true);
+      const inputs = filaElem.querySelectorAll('input:not([type="hidden"]), select, input[type="hidden"]');
+      inputs.forEach(el => {
+        if(el.tagName === 'INPUT' && el.type !== 'hidden') el.disabled = true;
+        if(el.tagName === 'SELECT') el.disabled = true;
+      });
 
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
       const btnSave = document.getElementById(`btn_save_${rowIndex}`);
@@ -813,6 +841,12 @@
         celdas.forEach((celda, cIdx) => {
           if (index > 0 && cIdx === 0) return;
 
+          const inputHidden = celda.querySelector('input[type="hidden"]');
+          if (inputHidden) {
+            datosFila.push(inputHidden.value || '');
+            return;
+          }
+
           const input = celda.querySelector('input');
           if (input && input.type !== 'checkbox') {
             datosFila.push(input.value || '');
@@ -825,7 +859,7 @@
             return;
           }
 
-          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅 Hoy/g, '').trim());
+          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅|✅|👉/g, '').trim());
         });
 
         if (datosFila.length > 0) {
