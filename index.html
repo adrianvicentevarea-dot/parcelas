@@ -296,10 +296,10 @@
       background-color: #0369a1;
     }
 
-    /* CONTENEDOR DE FECHAS EN GRID (2 POR FILA) */
+    /* CONTENEDOR DE FECHAS EN GRID (EXACTAMENTE 2 POR FILA) */
     .fechas-grid-container {
       display: grid;
-      grid-template-columns: repeat(2, auto);
+      grid-template-columns: repeat(2, minmax(85px, max-content));
       gap: 6px;
       align-items: center;
       justify-content: start;
@@ -314,6 +314,7 @@
       font-size: 12px;
       font-weight: 600;
       white-space: nowrap;
+      text-align: center;
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -615,16 +616,15 @@
               </button>
             </td>`;
           } else if (esFechaRegistro) {
-            // Columna Fecha de registro: Muestra las fechas acumuladas en formato grid de 2 en 2
+            // Celda de Fecha de registro sin cuadro de texto: muestra las fechas acumuladas en grid de 2 en 2
             let arrayFechas = valor ? valor.split(',').map(f => f.trim()).filter(f => f !== '') : [];
             
-            let badgesHtml = '<div class="fechas-grid-container" id="cell_' + rowIndex + '_' + colIndex + '_grid">';
+            let badgesHtml = `<div class="fechas-grid-container" id="cell_${rowIndex}_${colIndex}_grid">`;
             arrayFechas.forEach(f => {
               badgesHtml += `<div class="badge-fecha-item">${f}</div>`;
             });
-            badgesHtml += '</div>';
+            badgesHtml += `</div>`;
 
-            // Campo oculto para almacenar el texto bruto para Google Sheets/PDFs
             html += `<td>
               <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
               ${badgesHtml}
@@ -658,7 +658,7 @@
       if (inputs.length > 0) inputs[0].focus();
     }
 
-    // Al pulsar el botón de acción, añade la fecha de hoy de forma ilimitada
+    // Al pulsar el botón de acción, añade de forma ilimitada la fecha de hoy
     function pulsarBotonAccionFecha(rowIndex, nombreBoton) {
       habilitarFila(rowIndex);
       
@@ -680,7 +680,7 @@
         
         if (inputHidden && gridContainer) {
           let fechasActuales = inputHidden.value ? inputHidden.value.split(',').map(f => f.trim()).filter(f => f !== '') : [];
-          fechasActuales.push(hoy); // Añade ilimitadamente
+          fechasActuales.push(hoy); // Añade una nueva fecha ilimitadamente
 
           inputHidden.value = fechasActuales.join(', ');
 
