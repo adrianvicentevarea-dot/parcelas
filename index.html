@@ -528,12 +528,20 @@
             if (!response.ok) throw new Error("Error en red: " + response.status);
             
             const data = await response.json();
-            
-            populateTable('parcelas-table', data["Identificación de Parcelas"]);
-            populateTable('laboreos-table', data["Laboreos"]);
-            populateTable('poda-table', data["Poda"]);
-            populateTable('tratamientos-table', data["Tratamientos"]);
-            populateTable('recoleccion-table', data["Recolección"]);
+            const keys = Object.keys(data);
+
+            // Coincidencia exacta con "Identificación de Parcelas" o la primera hoja del documento
+            const parcelaKey = keys.find(k => k.trim() === "Identificación de Parcelas") || keys[0];
+            const laboreoKey = keys.find(k => k.trim().toLowerCase().includes("laboreos"));
+            const podaKey = keys.find(k => k.trim().toLowerCase().includes("poda"));
+            const tratamientoKey = keys.find(k => k.trim().toLowerCase().includes("tratamientos"));
+            const recoleccionKey = keys.find(k => k.trim().toLowerCase().includes("recolección") || k.trim().toLowerCase().includes("recoleccion"));
+
+            populateTable('parcelas-table', parcelaKey ? data[parcelaKey] : []);
+            populateTable('laboreos-table', laboreoKey ? data[laboreoKey] : []);
+            populateTable('poda-table', podaKey ? data[podaKey] : []);
+            populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey] : []);
+            populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey] : []);
             
             document.getElementById('loading-overlay').style.display = 'none';
 
