@@ -494,7 +494,7 @@
                 <table id="recoleccion-table" data-sheet="Recolección">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Variedad</th><th>Kilos</th><th>Trabajo realizado por</th><th>Recolección</th><th>Fecha de registro</th>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Variedad</th><th>Kilos</th><th>Trabajo realizado por</th><th>Recolección</th><th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -541,7 +541,7 @@
 
         let dateColIndex = -1;
         headers.forEach((th, idx) => {
-            if (th.textContent.toLowerCase().includes('fecha')) {
+            if (th.textContent.toLowerCase().includes('fecha de registro')) {
                 dateColIndex = idx;
             }
         });
@@ -652,28 +652,24 @@
 
     function saveCellChange(input, colIndex) {
         const td = input.closest('td');
-        sendDataToSheet(td, colIndex, input.value);
+        sendDataToSheet(td, input.value);
     }
 
     function syncCellData(td) {
-        const colIndex = parseInt(td.getAttribute('data-col'));
         let currentDates = [];
         td.querySelectorAll('.date-chip span span').forEach(span => {
             let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
         const combinedValue = currentDates.join(', ');
-        sendDataToSheet(td, colIndex, combinedValue);
+        sendDataToSheet(td, combinedValue);
     }
 
-    async function sendDataToSheet(td, colIndex, value) {
+    async function sendDataToSheet(td, value) {
         const tr = td.closest('tr');
         const table = tr.closest('table');
         const sheetName = table.getAttribute('data-sheet');
         const rowIndex = tr.rowIndex + 1; 
-
-        const headers = Array.from(table.querySelectorAll('th'));
-        const headerTitle = headers[colIndex - 1] ? headers[colIndex - 1].textContent : "Fecha de Registro";
 
         try {
             await fetch(WEB_APP_URL, {
@@ -683,8 +679,6 @@
                 body: JSON.stringify({
                     sheet: sheetName,
                     row: rowIndex,
-                    col: colIndex, 
-                    colName: headerTitle,
                     value: value
                 })
             });
