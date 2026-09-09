@@ -529,7 +529,7 @@
         }
     }
 
-    // Índices de las columnas que llevan el botón interactivo
+    // Columnas que llevan el botón de acción interactivo
     const buttonColIndices = {
         'laboreos-table': 10,     
         'poda-table': 5,          
@@ -537,7 +537,7 @@
         'recoleccion-table': 7    
     };
 
-    // Índices exactos de las columnas de Fecha de Registro en Google Sheets
+    // Columnas exactas de Fecha de Registro
     const dateColIndices = {
         'laboreos-table': 11,     
         'poda-table': 6,          
@@ -686,7 +686,7 @@
                 body: JSON.stringify({
                     sheet: sheetName,
                     row: rowIndex,
-                    col: colIndex + 1, 
+                    col: colIndex, // Enviamos el índice exacto sin sumar de más para que caiga en la columna correcta de Sheets
                     value: value
                 })
             });
