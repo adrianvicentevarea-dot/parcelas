@@ -168,7 +168,7 @@
       font-style: italic;
     }
 
-    /* BOTONES ACCIÓN SUPERIOR / INFERIOR */
+    /* ACCIONES SUPERIORES / INFERIORES */
     .acciones-superiores {
       display: flex;
       gap: 12px;
@@ -282,6 +282,16 @@
       font-size: 14px;
     }
 
+    .btn-fecha-auto {
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+
     /* MODAL DE CONFIRMACIÓN */
     .modal-overlay {
       position: fixed;
@@ -384,6 +394,8 @@
     let pestañaActual = 'Inicio';
     let tituloVistaActual = 'Inicio';
     const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
+    let datosMemoriaGlobal = [];
+    let encabezadosGlobales = [];
 
     const TODAS_LAS_PESTAÑAS = [
       { id: 'Identificación de Parcelas', nombre: 'Parcelas' },
@@ -509,7 +521,9 @@
           return;
         }
 
-        construirTablaHTML(filas, pestaña);
+        encabezadosGlobales = filas[0];
+        datosMemoriaGlobal = filas.slice(1);
+        construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
 
       } catch (error) {
         console.error("Error cargando datos:", error);
@@ -526,16 +540,14 @@
       }).filter(row => row.length > 0 && row.some(cell => cell !== ""));
     }
 
-    function construirTablaHTML(data, pestaña) {
+    function construirTablaHTML(encabezadosOriginales, filasData) {
       const contenedor = document.getElementById('contenedor-tabla');
       if (!contenedor) return;
 
-      const encabezadosOriginales = data[0];
       const totalColumnas = encabezadosOriginales.length;
-      const filasData = data.slice(1);
 
       let html = '<table id="tabla-datos"><thead><tr>';
-      html += '<th>Acciones</th>'; // Columna fija para Editar/Guardar/Borrar
+      html += '<th>Acciones</th>';
       encabezadosOriginales.forEach(enc => { 
         html += `<th>${enc || '&nbsp;'}</th>`;
       });
@@ -544,7 +556,6 @@
       filasData.forEach((fila, rowIndex) => {
         html += `<tr id="row_${rowIndex}">`;
         
-        // Celda de botones de acción de fila
         html += `<td>
           <div style="display: flex; gap: 4px; align-items: center;">
             <button class="btn-row-action" id="btn_edit_${rowIndex}" title="Editar fila" onclick="habilitarFila(${rowIndex})">✏️</button>
@@ -558,6 +569,7 @@
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
           const esTipoCultivo = headerLower === 'tipo de cultivo';
+          const esFechaRegistro = headerLower.includes('fecha');
 
           if (esTipoCultivo) {
             html += `<td>
@@ -570,6 +582,13 @@
             });
 
             html += `</select></td>`;
+          } else if (esFechaRegistro) {
+            html += `<td>
+              <div style="display: flex; align-items: center;">
+                <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
+                <button type="button" class="btn-fecha-auto" id="btn_fecha_${rowIndex}_${colIndex}" style="display:none;" onclick="ponerFechaActual(${rowIndex}, ${colIndex})">📅 Hoy</button>
+              </div>
+            </td>`;
           } else {
             html += `<td>
               <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
@@ -591,13 +610,24 @@
       const inputs = filaElem.querySelectorAll('input, select');
       inputs.forEach(el => el.disabled = false);
 
+      // Mostrar botones de fecha rápida si existen en la fila
+      const botonesFecha = filaElem.querySelectorAll('.btn-fecha-auto');
+      botonesFecha.forEach(b => b.style.display = 'inline-block');
+
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
       const btnSave = document.getElementById(`btn_save_${rowIndex}`);
       if (btnEdit) btnEdit.style.display = 'none';
       if (btnSave) btnSave.style.display = 'inline-block';
 
-      // Poner foco en el primer input
       if (inputs.length > 0) inputs[0].focus();
+    }
+
+    function ponerFechaActual(rowIndex, colIndex) {
+      const input = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      if (input) {
+        const hoy = new Date().toLocaleDateString('es-ES');
+        input.value = hoy;
+      }
     }
 
     function intentarGuardarFila(rowIndex) {
@@ -622,12 +652,14 @@
       const inputs = filaElem.querySelectorAll('input, select');
       inputs.forEach(el => el.disabled = true);
 
+      const botonesFecha = filaElem.querySelectorAll('.btn-fecha-auto');
+      botonesFecha.forEach(b => b.style.display = 'none');
+
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
       const btnSave = document.getElementById(`btn_save_${rowIndex}`);
       if (btnEdit) btnEdit.style.display = 'inline-block';
       if (btnSave) btnSave.style.display = 'none';
 
-      // Guardar cada celda de la fila en Google Sheets
       const rowInSheet = rowIndex + 2;
       inputs.forEach(async (el, colIndex) => {
         const valor = el.value.trim();
@@ -645,15 +677,18 @@
     }
 
     function agregarNuevaFila() {
-      // Simula añadir fila localmente o recargar tras insertar en hoja
-      alert("Para añadir una nueva fila, agrégala directamente en tu Google Sheets y recarga la aplicación, o usa los controles de la hoja.");
+      const nuevaFilaVacia = new Array(encabezadosGlobales.length).fill('');
+      datosMemoriaGlobal.push(nuevaFilaVacia);
+      construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
+      // Habilitar directamente la nueva fila añadida
+      const ultimoIndice = datosMemoriaGlobal.length - 1;
+      habilitarFila(ultimoIndice);
     }
 
     function confirmarEliminarFila(rowIndex) {
       mostrarModalConfirmacion("Eliminar fila", "¿Estás seguro de que deseas eliminar esta fila?", () => {
-        const filaElem = document.getElementById(`row_${rowIndex}`);
-        if (filaElem) filaElem.remove();
-        // Aquí podrías enviar petición de borrado de fila si tu Web App lo soporta
+        datosMemoriaGlobal.splice(rowIndex, 1);
+        construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
       });
     }
 
@@ -773,9 +808,8 @@
         const celdas = fila.querySelectorAll('th, td');
         const datosFila = [];
 
-        // Omitir la primera celda si es la columna de botones de acción
         celdas.forEach((celda, cIdx) => {
-          if (index > 0 && cIdx === 0) return; // Saltar columna de acciones en filas de datos
+          if (index > 0 && cIdx === 0) return;
 
           const input = celda.querySelector('input');
           if (input && input.type !== 'checkbox') {
@@ -789,7 +823,7 @@
             return;
           }
 
-          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️/g, '').trim());
+          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅 Hoy/g, '').trim());
         });
 
         if (datosFila.length > 0) {
