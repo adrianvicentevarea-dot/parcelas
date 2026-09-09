@@ -181,8 +181,16 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        /* Estilo con más color y tamaño grande de fondo */
-        .menu-card-con-imagen {
+        /* Estilo para la nueva foto en Laboreos con mejor color y tamaño */
+        .menu-card-laboreos {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45)), url('Imagen de WhatsApp 2026-09-09 a las 12.36.51.jpeg');
+            background-size: cover;
+            background-position: center;
+            padding: 26px 24px;
+        }
+
+        /* Estilo para la foto anterior en Recolección */
+        .menu-card-recoleccion {
             background-image: linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
             background-size: cover;
             background-position: center;
@@ -392,7 +400,8 @@
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
                 <div>📍</div>
             </div>
-            <div class="menu-card" onclick="switchView('laboreos')">
+            <!-- Tarjeta de Laboreos con la nueva foto -->
+            <div class="menu-card menu-card-laboreos" onclick="switchView('laboreos')">
                 <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
                 <div>🚜</div>
             </div>
@@ -404,8 +413,8 @@
                 <div class="menu-card-info"><h3>Tratamientos</h3><p>Control de tratamientos aplicados</p></div>
                 <div>🧪</div>
             </div>
-            <!-- Tarjeta de Recolección con la foto grande y colores vivos -->
-            <div class="menu-card menu-card-con-imagen" onclick="switchView('recoleccion')">
+            <!-- Tarjeta de Recolección con la foto anterior -->
+            <div class="menu-card menu-card-recoleccion" onclick="switchView('recoleccion')">
                 <div class="menu-card-info"><h3>Tareas / Recolección</h3><p>Control de tareas y kilos cosechados</p></div>
                 <div>📦</div>
             </div>
