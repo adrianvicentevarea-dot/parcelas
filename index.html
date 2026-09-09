@@ -531,7 +531,14 @@
             populateTable('recoleccion-table', data["Recolección"]);
             
             document.getElementById('loading-overlay').style.display = 'none';
-            switchView('home');
+
+            // Comprobar si hay una vista guardada en la sesión para restaurarla
+            const savedView = sessionStorage.getItem('activeView');
+            if (savedView) {
+                switchView(savedView);
+            } else {
+                switchView('home');
+            }
         } catch (error) {
             console.error("Error:", error);
             document.getElementById('loading-overlay').style.display = 'none';
@@ -715,6 +722,13 @@
 
         if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
             if (tbody.rows.length > 1) {
+                // Guardar la vista actual antes de recargar
+                const activeSection = document.querySelector('.view-section.active');
+                if (activeSection) {
+                    const viewId = activeSection.id.replace('view-', '');
+                    sessionStorage.setItem('activeView', viewId);
+                }
+
                 // Mostrar pantalla de carga mientras se borra y recarga
                 document.getElementById('loading-text').textContent = "Eliminando registro y sincronizando...";
                 document.getElementById('loading-overlay').style.display = 'flex';
@@ -724,7 +738,7 @@
                     await sendDataToSheet(sheetName, rowIndex, i, "");
                 }
 
-                // Recargar la página automáticamente para actualizar todo el estado
+                // Recargar la página automáticamente
                 location.reload();
             } else {
                 alert("Debe mantenerse al menos una fila en la tabla.");
@@ -762,6 +776,8 @@
         if (target) {
             target.classList.add('active');
             window.scrollTo(0, 0);
+            // Guardar la vista elegida en la sesión
+            sessionStorage.setItem('activeView', viewName);
         }
     }
 
