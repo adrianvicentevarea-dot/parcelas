@@ -37,14 +37,14 @@
             margin: 0 auto;
         }
 
-        /* ESTADO DE CARGA / MENSAJE */
+        /* PANTALLA DE CARGA */
         #loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(15, 23, 42, 0.9);
+            background-color: rgba(15, 23, 42, 0.95);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -53,6 +53,8 @@
             color: white;
             font-size: 1.2rem;
             gap: 15px;
+            text-align: center;
+            padding: 20px;
         }
 
         .spinner {
@@ -285,7 +287,7 @@
 </head>
 <body>
 
-<!-- Pantalla de carga mientras se conecta al Excel -->
+<!-- Pantalla de carga inicial -->
 <div id="loading-overlay">
     <div class="spinner"></div>
     <div id="loading-text">Conectando con Google Sheets...</div>
@@ -445,28 +447,29 @@
 </div>
 
 <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
+    // URL completa con el parámetro de datos requerido
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec?action=getData';
 
     async function loadDataFromExcel() {
         const loadingText = document.getElementById('loading-text');
         try {
-            const response = await fetch(WEB_APP_URL + '?action=getData');
+            const response = await fetch(WEB_APP_URL);
             const data = await response.json();
             
-            // Poblar cada tabla de forma segura
+            // Poblar cada tabla con la información de las hojas
             populateTable('parcelas-table', data["Identificación de Parcelas"]);
             populateTable('laboreos-table', data["Laboreos"]);
             populateTable('poda-table', data["Poda"]);
             populateTable('tratamientos-table', data["Tratamientos"]);
             populateTable('recoleccion-table', data["Recolección"]);
             
-            // Ocultar pantalla de carga y mostrar inicio
+            // Ocultar pantalla de carga y mostrar la vista principal
             document.getElementById('loading-overlay').style.display = 'none';
             switchView('home');
             
         } catch (error) {
             console.error("Error al conectar:", error);
-            loadingText.innerHTML = "❌ Error al conectar con Google Sheets.<br><small>Revisa la consola (F12) o los permisos del Script.</small>";
+            loadingText.innerHTML = "❌ Error al conectar con Google Sheets.<br><small>Verifica tu conexión o los permisos del script.</small>";
         }
     }
 
@@ -477,9 +480,8 @@
         tbody.innerHTML = ''; 
 
         if (!rowsData || rowsData.length === 0) {
-            // Si la hoja está vacía, añadir una fila en blanco
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="action-cell"><button class="btn-icon edit">✏️</button><button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button></div></td><td colspan="10" style="text-align:center; color:var(--text-muted);">Sin datos en el Excel</td>`;
+            tr.innerHTML = `<td><div class="action-cell"><button class="btn-icon edit">✏️</button><button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button></div></td><td colspan="12" style="text-align:center; color:var(--text-muted);">Sin datos en esta pestaña del Excel</td>`;
             tbody.appendChild(tr);
             return;
         }
@@ -497,7 +499,6 @@
 
             rowData.forEach(cellValue => {
                 let val = (cellValue !== undefined && cellValue !== null) ? cellValue : '';
-                // Formatear fecha si viene en formato largo de JavaScript
                 if (typeof val === 'string' && val.includes('T') && val.endsWith('Z')) {
                     val = val.split('T')[0];
                 }
