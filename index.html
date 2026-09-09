@@ -163,37 +163,37 @@
             margin-bottom: 24px;
         }
 
-        /* Tarjetas más grandes y adaptables a móviles */
+        /* Tarjetas mucho más grandes (tipo banner) y adaptables a móviles */
         .menu-card {
             background-color: white;
             color: #1e293b;
-            padding: 28px 20px;
-            border-radius: 10px;
+            padding: 36px 24px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: transform 0.1s, box-shadow 0.1s;
-            min-height: 110px;
+            min-height: 140px;
         }
 
         .menu-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        /* Laboreos adaptado: se ve completo el tractor y el apero */
+        /* Laboreos: altura grande, imagen centrada para que se aprecie bien el tractor y apero */
         .menu-card-laboreos {
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
+            background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
             background-size: cover;
-            background-position: center 55%;
+            background-position: center 48%;
         }
 
         .menu-card-laboreos h3, 
         .menu-card-laboreos p {
             color: white !important;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
         }
 
         .menu-card-recoleccion {
@@ -203,14 +203,14 @@
         }
 
         .menu-card-info h3 {
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             font-weight: 800;
             margin-bottom: 6px;
             color: #0f172a;
         }
 
         .menu-card-info p {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             color: #0f172a;
             font-weight: 700;
         }
@@ -410,25 +410,25 @@
         <div class="menu-grid">
             <div class="menu-card" onclick="switchView('parcelas')">
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
-                <div style="font-size: 1.5rem;">📍</div>
+                <div style="font-size: 1.8rem;">📍</div>
             </div>
             <!-- Tarjeta de Laboreos -->
             <div class="menu-card menu-card-laboreos" onclick="switchView('laboreos')">
                 <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
-                <div style="font-size: 1.5rem;">🚜</div>
+                <div style="font-size: 1.8rem;">🚜</div>
             </div>
             <div class="menu-card" onclick="switchView('poda')">
                 <div class="menu-card-info"><h3>Poda</h3><p>Registros y control de poda</p></div>
-                <div style="font-size: 1.5rem;">✂️</div>
+                <div style="font-size: 1.8rem;">✂️</div>
             </div>
             <div class="menu-card" onclick="switchView('tratamientos')">
                 <div class="menu-card-info"><h3>Tratamientos</h3><p>Control de tratamientos aplicados</p></div>
-                <div style="font-size: 1.5rem;">🧪</div>
+                <div style="font-size: 1.8rem;">🧪</div>
             </div>
             <!-- Tarjeta de Recolección -->
             <div class="menu-card menu-card-recoleccion" onclick="switchView('recoleccion')">
                 <div class="menu-card-info"><h3>Tareas / Recolección</h3><p>Control de tareas y kilos cosechados</p></div>
-                <div style="font-size: 1.5rem;">📦</div>
+                <div style="font-size: 1.8rem;">📦</div>
             </div>
         </div>
 
