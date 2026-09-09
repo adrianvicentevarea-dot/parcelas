@@ -152,7 +152,6 @@
     th, td {
       padding: 10px 12px;
       border-bottom: 1px solid #e2e8f0;
-      white-space: nowrap;
       vertical-align: middle;
     }
 
@@ -295,6 +294,26 @@
     }
     .btn-accion-custom:active {
       background-color: #0369a1;
+    }
+
+    /* CONTENEDOR DE FECHAS EN GRID (2 POR FILA) */
+    .fechas-grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: 6px;
+      align-items: center;
+      justify-content: start;
+    }
+
+    .badge-fecha-item {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -576,6 +595,7 @@
           
           const esTipoCultivo = headerLower === 'tipo de cultivo';
           const esBotonEspecial = ['laboreo', 'podado', 'trataminetos', 'recolección'].includes(headerLower);
+          const esFechaRegistro = headerLower === 'fecha de registro' || headerLower.includes('fecha de registro');
 
           if (esTipoCultivo) {
             html += `<td>
@@ -589,14 +609,27 @@
 
             html += `</select></td>`;
           } else if (esBotonEspecial) {
-            // Columnas Laboreo, Podado, Trataminetos y Recolección -> Muestran el botón que al pulsarlo rellena la Fecha de registro
             html += `<td>
               <button type="button" class="btn-accion-custom" onclick="pulsarBotonAccionFecha(${rowIndex}, '${header}')">
                 👉 ${header}
               </button>
             </td>`;
+          } else if (esFechaRegistro) {
+            // Columna Fecha de registro: Muestra las fechas acumuladas en formato grid de 2 en 2
+            let arrayFechas = valor ? valor.split(',').map(f => f.trim()).filter(f => f !== '') : [];
+            
+            let badgesHtml = '<div class="fechas-grid-container" id="cell_' + rowIndex + '_' + colIndex + '_grid">';
+            arrayFechas.forEach(f => {
+              badgesHtml += `<div class="badge-fecha-item">${f}</div>`;
+            });
+            badgesHtml += '</div>';
+
+            // Campo oculto para almacenar el texto bruto para Google Sheets/PDFs
+            html += `<td>
+              <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
+              ${badgesHtml}
+            </td>`;
           } else {
-            // Resto de columnas normales (incluyendo Fecha de registro, que se comporta como texto normal editable/guardable)
             html += `<td>
               <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
             </td>`;
@@ -625,7 +658,7 @@
       if (inputs.length > 0) inputs[0].focus();
     }
 
-    // Función que se ejecuta al pulsar el botón de Laboreo, Podado, Trataminetos o Recolección
+    // Al pulsar el botón de acción, añade la fecha de hoy de forma ilimitada
     function pulsarBotonAccionFecha(rowIndex, nombreBoton) {
       habilitarFila(rowIndex);
       
@@ -633,7 +666,6 @@
       const filaElem = document.getElementById(`row_${rowIndex}`);
       if (!filaElem) return;
 
-      // Buscamos dentro de la misma fila la columna que tenga como título "Fecha de registro"
       let colFechaIndex = -1;
       encabezadosGlobales.forEach((enc, idx) => {
         const encL = enc.toLowerCase().trim();
@@ -643,14 +675,24 @@
       });
 
       if (colFechaIndex !== -1) {
-        // La celda de la tabla corresponde al colIndex + 1 en los inputs normales
-        const inputFecha = document.getElementById(`cell_${rowIndex}_${colFechaIndex}`);
-        if (inputFecha) {
-          inputFecha.value = hoy;
+        const inputHidden = document.getElementById(`cell_${rowIndex}_${colFechaIndex}`);
+        const gridContainer = document.getElementById(`cell_${rowIndex}_${colFechaIndex}_grid`);
+        
+        if (inputHidden && gridContainer) {
+          let fechasActuales = inputHidden.value ? inputHidden.value.split(',').map(f => f.trim()).filter(f => f !== '') : [];
+          fechasActuales.push(hoy); // Añade ilimitadamente
+
+          inputHidden.value = fechasActuales.join(', ');
+
+          // Reconstruir visualmente el grid de 2 en 2
+          let badgesHtml = '';
+          fechasActuales.forEach(f => {
+            badgesHtml += `<div class="badge-fecha-item">${f}</div>`;
+          });
+          gridContainer.innerHTML = badgesHtml;
         }
       }
 
-      // Guardamos automáticamente la fila con la nueva fecha colocada
       intentarGuardarFila(rowIndex);
     }
 
@@ -686,7 +728,6 @@
 
       const rowInSheet = rowIndex + 2;
       
-      // Mapeamos y guardamos cada campo basándonos en su posición real de columna
       for (let colIndex = 0; colIndex < encabezadosGlobales.length; colIndex++) {
         const cellInput = document.getElementById(`cell_${rowIndex}_${colIndex}`);
         if (cellInput) {
