@@ -575,9 +575,7 @@
           const headerLower = header.toLowerCase().trim();
           
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          const esFecha = headerLower.includes('fecha') || headerLower.includes('día') || headerLower.includes('dia');
-          
-          // Columnas específicas que llevan botón de acción sin cuadro de texto: Laboreo, Podado, Trataminetos, Recolección
+          const esFechaRegistro = headerLower === 'fecha de registro' || headerLower.includes('fecha de registro');
           const esBotonEspecial = ['laboreo', 'podado', 'trataminetos', 'recolección'].includes(headerLower);
 
           if (esTipoCultivo) {
@@ -591,7 +589,7 @@
             });
 
             html += `</select></td>`;
-          } else if (esFecha) {
+          } else if (esFechaRegistro) {
             html += `<td>
               <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
               <button type="button" id="btn_fecha_${rowIndex}_${colIndex}" class="btn-accion-custom" onclick="marcarFechaHoy(${rowIndex}, ${colIndex})">
@@ -602,7 +600,7 @@
             html += `<td>
               <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
               <button type="button" id="btn_custom_${rowIndex}_${colIndex}" class="btn-accion-custom" onclick="accionBotonEspecial(${rowIndex}, ${colIndex}, '${header}')">
-                ${valor ? '✅ ' + valor : '👉 ' + header}
+                ${valor ? '📅 ' + valor : '👉 ' + header}
               </button>
             </td>`;
           } else {
@@ -649,16 +647,15 @@
 
     function accionBotonEspecial(rowIndex, colIndex, nombreColumna) {
       habilitarFila(rowIndex);
-      const valorPrompt = prompt(`Introduce el valor para "${nombreColumna}":`, "");
-      if (valorPrompt !== null) {
-        const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-        const btnCustom = document.getElementById(`btn_custom_${rowIndex}_${colIndex}`);
-        
-        if (inputHidden) inputHidden.value = valorPrompt;
-        if (btnCustom) btnCustom.innerText = valorPrompt ? `✅ ${valorPrompt}` : `👉 ${nombreColumna}`;
+      const hoy = new Date().toLocaleDateString('es-ES');
+      
+      const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      const btnCustom = document.getElementById(`btn_custom_${rowIndex}_${colIndex}`);
+      
+      if (inputHidden) inputHidden.value = hoy;
+      if (btnCustom) btnCustom.innerText = `📅 ${hoy}`;
 
-        intentarGuardarFila(rowIndex);
-      }
+      intentarGuardarFila(rowIndex);
     }
 
     function intentarGuardarFila(rowIndex) {
