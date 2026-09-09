@@ -207,46 +207,41 @@
       color: #ffffff;
     }
 
-    /* CONTROLES EDITABLES */
-    .btn-accion-tarea {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
+    /* CONTROLES EDITABLES UNIVERSALES */
+    .editable-cell-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .select-cultivo {
+    .input-editable {
+      width: 130px;
+      padding: 6px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .input-editable:disabled {
+      background-color: #f1f5f9;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .select-editable {
       padding: 6px 8px;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
       font-size: 13px;
     }
 
-    .kilos-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .input-kilos {
-      width: 75px;
-      padding: 6px;
-      border: 1.5px solid #0284c7;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .input-kilos:disabled {
+    .select-editable:disabled {
       background-color: #f1f5f9;
-      border-color: #cbd5e1;
+      border-color: #e2e8f0;
+      color: #0f172a;
     }
 
-    .btn-edit-kilos {
+    .btn-edit-row {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
       padding: 5px;
@@ -254,7 +249,7 @@
       cursor: pointer;
     }
 
-    .btn-guardar-kilos {
+    .btn-save-row {
       background-color: #2563eb;
       color: white;
       border: none;
@@ -265,34 +260,79 @@
       cursor: pointer;
     }
 
-    .fechas-grid {
+    /* MODAL DE CONFIRMACIÓN */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 16px;
     }
 
-    .fecha-item {
-      display: inline-flex;
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .modal-body {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .modal-checkbox-container {
+      display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      background-color: #e0f2fe;
-      color: #0369a1;
-      padding: 3px 6px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
+      gap: 8px;
+      font-size: 13px;
+      color: #334155;
+      cursor: pointer;
+      user-select: none;
     }
 
-    .btn-quitar-fecha {
-      background-color: #ef4444;
-      color: #ffffff;
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
       border: none;
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      font-size: 10px;
       cursor: pointer;
+    }
+
+    .modal-btn-cancel {
+      background-color: #f1f5f9;
+      color: #64748b;
+    }
+
+    .modal-btn-confirm {
+      background-color: #10b981;
+      color: #ffffff;
     }
   </style>
 </head>
@@ -321,7 +361,7 @@
 
     let pestañaActual = 'Inicio';
     let tituloVistaActual = 'Inicio';
-    const memoriaFechas = {};
+    const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
 
     const TODAS_LAS_PESTAÑAS = [
       { id: 'Identificación de Parcelas', nombre: 'Parcelas' },
@@ -330,9 +370,6 @@
       { id: 'Tratamientos', nombre: 'Tratamientos' },
       { id: 'Recolección', nombre: 'Recolección / Tareas' }
     ];
-
-    const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
-    const COLUMNAS_BOTON = ['laboreo', 'podado', 'tratamientos', 'trataminetos', 'recolección', 'poda', 'tipo de trabajo realizado'];
 
     function navegar(pestaña, tituloVisual) {
       pestañaActual = pestaña;
@@ -394,15 +431,7 @@
               <div class="card-title">Tareas / Recolección</div>
               <div class="card-subtitle">Control de tareas y kilos cosechados</div>
             </div>
-            <div class="card-badge">
-              <div style="background: #ecfdf5; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
-              </div>
-            </div>
+            <div class="card-badge"><div class="card-badge-num">📦</div></div>
           </div>
         </div>
 
@@ -411,7 +440,7 @@
             📄 Descargar PDF Completo
           </button>
           <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarTodasLasPestañas()">
-            🗑️ Borrar Fechas, Cultivos y Kilos
+            🗑️ Borrar Datos del Excel
           </button>
         </div>
       `;
@@ -430,14 +459,14 @@
             📄 Descargar PDF
           </button>
           <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarDatosPestañaActual()">
-            🗑️ Borrar Datos
+            🗑️ Borrar Datos de esta Pestaña
           </button>
         </div>
       `;
-      obtenerDatosGoogleSheets(pestaña, false);
+      obtenerDatosGoogleSheets(pestaña);
     }
 
-    async function obtenerDatosGoogleSheets(pestaña, esEnSegundoPlano = true) {
+    async function obtenerDatosGoogleSheets(pestaña) {
       const contenedor = document.getElementById('contenedor-tabla');
       if (!contenedor) return;
 
@@ -451,7 +480,7 @@
         const filas = parseCSV(textData);
 
         if (filas.length === 0) {
-          if (!esEnSegundoPlano) contenedor.innerHTML = '<div class="loading">La hoja seleccionada está vacía.</div>';
+          contenedor.innerHTML = '<div class="loading">La hoja seleccionada está vacía.</div>';
           return;
         }
 
@@ -459,9 +488,7 @@
 
       } catch (error) {
         console.error("Error cargando datos:", error);
-        if (!esEnSegundoPlano) {
-          contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar los datos.</div>`;
-        }
+        contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar los datos.</div>`;
       }
     }
 
@@ -481,8 +508,6 @@
       const encabezadosOriginales = data[0];
       const totalColumnas = encabezadosOriginales.length;
       const filasData = data.slice(1);
-      
-      const esIdentificacion = pestaña.toLowerCase().trim().includes('identificación') || pestaña.toLowerCase().trim().includes('identificacion');
 
       let html = '<table id="tabla-datos"><thead><tr>';
       encabezadosOriginales.forEach(enc => { 
@@ -499,72 +524,36 @@
           const headerLower = header.toLowerCase().trim();
 
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          const esKilos = headerLower.includes('kilo') || headerLower.includes('quilo');
-          const esColumnaTarea = COLUMNAS_BOTON.includes(headerLower);
-          const esColumnaFecha = !esIdentificacion && (headerLower.includes('fecha') || headerLower.includes('registro') || colIndex === totalColumnas - 1);
-
-          if (esIdentificacion) {
-            html += `<td>${valor}</td>`;
-          } 
-          else if (esTipoCultivo) {
+          
+          if (esTipoCultivo) {
             html += `<td>
-              <select class="select-cultivo" onchange="cambiarTipoCultivo(this, ${rowIndex}, ${colIndex})">
-                <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
+              <div class="editable-cell-container">
+                <select id="cell_${rowIndex}_${colIndex}" class="select-editable" disabled>
+                  <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
             
             OPCIONES_CULTIVO.forEach(opcion => {
               const selected = (valor.toLowerCase().trim() === opcion.toLowerCase().trim()) ? 'selected' : '';
               html += `<option value="${opcion}" ${selected}>${opcion}</option>`;
             });
 
-            html += `</select></td>`;
-          } 
-          else if (esKilos) {
-            const tieneValor = valor !== '' && valor !== null && valor !== undefined;
-            const disabledAttr = tieneValor ? 'disabled' : '';
-            const displayEdit = tieneValor ? 'inline-block' : 'none';
-
-            html += `<td>
-              <div class="kilos-container">
-                <input type="number" 
-                       id="input_kilos_${rowIndex}" 
-                       class="input-kilos" 
-                       placeholder="Cant..." 
-                       value="${valor}" 
-                       ${disabledAttr} 
-                       min="0" 
-                       step="any"
-                       onblur="guardarKilosAuto(this, ${rowIndex}, ${colIndex})"
-                       onkeydown="if(event.key==='Enter') { this.blur(); }" />
-                
-                <button id="btn_edit_${rowIndex}" 
-                        class="btn-edit-kilos" 
-                        title="Modificar" 
-                        style="display: ${displayEdit};" 
-                        onclick="habilitarEdicionKilos(${rowIndex})">✏️</button>
-
-                <button id="btn_guardar_${rowIndex}" 
-                        class="btn-guardar-kilos" 
-                        style="display: none;" 
-                        onclick="confirmarGuardarKilos(${rowIndex}, ${colIndex})">💾 Guardar</button>
+            html += `</select>
+                <button id="btn_edit_${rowIndex}_${colIndex}" class="btn-edit-row" title="Editar" onclick="habilitarCelda(${rowIndex}, ${colIndex})">✏️</button>
+                <button id="btn_save_${rowIndex}_${colIndex}" class="btn-save-row" style="display: none;" onclick="intentarGuardarCelda(${rowIndex}, ${colIndex}, '${header}', '${valor}')">💾 Guardar</button>
               </div>
             </td>`;
-          }
-          else if (esColumnaTarea) {
-            const textoBoton = valor ? valor : 'Marcar / Fecha';
+          } else {
+            // Celda de texto / número genérica con lápiz y guardar
             html += `<td>
-              <button class="btn-accion-tarea" onclick="registrarFechaAccion(${rowIndex})">
-                📅 ${textoBoton}
-              </button>
+              <div class="editable-cell-container">
+                <input type="text" 
+                       id="cell_${rowIndex}_${colIndex}" 
+                       class="input-editable" 
+                       value="${valor}" 
+                       disabled />
+                <button id="btn_edit_${rowIndex}_${colIndex}" class="btn-edit-row" title="Editar" onclick="habilitarCelda(${rowIndex}, ${colIndex})">✏️</button>
+                <button id="btn_save_${rowIndex}_${colIndex}" class="btn-save-row" style="display: none;" onclick="intentarGuardarCelda(${rowIndex}, ${colIndex}, '${header}', '${valor}')">💾 Guardar</button>
+              </div>
             </td>`;
-          } 
-          else if (esColumnaFecha) {
-            const key = `${pestaña}_fila_${rowIndex}`;
-            memoriaFechas[key] = valor ? valor.split(' | ').map(s => s.trim()) : [];
-
-            html += `<td id="celda_fecha_${rowIndex}">${renderizarFechasHTML(rowIndex, memoriaFechas[key])}</td>`;
-          } 
-          else {
-            html += `<td>${valor}</td>`;
           }
         }
 
@@ -575,94 +564,101 @@
       contenedor.innerHTML = html;
     }
 
-    function registrarFechaAccion(rowIndex) {
-      const ahora = new Date();
-      const fechaFormateada = ahora.toLocaleDateString('es-ES') + ' ' + ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      const key = `${pestañaActual}_fila_${rowIndex}`;
-
-      if (!memoriaFechas[key]) memoriaFechas[key] = [];
-
-      memoriaFechas[key].push(fechaFormateada);
-      actualizarCeldaFecha(rowIndex, key);
-      guardarEnGoogleSheets(rowIndex, memoriaFechas[key]);
-    }
-
-    function eliminarFechaIndex(rowIndex, fechaIndex) {
-      const key = `${pestañaActual}_fila_${rowIndex}`;
-
-      if (memoriaFechas[key]) {
-        memoriaFechas[key].splice(fechaIndex, 1);
-        actualizarCeldaFecha(rowIndex, key);
-        guardarEnGoogleSheets(rowIndex, memoriaFechas[key]);
-      }
-    }
-
-    function cambiarTipoCultivo(selectElement, rowIndex, colIndex) {
-      guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, selectElement.value);
-    }
-
-    function guardarKilosAuto(input, rowIndex, colIndex) {
-      if (input.disabled) return;
-      const valor = input.value.trim();
-      if (valor !== '') {
-        input.disabled = true;
-        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
-        if (btnEdit) btnEdit.style.display = 'inline-block';
-        if (btnGuardar) btnGuardar.style.display = 'none';
-        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, valor);
-      }
-    }
-
-    function habilitarEdicionKilos(rowIndex) {
-      const input = document.getElementById(`input_kilos_${rowIndex}`);
-      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-      const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
+    function habilitarCelda(rowIndex, colIndex) {
+      const input = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      const btnEdit = document.getElementById(`btn_edit_${rowIndex}_${colIndex}`);
+      const btnSave = document.getElementById(`btn_save_${rowIndex}_${colIndex}`);
 
       if (input) {
         input.disabled = false;
         input.focus();
-        input.select();
+        if (input.tagName === 'INPUT') {
+          input.select();
+        }
         if (btnEdit) btnEdit.style.display = 'none';
-        if (btnGuardar) btnGuardar.style.display = 'inline-block';
+        if (btnSave) btnSave.style.display = 'inline-block';
       }
     }
 
-    function confirmarGuardarKilos(rowIndex, colIndex) {
-      const input = document.getElementById(`input_kilos_${rowIndex}`);
-      if (input) {
-        input.disabled = true;
-        const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-        const btnGuardar = document.getElementById(`btn_guardar_${rowIndex}`);
-        if (btnEdit) btnEdit.style.display = 'inline-block';
-        if (btnGuardar) btnGuardar.style.display = 'none';
-        guardarValorEspecificoGoogleSheets(rowIndex + 2, colIndex + 1, input.value.trim());
+    function intentarGuardarCelda(rowIndex, colIndex, nombreColumna, valorAnterior) {
+      const elemento = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      if (!elemento) return;
+
+      const nuevoValor = elemento.value.trim();
+      const noMostrarAviso = localStorage.getItem('noMostrarAvisoGuardar') === 'true';
+
+      if (noMostrarAviso) {
+        ejecutarGuardadoCelda(rowIndex, colIndex, nuevoValor);
+      } else {
+        mostrarModalConfirmacion(nombreColumna, valorAnterior, nuevoValor, (marcarNoMostrar) => {
+          if (marcarNoMostrar) {
+            localStorage.setItem('noMostrarAvisoGuardar', 'true');
+          }
+          ejecutarGuardadoCelda(rowIndex, colIndex, nuevoValor);
+        });
       }
     }
 
-    async function guardarEnGoogleSheets(rowIndex, listaFechas) {
+    function mostrarModalConfirmacion(columna, valorAnt, valorNuevo, callbackConfirmar) {
+      const modalOverlay = document.createElement('div');
+      modalOverlay.className = 'modal-overlay';
+      modalOverlay.id = 'modal-confirmacion';
+
+      modalOverlay.innerHTML = `
+        <div class="modal-card">
+          <div class="modal-title">⚠️ Confirmar cambios</div>
+          <div class="modal-body">
+            ¿Estás seguro de que quieres guardar los datos que has cambiado?<br><br>
+            <strong>Columna:</strong> ${columna}<br>
+            <strong>Valor anterior:</strong> "${valorAnt || 'Vacío'}"<br>
+            <strong>Nuevo valor:</strong> "${valorNuevo || 'Vacío'}"
+          </div>
+          <label class="modal-checkbox-container">
+            <input type="checkbox" id="check-no-preguntar" />
+            No volver a preguntar
+          </label>
+          <div class="modal-buttons">
+            <button class="modal-btn modal-btn-cancel" id="btn-modal-cancel">Cancelar</button>
+            <button class="modal-btn modal-btn-confirm" id="btn-modal-ok">Guardar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modalOverlay);
+
+      document.getElementById('btn-modal-cancel').onclick = () => {
+        document.body.removeChild(modalOverlay);
+      };
+
+      document.getElementById('btn-modal-ok').onclick = () => {
+        const marcarNoPreguntar = document.getElementById('check-no-preguntar').checked;
+        document.body.removeChild(modalOverlay);
+        callbackConfirmar(marcarNoPreguntar);
+      };
+    }
+
+    async function ejecutarGuardadoCelda(rowIndex, colIndex, nuevoValor) {
+      const elemento = document.getElementById(`cell_${rowIndex}_${colIndex}`);
+      const btnEdit = document.getElementById(`btn_edit_${rowIndex}_${colIndex}`);
+      const btnSave = document.getElementById(`btn_save_${rowIndex}_${colIndex}`);
+
+      if (elemento) elemento.disabled = true;
+      if (btnEdit) btnEdit.style.display = 'inline-block';
+      if (btnSave) btnSave.style.display = 'none';
+
+      // Fila real en Google Sheets (fila visual + 2 por cabecera)
+      const rowInSheet = rowIndex + 2;
+      const colInSheet = colIndex + 1;
+
       try {
         await fetch(WEB_APP_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sheet: pestañaActual, row: rowIndex + 2, fechas: listaFechas })
+          body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colInSheet, valor: nuevoValor })
         });
       } catch (e) {
-        console.error("Error al guardar:", e);
-      }
-    }
-
-    async function guardarValorEspecificoGoogleSheets(rowInSheet, colInSheet, valor) {
-      try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colInSheet, valor: valor })
-        });
-      } catch (e) {
-        console.error("Error al guardar:", e);
+        console.error("Error al guardar en Google Sheets:", e);
       }
     }
 
@@ -755,7 +751,7 @@
 
         celdas.forEach(celda => {
           const input = celda.querySelector('input');
-          if (input) {
+          if (input && input.type !== 'checkbox') {
             datosFila.push(input.value || '');
             return;
           }
@@ -766,14 +762,7 @@
             return;
           }
 
-          const fechaItems = celda.querySelectorAll('.fecha-item span');
-          if (fechaItems.length > 0) {
-            const fechasTxt = Array.from(fechaItems).map(item => item.innerText.replace('📅', '').trim()).join(', ');
-            datosFila.push(fechasTxt);
-            return;
-          }
-
-          datosFila.push(celda.innerText.replace(/📅|✏️|💾|−/g, '').trim());
+          datosFila.push(celda.innerText.replace(/✏️|💾/g, '').trim());
         });
 
         if (datosFila.length > 0) {
@@ -815,10 +804,7 @@
           body: JSON.stringify({ action: 'clearUserEnteredData', sheet: pestañaActual })
         });
 
-        setTimeout(() => {
-          location.reload();
-        }, 800);
-
+        setTimeout(() => { location.reload(); }, 800);
       } catch (e) {
         console.error("Error al borrar datos:", e);
         location.reload();
@@ -826,10 +812,10 @@
     }
 
     async function confirmarBorrarTodasLasPestañas() {
-      const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR TODAS LAS FECHAS, TIPOS DE CULTIVO Y KILOS de todo el Excel?`);
+      const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR TODOS LOS DATOS de todo el Excel?`);
       if (!primeraConfirmacion) return;
 
-      const segundaConfirmacion = confirm(`🔴 ACCIÓN DEFINITIVA:\nSe vaciarán los campos de fechas, cultivos y kilos en todas las secciones.\n\n¿Estás completamente seguro?`);
+      const segundaConfirmacion = confirm(`🔴 ACCIÓN DEFINITIVA:\nSe vaciarán todas las celdas en todas las secciones.\n\n¿Estás completamente seguro?`);
       if (!segundaConfirmacion) return;
 
       for (let item of TODAS_LAS_PESTAÑAS) {
@@ -848,30 +834,7 @@
       sessionStorage.setItem('ultimaPestaña', 'Inicio');
       sessionStorage.setItem('ultimoTitulo', 'Inicio');
 
-      setTimeout(() => {
-        location.reload();
-      }, 800);
-    }
-
-    function actualizarCeldaFecha(rowIndex, key) {
-      const celdaFecha = document.getElementById(`celda_fecha_${rowIndex}`);
-      if (celdaFecha) {
-        celdaFecha.innerHTML = renderizarFechasHTML(rowIndex, memoriaFechas[key]);
-      }
-    }
-
-    function renderizarFechasHTML(rowIndex, listaFechas) {
-      if (!listaFechas || listaFechas.length === 0) return '';
-      let html = '<div class="fechas-grid">';
-      listaFechas.forEach((f, idx) => {
-        html += `
-          <div class="fecha-item">
-            <span>📅 ${f}</span>
-            <button class="btn-quitar-fecha" onclick="eliminarFechaIndex(${rowIndex}, ${idx})">−</button>
-          </div>`;
-      });
-      html += '</div>';
-      return html;
+      setTimeout(() => { location.reload(); }, 800);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
