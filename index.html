@@ -212,6 +212,7 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
         }
 
         .view-title {
@@ -356,6 +357,60 @@
         .btn-action-date:hover {
             background-color: #2563eb;
         }
+
+        /* CONFIGURACIÓN PARA IMPRESIÓN / PDF */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 0 !important;
+            }
+            #loading-overlay, .top-nav, .home-header, .menu-grid, .home-actions, .table-actions, .action-cell, th:first-child, td:first-child {
+                display: none !important;
+            }
+            .view-section {
+                display: block !important;
+                page-break-after: always;
+            }
+            .table-container-wrapper {
+                background-color: white !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin-bottom: 20px !important;
+            }
+            .view-title {
+                color: black !important;
+                font-size: 1.2rem;
+                border-bottom: 2px solid #000;
+                padding-bottom: 5px;
+            }
+            table {
+                border: 1px solid #ddd;
+            }
+            th {
+                background-color: #f1f5f9 !important;
+                color: black !important;
+                border: 1px solid #ddd;
+            }
+            td {
+                border: 1px solid #ddd;
+                color: black !important;
+            }
+            input[type="text"] {
+                background: transparent !important;
+                border: none !important;
+                color: black !important;
+                padding: 0 !important;
+            }
+            .date-chip {
+                background: #f1f5f9 !important;
+                color: black !important;
+                border: 1px solid #ccc;
+            }
+            .date-chip button {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -397,7 +452,7 @@
         </div>
 
         <div class="home-actions">
-            <button class="btn btn-blue" onclick="alert('Descargar PDF')">📄 Descargar PDF Completo</button>
+            <button class="btn btn-blue" onclick="descargarPDF()">📄 Descargar PDF Completo</button>
             <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
         </div>
     </div>
@@ -532,7 +587,6 @@
             
             document.getElementById('loading-overlay').style.display = 'none';
 
-            // Comprobar si hay una vista guardada en la sesión para restaurarla
             const savedView = sessionStorage.getItem('activeView');
             if (savedView) {
                 switchView(savedView);
@@ -722,28 +776,37 @@
 
         if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
             if (tbody.rows.length > 1) {
-                // Guardar la vista actual antes de recargar
                 const activeSection = document.querySelector('.view-section.active');
                 if (activeSection) {
                     const viewId = activeSection.id.replace('view-', '');
                     sessionStorage.setItem('activeView', viewId);
                 }
 
-                // Mostrar pantalla de carga mientras se borra y recarga
                 document.getElementById('loading-text').textContent = "Eliminando registro y sincronizando...";
                 document.getElementById('loading-overlay').style.display = 'flex';
 
-                // Vaciar los datos de la fila en Google Sheets
                 for (let i = 1; i <= headers.length; i++) {
                     await sendDataToSheet(sheetName, rowIndex, i, "");
                 }
 
-                // Recargar la página automáticamente
                 location.reload();
             } else {
                 alert("Debe mantenerse al menos una fila en la tabla.");
             }
         }
+    }
+
+    // NUEVA FUNCIÓN PARA DESCARGAR TODO EL EXCEL EN PDF
+    function descargarPDF() {
+        // Muestra temporalmente todas las secciones para que se impriman juntas en el PDF
+        const sections = document.querySelectorAll('.view-section');
+        sections.forEach(sec => sec.classList.add('active'));
+
+        // Lanza el cuadro de impresión del navegador (el usuario solo debe seleccionar "Guardar como PDF")
+        window.print();
+
+        // Vuelve a restaurar la vista de inicio tras cerrar la ventana de impresión
+        switchView('home');
     }
 
     async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
@@ -776,7 +839,6 @@
         if (target) {
             target.classList.add('active');
             window.scrollTo(0, 0);
-            // Guardar la vista elegida en la sesión
             sessionStorage.setItem('activeView', viewName);
         }
     }
