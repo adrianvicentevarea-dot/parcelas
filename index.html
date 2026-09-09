@@ -284,7 +284,7 @@
         .btn-icon.edit { background-color: #f59e0b; }
         .btn-icon.delete { background-color: var(--accent-red); }
 
-        /* ESTILOS PARA LOS BLOQUES DE FECHAS (2 por fila) */
+        /* ESTILOS PARA LOS BLOQUES DE FECHAS (De dos en dos por fila) */
         .dates-container {
             display: flex;
             flex-direction: column;
@@ -300,15 +300,15 @@
         .date-chip {
             background-color: #334155;
             color: #f8fafc;
-            padding: 3px 6px;
+            padding: 4px 8px;
             border-radius: 4px;
-            font-size: 0.75rem;
-            display: inline-flex;
+            font-size: 0.8rem;
+            display: flex;
             align-items: center;
-            gap: 4px;
-            flex: 1;
             justify-content: space-between;
             border: 1px solid #475569;
+            flex: 1;
+            gap: 4px;
         }
 
         .date-chip button {
@@ -317,8 +317,9 @@
             color: #ef4444;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             padding: 0 2px;
+            line-height: 1;
         }
         .date-chip button:hover {
             color: #dc2626;
@@ -336,6 +337,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
         }
         .btn-action-date:hover {
             background-color: #2563eb;
@@ -529,22 +531,6 @@
         }
     }
 
-    // Columnas que llevan el botón de acción interactivo
-    const buttonColIndices = {
-        'laboreos-table': 10,     
-        'poda-table': 5,          
-        'tratamientos-table': 5,  
-        'recoleccion-table': 7    
-    };
-
-    // Columnas exactas de Fecha de Registro
-    const dateColIndices = {
-        'laboreos-table': 11,     
-        'poda-table': 6,          
-        'tratamientos-table': 6,  
-        'recoleccion-table': 8    
-    };
-
     function populateTable(tableId, rowsData) {
         const table = document.getElementById(tableId);
         if (!table) return;
@@ -552,6 +538,15 @@
         tbody.innerHTML = ''; 
 
         const headers = Array.from(table.querySelectorAll('th'));
+
+        let dateColIndex = -1;
+        headers.forEach((th, idx) => {
+            if (th.textContent.toLowerCase().includes('fecha')) {
+                dateColIndex = idx;
+            }
+        });
+
+        let btnColIndex = dateColIndex > 0 ? dateColIndex - 1 : -1;
 
         if (!rowsData || rowsData.length === 0) {
             const tr = document.createElement('tr');
@@ -577,9 +572,8 @@
                 const cellValue = (rowData[colIndexAdjusted] !== undefined && rowData[colIndexAdjusted] !== null) ? rowData[colIndexAdjusted] : '';
                 const actualColIndex = colIndexAdjusted + 1; 
 
-                const currentTableId = table.id;
-                const isBtnCol = (currentTableId in buttonColIndices && actualColIndex === buttonColIndices[currentTableId]);
-                const isDateCol = (currentTableId in dateColIndices && actualColIndex === dateColIndices[currentTableId]);
+                const isBtnCol = (actualColIndex === btnColIndex);
+                const isDateCol = (actualColIndex === dateColIndex);
 
                 if (isBtnCol) {
                     htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
@@ -606,9 +600,9 @@
         let html = "";
         for (let i = 0; i < dates.length; i += 2) {
             html += `<div class="dates-row">`;
-            html += `<span class="date-chip">${dates[i]} <button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
+            html += `<span class="date-chip"><span>${dates[i]}</span><button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
             if (i + 1 < dates.length) {
-                html += `<span class="date-chip">${dates[i+1]} <button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
+                html += `<span class="date-chip"><span>${dates[i+1]}</span><button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
             }
             html += `</div>`;
         }
@@ -629,8 +623,8 @@
         const dateStr = `${year}-${month}-${day}`;
 
         let currentDates = [];
-        dateTd.querySelectorAll('.date-chip').forEach(chip => {
-            let text = chip.childNodes[0].nodeValue.trim();
+        dateTd.querySelectorAll('.date-chip span span').forEach(span => {
+            let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
 
@@ -645,8 +639,8 @@
         const container = td.querySelector('.dates-container');
         
         let currentDates = [];
-        td.querySelectorAll('.date-chip').forEach(chip => {
-            let text = chip.childNodes[0].nodeValue.trim();
+        td.querySelectorAll('.date-chip span span').forEach(span => {
+            let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
 
@@ -664,8 +658,8 @@
     function syncCellData(td) {
         const colIndex = parseInt(td.getAttribute('data-col'));
         let currentDates = [];
-        td.querySelectorAll('.date-chip').forEach(chip => {
-            let text = chip.childNodes[0].nodeValue.trim();
+        td.querySelectorAll('.date-chip span span').forEach(span => {
+            let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
         const combinedValue = currentDates.join(', ');
@@ -686,7 +680,7 @@
                 body: JSON.stringify({
                     sheet: sheetName,
                     row: rowIndex,
-                    col: colIndex, // Enviamos el índice exacto sin sumar de más para que caiga en la columna correcta de Sheets
+                    col: colIndex, 
                     value: value
                 })
             });
