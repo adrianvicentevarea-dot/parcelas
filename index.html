@@ -447,29 +447,34 @@
 </div>
 
 <script>
-    // URL integrada con tu nuevo enlace y el parámetro de datos
+    // URL con tu enlace actualizado y el parámetro de datos
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec?action=getData';
 
     async function loadDataFromExcel() {
         const loadingText = document.getElementById('loading-text');
         try {
-            const response = await fetch(WEB_APP_URL);
+            const response = await fetch(WEB_APP_URL, { method: 'GET', redirect: 'follow' });
+            
+            if (!response.ok) {
+                throw new Error("Respuesta de red incorrecta: " + response.status);
+            }
+            
             const data = await response.json();
             
-            // Poblar cada tabla con la información de las hojas
             populateTable('parcelas-table', data["Identificación de Parcelas"]);
             populateTable('laboreos-table', data["Laboreos"]);
             populateTable('poda-table', data["Poda"]);
             populateTable('tratamientos-table', data["Tratamientos"]);
             populateTable('recoleccion-table', data["Recolección"]);
             
-            // Ocultar pantalla de carga y mostrar la vista principal
             document.getElementById('loading-overlay').style.display = 'none';
             switchView('home');
             
         } catch (error) {
             console.error("Error al conectar:", error);
-            loadingText.innerHTML = "❌ Error al conectar con Google Sheets.<br><small>Verifica tu conexión o los permisos del script.</small>";
+            document.getElementById('loading-overlay').style.display = 'none';
+            switchView('home');
+            alert("No se pudieron cargar los datos del Excel. Revisa la consola (F12) para más detalles.");
         }
     }
 
