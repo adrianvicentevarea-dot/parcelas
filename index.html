@@ -284,7 +284,7 @@
         .btn-icon.edit { background-color: #f59e0b; }
         .btn-icon.delete { background-color: var(--accent-red); }
 
-        /* ESTILOS PARA EL CONTENEDOR DE FECHAS EN BLOQUES DE 2 */
+        /* ESTILOS PARA LOS BLOQUES DE FECHAS (2 por fila) */
         .dates-container {
             display: flex;
             flex-direction: column;
@@ -328,15 +328,14 @@
             background-color: var(--accent-blue);
             color: white;
             border: none;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            margin-bottom: 6px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
         .btn-action-date:hover {
             background-color: #2563eb;
@@ -530,8 +529,10 @@
         }
     }
 
-    // Nombres de columnas que deben convertirse en botones interactivos de fecha
-    const targetTitles = ["laboreo", "podado", "tratamientos", "recolección", "fecha de registro"];
+    // Columnas que llevan el botón de acción
+    const actionButtonTitles = ["laboreo", "podado", "tratamientos", "recolección"];
+    // Columnas que muestran las fechas acumuladas
+    const dateDisplayTitles = ["fecha de registro"];
 
     function populateTable(tableId, rowsData) {
         const table = document.getElementById(tableId);
@@ -564,12 +565,15 @@
                 const cellValue = (rowData[colIndexAdjusted] !== undefined && rowData[colIndexAdjusted] !== null) ? rowData[colIndexAdjusted] : '';
                 const actualColIndex = colIndexAdjusted + 1; // Índice base 1 para el script
 
-                // Verificar si esta columna coincide con los nombres solicitados
-                const isTargetColumn = targetTitles.some(t => headerText.includes(t));
+                const isActionButtonCol = actionButtonTitles.some(t => headerText === t || headerText.includes(t));
+                const isDateDisplayCol = dateDisplayTitles.some(t => headerText.includes(t));
 
-                if (isTargetColumn) {
+                if (isActionButtonCol) {
+                    // Columna con el botón interactivo para generar fecha
+                    htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
+                } else if (isDateDisplayCol) {
+                    // Columna donde se visualizan y borran las fechas guardadas
                     htmlContent += `<td data-col="${actualColIndex}" data-is-date-col="true">`;
-                    htmlContent += `<button type="button" class="btn-action-date" onclick="addDateToCell(this)">📅 Añadir Fecha</button>`;
                     htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue)}</div>`;
                     htmlContent += `</td>`;
                 } else {
@@ -601,10 +605,13 @@
         return html;
     }
 
-    // Añade la fecha actual (YYYY-MM-DD) al pulsar el botón
-    function addDateToCell(btn) {
-        const td = btn.closest('td');
-        const container = td.querySelector('.dates-container');
+    // Al pulsar el botón "Añadir Fecha", busca automáticamente la celda de "Fecha de Registro" de la misma fila
+    function triggerDateAction(btn) {
+        const tr = btn.closest('tr');
+        const dateTd = tr.querySelector('td[data-is-date-col="true"]');
+        if (!dateTd) return;
+
+        const container = dateTd.querySelector('.dates-container');
         
         const now = new Date();
         const year = now.getFullYear();
@@ -613,8 +620,7 @@
         const dateStr = `${year}-${month}-${day}`;
 
         let currentDates = [];
-        td.querySelectorAll('.date-chip').forEach(chip => {
-            // Extraer solo la fecha sin contar el texto del botón "×"
+        dateTd.querySelectorAll('.date-chip').forEach(chip => {
             let text = chip.childNodes[0].nodeValue.trim();
             if (text) currentDates.push(text);
         });
@@ -622,10 +628,10 @@
         currentDates.push(dateStr);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
         
-        syncCellData(td);
+        syncCellData(dateTd);
     }
 
-    // Elimina una fecha específica al pulsar la "×"
+    // Elimina una fecha específica al pulsar la "×" en Fecha de Registro
     function removeDate(closeBtn, indexToRemove) {
         const td = closeBtn.closest('td');
         const container = td.querySelector('.dates-container');
