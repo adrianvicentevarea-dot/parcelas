@@ -232,7 +232,6 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            white-space: nowrap;
         }
 
         th {
@@ -245,8 +244,9 @@
         }
 
         td {
-            padding: 8px 10px;
+            padding: 10px;
             border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
         }
 
         input[type="text"],
@@ -283,6 +283,64 @@
         }
         .btn-icon.edit { background-color: #f59e0b; }
         .btn-icon.delete { background-color: var(--accent-red); }
+
+        /* ESTILOS PARA EL CONTENEDOR DE FECHAS EN BLOQUES DE 2 */
+        .dates-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+        }
+
+        .dates-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .date-chip {
+            background-color: #334155;
+            color: #f8fafc;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            justify-content: space-between;
+            border: 1px solid #475569;
+        }
+
+        .date-chip button {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            padding: 0 2px;
+        }
+        .date-chip button:hover {
+            color: #dc2626;
+        }
+
+        .btn-action-date {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-action-date:hover {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 <body>
@@ -340,7 +398,7 @@
             <div class="view-title">Registros de Parcelas</div>
             <div class="table-actions"><button class="btn btn-primary" onclick="addRow('parcelas-table')">+ Añadir Fila</button></div>
             <div class="table-responsive">
-                <table id="parcelas-table">
+                <table id="parcelas-table" data-sheet="Identificación de Parcelas">
                     <thead>
                         <tr>
                             <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Recinto</th><th>Nombre</th><th>Tipo de cultivo</th><th>Variedad</th>
@@ -363,7 +421,7 @@
             <div class="view-title">Gestión de Trabajos de Laboreo</div>
             <div class="table-actions"><button class="btn btn-primary" onclick="addRow('laboreos-table')">+ Añadir Fila</button></div>
             <div class="table-responsive">
-                <table id="laboreos-table">
+                <table id="laboreos-table" data-sheet="Laboreos">
                     <thead>
                         <tr>
                             <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tipo de cultivo</th><th>Tipo de trabajo realizado</th><th>Trabajo realizado por</th><th>Laboreo</th><th>Fecha de Registro</th>
@@ -386,7 +444,7 @@
             <div class="view-title">Registros y Control de Poda</div>
             <div class="table-actions"><button class="btn btn-primary" onclick="addRow('poda-table')">+ Añadir Fila</button></div>
             <div class="table-responsive">
-                <table id="poda-table">
+                <table id="poda-table" data-sheet="Poda">
                     <thead>
                         <tr>
                             <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Trabajo realizado por</th><th>Podado</th><th>Fecha de Registro</th>
@@ -409,7 +467,7 @@
             <div class="view-title">Control de Tratamientos Aplicados</div>
             <div class="table-actions"><button class="btn btn-primary" onclick="addRow('tratamientos-table')">+ Añadir Fila</button></div>
             <div class="table-responsive">
-                <table id="tratamientos-table">
+                <table id="tratamientos-table" data-sheet="Tratamientos">
                     <thead>
                         <tr>
                             <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Trabajo realizado por</th><th>Tratamientos</th><th>Fecha de Registro</th>
@@ -432,7 +490,7 @@
             <div class="view-title">Control de Tareas y Kilos Cosechados</div>
             <div class="table-actions"><button class="btn btn-primary" onclick="addRow('recoleccion-table')">+ Añadir Fila</button></div>
             <div class="table-responsive">
-                <table id="recoleccion-table">
+                <table id="recoleccion-table" data-sheet="Recolección">
                     <thead>
                         <tr>
                             <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Variedad</th><th>Kilos</th><th>Trabajo realizado por</th><th>Recolección</th><th>Fecha de registro</th>
@@ -447,17 +505,12 @@
 </div>
 
 <script>
-    // URL actualizada con tu nuevo enlace y el parámetro de datos
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec?action=getData';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
     async function loadDataFromExcel() {
-        const loadingText = document.getElementById('loading-text');
         try {
-            const response = await fetch(WEB_APP_URL, { method: 'GET', redirect: 'follow' });
-            
-            if (!response.ok) {
-                throw new Error("Respuesta de red incorrecta: " + response.status);
-            }
+            const response = await fetch(WEB_APP_URL + '?action=getData', { method: 'GET', redirect: 'follow' });
+            if (!response.ok) throw new Error("Error en red: " + response.status);
             
             const data = await response.json();
             
@@ -469,14 +522,16 @@
             
             document.getElementById('loading-overlay').style.display = 'none';
             switchView('home');
-            
         } catch (error) {
-            console.error("Error al conectar:", error);
+            console.error("Error:", error);
             document.getElementById('loading-overlay').style.display = 'none';
             switchView('home');
-            alert("No se pudieron cargar los datos del Excel. Revisa la consola (F12) para más detalles.");
+            alert("No se pudieron cargar los datos del Excel.");
         }
     }
+
+    // Nombres de columnas que deben convertirse en botones interactivos de fecha
+    const targetTitles = ["laboreo", "podado", "tratamientos", "recolección", "fecha de registro"];
 
     function populateTable(tableId, rowsData) {
         const table = document.getElementById(tableId);
@@ -484,9 +539,12 @@
         const tbody = table.getElementsByTagName('tbody')[0];
         tbody.innerHTML = ''; 
 
+        const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim().toLowerCase());
+
         if (!rowsData || rowsData.length === 0) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="action-cell"><button class="btn-icon edit">✏️</button><button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button></div></td><td colspan="12" style="text-align:center; color:var(--text-muted);">Sin datos en esta pestaña del Excel</td>`;
+            let colsCount = headers.length;
+            tr.innerHTML = `<td><div class="action-cell"><button class="btn-icon edit">✏️</button><button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button></div></td><td colspan="${colsCount - 1}" style="text-align:center; color:var(--text-muted);">Sin datos en esta pestaña del Excel</td>`;
             tbody.appendChild(tr);
             return;
         }
@@ -502,17 +560,128 @@
                 </td>
             `;
 
-            rowData.forEach(cellValue => {
-                let val = (cellValue !== undefined && cellValue !== null) ? cellValue : '';
-                if (typeof val === 'string' && val.includes('T') && val.endsWith('Z')) {
-                    val = val.split('T')[0];
+            headers.slice(1).forEach((headerText, colIndexAdjusted) => {
+                const cellValue = (rowData[colIndexAdjusted] !== undefined && rowData[colIndexAdjusted] !== null) ? rowData[colIndexAdjusted] : '';
+                const actualColIndex = colIndexAdjusted + 1; // Índice base 1 para el script
+
+                // Verificar si esta columna coincide con los nombres solicitados
+                const isTargetColumn = targetTitles.some(t => headerText.includes(t));
+
+                if (isTargetColumn) {
+                    htmlContent += `<td data-col="${actualColIndex}" data-is-date-col="true">`;
+                    htmlContent += `<button type="button" class="btn-action-date" onclick="addDateToCell(this)">📅 Añadir Fecha</button>`;
+                    htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue)}</div>`;
+                    htmlContent += `</td>`;
+                } else {
+                    let val = String(cellValue);
+                    if (val.includes('T') && val.endsWith('Z')) val = val.split('T')[0];
+                    htmlContent += `<td><input type="text" value="${val}" onchange="saveCellChange(this, ${actualColIndex})"></td>`;
                 }
-                htmlContent += `<td><input type="text" value="${val}"></td>`;
             });
 
             tr.innerHTML = htmlContent;
             tbody.appendChild(tr);
         });
+    }
+
+    // Renderiza las fechas separadas por comas en bloques de 2 por fila, con botón de borrado "×"
+    function renderDatesHTML(rawValue) {
+        if (!rawValue || String(rawValue).trim() === "") return "";
+        let dates = String(rawValue).split(',').map(d => d.trim()).filter(d => d !== "");
+        
+        let html = "";
+        for (let i = 0; i < dates.length; i += 2) {
+            html += `<div class="dates-row">`;
+            html += `<span class="date-chip">${dates[i]} <button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
+            if (i + 1 < dates.length) {
+                html += `<span class="date-chip">${dates[i+1]} <button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
+            }
+            html += `</div>`;
+        }
+        return html;
+    }
+
+    // Añade la fecha actual (YYYY-MM-DD) al pulsar el botón
+    function addDateToCell(btn) {
+        const td = btn.closest('td');
+        const container = td.querySelector('.dates-container');
+        
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
+        let currentDates = [];
+        td.querySelectorAll('.date-chip').forEach(chip => {
+            // Extraer solo la fecha sin contar el texto del botón "×"
+            let text = chip.childNodes[0].nodeValue.trim();
+            if (text) currentDates.push(text);
+        });
+
+        currentDates.push(dateStr);
+        container.innerHTML = renderDatesHTML(currentDates.join(', '));
+        
+        syncCellData(td);
+    }
+
+    // Elimina una fecha específica al pulsar la "×"
+    function removeDate(closeBtn, indexToRemove) {
+        const td = closeBtn.closest('td');
+        const container = td.querySelector('.dates-container');
+        
+        let currentDates = [];
+        td.querySelectorAll('.date-chip').forEach(chip => {
+            let text = chip.childNodes[0].nodeValue.trim();
+            if (text) currentDates.push(text);
+        });
+
+        currentDates.splice(indexToRemove, 1);
+        container.innerHTML = renderDatesHTML(currentDates.join(', '));
+        
+        syncCellData(td);
+    }
+
+    // Sincroniza y guarda los cambios de celdas normales de texto
+    function saveCellChange(input, colIndex) {
+        const td = input.closest('td');
+        sendDataToSheet(td, colIndex, input.value);
+    }
+
+    // Sincroniza y guarda las fechas acumuladas en Google Sheets
+    function syncCellData(td) {
+        const colIndex = parseInt(td.getAttribute('data-col'));
+        let currentDates = [];
+        td.querySelectorAll('.date-chip').forEach(chip => {
+            let text = chip.childNodes[0].nodeValue.trim();
+            if (text) currentDates.push(text);
+        });
+        const combinedValue = currentDates.join(', ');
+        sendDataToSheet(td, colIndex, combinedValue);
+    }
+
+    // Envía la petición POST al Apps Script para actualizar la celda física en Google Sheets
+    async function sendDataToSheet(td, colIndex, value) {
+        const tr = td.closest('tr');
+        const table = tr.closest('table');
+        const sheetName = table.getAttribute('data-sheet');
+        const rowIndex = tr.rowIndex + 1; // +1 porque el array empieza en 1 y hay cabecera
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    sheet: sheetName,
+                    row: rowIndex,
+                    col: colIndex + 1, // +1 por la columna A de Acciones
+                    value: value
+                })
+            });
+        } catch (err) {
+            console.error("Error al actualizar el Excel:", err);
+        }
     }
 
     window.onload = function() {
@@ -538,8 +707,8 @@
         if (!firstRow) return;
 
         const newRow = firstRow.cloneNode(true);
-        const inputs = newRow.querySelectorAll('input, select');
-        inputs.forEach(input => { input.value = ''; });
+        newRow.querySelectorAll('input').forEach(input => { input.value = ''; });
+        newRow.querySelectorAll('.dates-container').forEach(container => { container.innerHTML = ''; });
 
         const deleteBtn = newRow.querySelector('.btn-icon.delete');
         if(deleteBtn) { deleteBtn.setAttribute('onclick', 'deleteRow(this)'); }
