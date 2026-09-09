@@ -746,23 +746,20 @@
         }
     }
 
-    // FUNCIÓN PARA DESCARGAR AUTOMÁTICAMENTE EL EXCEL COMPLETO EN FORMATO PDF
     function descargarPDF() {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal (landscape)
+        const doc = new jsPDF('l', 'mm', 'a4');
 
         let startY = 15;
         doc.setFontSize(16);
         doc.text("Reporte Completo - Gestión Agrícola", 14, startY);
         startY += 10;
 
-        // Seleccionamos todas las tablas de las diferentes hojas/pestañas
         const tables = document.querySelectorAll('.table-responsive table');
 
         tables.forEach((table, index) => {
             const sheetName = table.getAttribute('data-sheet') || `Pestaña ${index + 1}`;
             
-            // Título de la sección/pestaña en el PDF
             if (index > 0) {
                 doc.addPage();
                 startY = 15;
@@ -773,21 +770,18 @@
             doc.text(`Hoja: ${sheetName}`, 14, startY);
             startY += 6;
 
-            // Extraer cabeceras omitiendo la columna de "Acciones" (la primera)
             const headers = [];
             const headerThs = table.querySelectorAll('thead th');
             for (let i = 1; i < headerThs.length; i++) {
                 headers.push(headerThs[i].innerText);
             }
 
-            // Extraer filas de datos
             const rows = [];
             const trs = table.querySelectorAll('tbody tr');
             trs.forEach(tr => {
                 const rowData = [];
                 const tds = tr.querySelectorAll('td');
                 
-                // Si la tabla está vacía, omitir o mostrar mensaje
                 if(tds.length <= 1 && tds[0].getAttribute('colspan')) return;
 
                 for (let i = 1; i < tds.length; i++) {
@@ -799,7 +793,6 @@
                     if (input) {
                         text = input.value;
                     } else if (datesContainer) {
-                        // Extraer fechas concatenadas de los chips
                         const dateSpans = datesContainer.querySelectorAll('.date-text');
                         let datesArr = [];
                         dateSpans.forEach(span => datesArr.push(span.innerText));
@@ -814,13 +807,12 @@
                 }
             });
 
-            // Generar la tabla dentro del documento PDF con AutoTable
             doc.autoTable({
                 startY: startY,
                 head: [headers],
                 body: rows,
                 theme: 'grid',
-                headStyles: { fillColor: [16, 185, 129] }, // Color verde primario
+                headStyles: { fillColor: [16, 185, 129] },
                 styles: { fontSize: 8, cellPadding: 3 },
                 margin: { left: 14, right: 14 }
             });
@@ -828,7 +820,6 @@
             startY = doc.lastAutoTable.finalY + 15;
         });
 
-        // Descarga automática del archivo PDF
         doc.save("Gestion_Agricola_Completa.pdf");
     }
 
