@@ -163,11 +163,11 @@
             margin-bottom: 24px;
         }
 
-        /* Tarjetas grandes */
+        /* Tarjetas más grandes para lucir las imágenes */
         .menu-card {
             background-color: white;
             color: #1e293b;
-            padding: 36px 24px;
+            padding: 48px 32px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -175,7 +175,7 @@
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: transform 0.1s, box-shadow 0.1s;
-            min-height: 140px;
+            min-height: 200px;
         }
 
         .menu-card:hover {
@@ -183,9 +183,9 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        /* Laboreos: imagen de fondo adaptada y centrada para coincidir con la referencia */
+        /* Laboreos: tamaño de tarjeta ampliado con la imagen cubriendo todo el espacio */
         .menu-card-laboreos {
-            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
+            background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
@@ -200,18 +200,18 @@
         .menu-card-recoleccion {
             background: linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.65)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
             background-size: cover;
-            background-position: center;
+            background-position: center center;
         }
 
         .menu-card-info h3 {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             font-weight: 800;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             color: #0f172a;
         }
 
         .menu-card-info p {
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             color: #0f172a;
             font-weight: 700;
         }
@@ -411,25 +411,25 @@
         <div class="menu-grid">
             <div class="menu-card" onclick="switchView('parcelas')">
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
-                <div style="font-size: 1.8rem;">📍</div>
+                <div style="font-size: 2.2rem;">📍</div>
             </div>
             <!-- Tarjeta de Laboreos -->
             <div class="menu-card menu-card-laboreos" onclick="switchView('laboreos')">
                 <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
-                <div style="font-size: 1.8rem;">🚜</div>
+                <div style="font-size: 2.2rem;">🚜</div>
             </div>
             <div class="menu-card" onclick="switchView('poda')">
                 <div class="menu-card-info"><h3>Poda</h3><p>Registros y control de poda</p></div>
-                <div style="font-size: 1.8rem;">✂️</div>
+                <div style="font-size: 2.2rem;">✂️</div>
             </div>
             <div class="menu-card" onclick="switchView('tratamientos')">
                 <div class="menu-card-info"><h3>Tratamientos</h3><p>Control de tratamientos aplicados</p></div>
-                <div style="font-size: 1.8rem;">🧪</div>
+                <div style="font-size: 2.2rem;">🧪</div>
             </div>
             <!-- Tarjeta de Recolección -->
             <div class="menu-card menu-card-recoleccion" onclick="switchView('recoleccion')">
                 <div class="menu-card-info"><h3>Tareas / Recolección</h3><p>Control de tareas y kilos cosechados</p></div>
-                <div style="font-size: 1.8rem;">📦</div>
+                <div style="font-size: 2.2rem;">📦</div>
             </div>
         </div>
 
