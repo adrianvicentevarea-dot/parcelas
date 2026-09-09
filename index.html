@@ -225,7 +225,7 @@
 
     /* CONTROLES DE FILA */
     .input-row-cell {
-      width: 120px;
+      width: 110px;
       padding: 6px;
       border: 1.5px solid #cbd5e1;
       border-radius: 6px;
@@ -286,14 +286,16 @@
       background-color: #10b981;
       color: white;
       border: none;
-      padding: 6px 10px;
+      padding: 6px 8px;
       border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       cursor: pointer;
-      margin-left: 6px;
-      display: none; /* Se muestra solo al editar la fila */
-      box-shadow: 0 2px 5px rgba(16,185,129,0.3);
+      margin-left: 4px;
+      box-shadow: 0 2px 4px rgba(16,185,129,0.3);
+    }
+    .btn-fecha-auto:active {
+      background-color: #059669;
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -573,7 +575,7 @@
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          // Detectar columnas de fecha por palabra clave
+          // Detección mejorada para cualquier columna de fecha
           const esFecha = headerLower.includes('fecha') || headerLower.includes('día') || headerLower.includes('dia');
 
           if (esTipoCultivo) {
@@ -591,7 +593,7 @@
             html += `<td>
               <div style="display: flex; align-items: center;">
                 <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
-                <button type="button" class="btn-fecha-auto" id="btn_fecha_${rowIndex}_${colIndex}" onclick="ponerFechaActual(${rowIndex}, ${colIndex})">📅 Fecha Hoy</button>
+                <button type="button" class="btn-fecha-auto" onclick="ponerFechaActual(${rowIndex}, ${colIndex})">📅 Hoy</button>
               </div>
             </td>`;
           } else {
@@ -615,10 +617,6 @@
       const inputs = filaElem.querySelectorAll('input, select');
       inputs.forEach(el => el.disabled = false);
 
-      // Mostrar los botones de fecha rápida en esta fila
-      const botonesFecha = filaElem.querySelectorAll('.btn-fecha-auto');
-      botonesFecha.forEach(b => b.style.display = 'inline-block');
-
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
       const btnSave = document.getElementById(`btn_save_${rowIndex}`);
       if (btnEdit) btnEdit.style.display = 'none';
@@ -628,6 +626,9 @@
     }
 
     function ponerFechaActual(rowIndex, colIndex) {
+      // Aseguramos que al hacer clic en el botón de fecha, la fila se habilite automáticamente para poder guardar el cambio
+      habilitarFila(rowIndex);
+      
       const input = document.getElementById(`cell_${rowIndex}_${colIndex}`);
       if (input) {
         const hoy = new Date().toLocaleDateString('es-ES');
@@ -656,9 +657,6 @@
 
       const inputs = filaElem.querySelectorAll('input, select');
       inputs.forEach(el => el.disabled = true);
-
-      const botonesFecha = filaElem.querySelectorAll('.btn-fecha-auto');
-      botonesFecha.forEach(b => b.style.display = 'none');
 
       const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
       const btnSave = document.getElementById(`btn_save_${rowIndex}`);
@@ -827,7 +825,7 @@
             return;
           }
 
-          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅 Fecha Hoy/g, '').trim());
+          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅 Hoy/g, '').trim());
         });
 
         if (datosFila.length > 0) {
