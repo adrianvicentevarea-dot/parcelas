@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión Agrícola - Aplicación de Parcelas</title>
+    <!-- Librerías para generar el PDF automáticamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -357,60 +361,6 @@
         .btn-action-date:hover {
             background-color: #2563eb;
         }
-
-        /* CONFIGURACIÓN PARA IMPRESIÓN / PDF AUTOMÁTICO */
-        @media print {
-            body {
-                background-color: white !important;
-                color: black !important;
-                padding: 0 !important;
-            }
-            #loading-overlay, .top-nav, .home-header, .menu-grid, .home-actions, .table-actions, .action-cell, th:first-child, td:first-child {
-                display: none !important;
-            }
-            .view-section {
-                display: block !important;
-                page-break-after: always;
-            }
-            .table-container-wrapper {
-                background-color: white !important;
-                box-shadow: none !important;
-                padding: 0 !important;
-                margin-bottom: 20px !important;
-            }
-            .view-title {
-                color: black !important;
-                font-size: 1.2rem;
-                border-bottom: 2px solid #000;
-                padding-bottom: 5px;
-            }
-            table {
-                border: 1px solid #ddd;
-            }
-            th {
-                background-color: #f1f5f9 !important;
-                color: black !important;
-                border: 1px solid #ddd;
-            }
-            td {
-                border: 1px solid #ddd;
-                color: black !important;
-            }
-            input[type="text"] {
-                background: transparent !important;
-                border: none !important;
-                color: black !important;
-                padding: 0 !important;
-            }
-            .date-chip {
-                background: #f1f5f9 !important;
-                color: black !important;
-                border: 1px solid #ccc;
-            }
-            .date-chip button {
-                display: none !important;
-            }
-        }
     </style>
 </head>
 <body>
@@ -452,7 +402,7 @@
         </div>
 
         <div class="home-actions">
-            <button class="btn btn-blue" onclick="descargarPDF()">📄 Descargar PDF Completo</button>
+            <button class="btn btn-blue" onclick="descargarPDF()">📄 Descargar Excel en PDF</button>
             <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
         </div>
     </div>
@@ -796,17 +746,90 @@
         }
     }
 
-    // FUNCIÓN AUTOMÁTICA PARA PREPARAR LAS TABLAS Y LANZAR EL PDF
+    // FUNCIÓN PARA DESCARGAR AUTOMÁTICAMENTE EL EXCEL COMPLETO EN FORMATO PDF
     function descargarPDF() {
-        // Muestra todas las secciones de las pestañas temporalmente
-        const sections = document.querySelectorAll('.view-section');
-        sections.forEach(sec => sec.classList.add('active'));
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal (landscape)
 
-        // Lanza de inmediato el diálogo de impresión / guardado en PDF del navegador
-        window.print();
+        let startY = 15;
+        doc.setFontSize(16);
+        doc.text("Reporte Completo - Gestión Agrícola", 14, startY);
+        startY += 10;
 
-        // Restaura la vista de inicio al cerrar o completar la acción
-        switchView('home');
+        // Seleccionamos todas las tablas de las diferentes hojas/pestañas
+        const tables = document.querySelectorAll('.table-responsive table');
+
+        tables.forEach((table, index) => {
+            const sheetName = table.getAttribute('data-sheet') || `Pestaña ${index + 1}`;
+            
+            // Título de la sección/pestaña en el PDF
+            if (index > 0) {
+                doc.addPage();
+                startY = 15;
+            }
+            
+            doc.setFontSize(12);
+            doc.setTextColor(40);
+            doc.text(`Hoja: ${sheetName}`, 14, startY);
+            startY += 6;
+
+            // Extraer cabeceras omitiendo la columna de "Acciones" (la primera)
+            const headers = [];
+            const headerThs = table.querySelectorAll('thead th');
+            for (let i = 1; i < headerThs.length; i++) {
+                headers.push(headerThs[i].innerText);
+            }
+
+            // Extraer filas de datos
+            const rows = [];
+            const trs = table.querySelectorAll('tbody tr');
+            trs.forEach(tr => {
+                const rowData = [];
+                const tds = tr.querySelectorAll('td');
+                
+                // Si la tabla está vacía, omitir o mostrar mensaje
+                if(tds.length <= 1 && tds[0].getAttribute('colspan')) return;
+
+                for (let i = 1; i < tds.length; i++) {
+                    const td = tds[i];
+                    let text = "";
+                    const input = td.querySelector('input');
+                    const datesContainer = td.querySelector('.dates-container');
+
+                    if (input) {
+                        text = input.value;
+                    } else if (datesContainer) {
+                        // Extraer fechas concatenadas de los chips
+                        const dateSpans = datesContainer.querySelectorAll('.date-text');
+                        let datesArr = [];
+                        dateSpans.forEach(span => datesArr.push(span.innerText));
+                        text = datesArr.join(', ');
+                    } else {
+                        text = td.innerText.replace('📅 Añadir Fecha', '').trim();
+                    }
+                    rowData.push(text);
+                }
+                if(rowData.length > 0) {
+                    rows.push(rowData);
+                }
+            });
+
+            // Generar la tabla dentro del documento PDF con AutoTable
+            doc.autoTable({
+                startY: startY,
+                head: [headers],
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129] }, // Color verde primario
+                styles: { fontSize: 8, cellPadding: 3 },
+                margin: { left: 14, right: 14 }
+            });
+
+            startY = doc.lastAutoTable.finalY + 15;
+        });
+
+        // Descarga automática del archivo PDF
+        doc.save("Gestion_Agricola_Completa.pdf");
     }
 
     async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
