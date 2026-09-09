@@ -34,7 +34,7 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
@@ -80,17 +80,17 @@
         .top-nav {
             background-color: var(--primary);
             color: white;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .top-nav h1 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -148,12 +148,12 @@
         .home-header {
             background-color: var(--primary);
             color: white;
-            padding: 16px 24px;
+            padding: 16px 20px;
             border-radius: 8px;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .menu-grid {
@@ -163,65 +163,72 @@
             margin-bottom: 24px;
         }
 
+        /* Tarjetas más grandes y adaptables a móviles */
         .menu-card {
             background-color: white;
             color: #1e293b;
-            padding: 16px 24px;
-            border-radius: 8px;
+            padding: 28px 20px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
             transition: transform 0.1s, box-shadow 0.1s;
+            min-height: 110px;
         }
 
         .menu-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
         }
 
-        /* Tarjeta de Laboreos ajustada para ver mejor el tractor y apero */
+        /* Laboreos adaptado: se ve completo el tractor y el apero */
         .menu-card-laboreos {
-            background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
-            background-size: 130%;
-            background-position: 50% 65%;
-            padding: 35px 24px;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
+            background-size: cover;
+            background-position: center 55%;
         }
 
         .menu-card-laboreos h3, 
         .menu-card-laboreos p {
             color: white !important;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
         }
 
         .menu-card-recoleccion {
-            background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
+            background: linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.65)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
             background-size: cover;
             background-position: center;
-            padding: 28px 24px;
         }
 
         .menu-card-info h3 {
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             font-weight: 800;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             color: #0f172a;
         }
 
         .menu-card-info p {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #0f172a;
             font-weight: 700;
         }
 
         .home-actions {
             display: flex;
-            gap: 16px;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        @media(min-width: 600px) {
+            .home-actions {
+                flex-direction: row;
+            }
         }
 
         .home-actions .btn {
-            flex: 1;
+            width: 100%;
             justify-content: center;
             padding: 14px;
             font-size: 1rem;
@@ -236,13 +243,13 @@
         .table-container-wrapper {
             background-color: var(--card-bg);
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
         }
 
         .view-title {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 16px;
             color: var(--text-main);
@@ -403,25 +410,25 @@
         <div class="menu-grid">
             <div class="menu-card" onclick="switchView('parcelas')">
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
-                <div>📍</div>
+                <div style="font-size: 1.5rem;">📍</div>
             </div>
             <!-- Tarjeta de Laboreos -->
             <div class="menu-card menu-card-laboreos" onclick="switchView('laboreos')">
                 <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
-                <div>🚜</div>
+                <div style="font-size: 1.5rem;">🚜</div>
             </div>
             <div class="menu-card" onclick="switchView('poda')">
                 <div class="menu-card-info"><h3>Poda</h3><p>Registros y control de poda</p></div>
-                <div>✂️</div>
+                <div style="font-size: 1.5rem;">✂️</div>
             </div>
             <div class="menu-card" onclick="switchView('tratamientos')">
                 <div class="menu-card-info"><h3>Tratamientos</h3><p>Control de tratamientos aplicados</p></div>
-                <div>🧪</div>
+                <div style="font-size: 1.5rem;">🧪</div>
             </div>
             <!-- Tarjeta de Recolección -->
             <div class="menu-card menu-card-recoleccion" onclick="switchView('recoleccion')">
                 <div class="menu-card-info"><h3>Tareas / Recolección</h3><p>Control de tareas y kilos cosechados</p></div>
-                <div>📦</div>
+                <div style="font-size: 1.5rem;">📦</div>
             </div>
         </div>
 
