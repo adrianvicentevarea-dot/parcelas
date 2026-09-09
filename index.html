@@ -677,7 +677,6 @@
         currentDates.push(dateStr);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
 
-        // Guardar automáticamente los cambios en Google Sheets
         const table = tr.closest('table');
         const sheetName = table.getAttribute('data-sheet');
         const rowIndex = tr.rowIndex + 1;
@@ -699,12 +698,32 @@
         currentDates.splice(indexToRemove, 1);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
 
-        // Guardar automáticamente los cambios en Google Sheets
         const table = tr.closest('table');
         const sheetName = table.getAttribute('data-sheet');
         const rowIndex = tr.rowIndex + 1;
         const colIndex = parseInt(td.getAttribute('data-col'));
         await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
+    }
+
+    async function deleteRow(btn) {
+        const row = btn.closest('tr');
+        const tbody = row.closest('tbody');
+        const table = row.closest('table');
+        const sheetName = table.getAttribute('data-sheet');
+        const rowIndex = row.rowIndex + 1;
+        const headers = table.querySelectorAll('th');
+
+        if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
+            if (tbody.rows.length > 1) {
+                // Vaciar los datos de la fila en Google Sheets
+                for (let i = 1; i <= headers.length; i++) {
+                    await sendDataToSheet(sheetName, rowIndex, i, "");
+                }
+                row.remove();
+            } else {
+                alert("Debe mantenerse al menos una fila en la tabla.");
+            }
+        }
     }
 
     async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
@@ -760,19 +779,6 @@
         if(saveBtn) saveBtn.style.display = 'inline-flex';
 
         tbody.appendChild(newRow);
-    }
-
-    function deleteRow(btn) {
-        const row = btn.closest('tr');
-        const tbody = row.closest('tbody');
-        
-        if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
-            if (tbody.rows.length > 1) {
-                row.remove();
-            } else {
-                alert("Debe mantenerse al menos una fila en la tabla.");
-            }
-        }
     }
 
     function confirmReset() {
