@@ -358,7 +358,7 @@
             background-color: #2563eb;
         }
 
-        /* CONFIGURACIÓN PARA IMPRESIÓN / PDF */
+        /* CONFIGURACIÓN PARA IMPRESIÓN / PDF AUTOMÁTICO */
         @media print {
             body {
                 background-color: white !important;
@@ -796,16 +796,16 @@
         }
     }
 
-    // NUEVA FUNCIÓN PARA DESCARGAR TODO EL EXCEL EN PDF
+    // FUNCIÓN AUTOMÁTICA PARA PREPARAR LAS TABLAS Y LANZAR EL PDF
     function descargarPDF() {
-        // Muestra temporalmente todas las secciones para que se impriman juntas en el PDF
+        // Muestra todas las secciones de las pestañas temporalmente
         const sections = document.querySelectorAll('.view-section');
         sections.forEach(sec => sec.classList.add('active'));
 
-        // Lanza el cuadro de impresión del navegador (el usuario solo debe seleccionar "Guardar como PDF")
+        // Lanza de inmediato el diálogo de impresión / guardado en PDF del navegador
         window.print();
 
-        // Vuelve a restaurar la vista de inicio tras cerrar la ventana de impresión
+        // Restaura la vista de inicio al cerrar o completar la acción
         switchView('home');
     }
 
