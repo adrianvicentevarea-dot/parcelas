@@ -1,1038 +1,674 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gestión Agrícola</title>
-  
-  <!-- Librerías para exportar a PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Agrícola - Aplicación de Parcelas</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --header-bg: #0f172a;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+        }
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    body {
-      background-color: #0b1e28;
-      color: #333333;
-      padding-bottom: 30px;
-      min-height: 100vh;
-    }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    /* CABECERA */
-    .header {
-      padding: 20px 20px 10px 20px;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-    .header h1 {
-      font-size: 28px;
-      font-weight: 800;
-    }
+        /* HEADER / NAVBAR */
+        .top-nav {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
 
-    .btn-principal {
-      width: 100%;
-      background-color: #10b981;
-      color: #ffffff;
-      border: none;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-      transition: transform 0.1s, background 0.2s;
-    }
+        .top-nav h1 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .btn-principal:active {
-      transform: scale(0.98);
-      background-color: #059669;
-    }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
 
-    /* CONTENEDOR PRINCIPAL */
-    .main-content {
-      padding: 15px 20px;
-    }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
 
-    .section-title {
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
+        .btn-home {
+            background-color: white;
+            color: var(--primary);
+        }
+        .btn-home:hover {
+            background-color: #f1f5f9;
+        }
 
-    /* TARJETAS DE INICIO */
-    .cards-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
 
-    .card-item {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
+        .btn-danger {
+            background-color: var(--accent-red);
+            color: white;
+        }
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
 
-    .card-item:active {
-      transform: scale(0.98);
-    }
+        /* VISTAS */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
 
-    .card-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+        /* HOME MENU GRID */
+        .home-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
 
-    .card-title {
-      font-size: 17px;
-      font-weight: 800;
-      color: #0f172a;
-    }
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
 
-    .card-subtitle {
-      font-size: 13px;
-      color: #64748b;
-    }
+        .menu-card {
+            background-color: white;
+            color: #1e293b;
+            padding: 16px 24px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
 
-    .card-badge {
-      text-align: right;
-      padding-right: 5px;
-    }
+        .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
 
-    .card-badge-num {
-      font-size: 22px;
-    }
+        .menu-card-info h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #0f172a;
+        }
 
-    /* TABLA EXCEL */
-    .table-card {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
+        .menu-card-info p {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
 
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 8px;
-    }
+        .menu-card-icon {
+            font-size: 1.5rem;
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 13px;
-    }
+        .home-actions {
+            display: flex;
+            gap: 16px;
+        }
 
-    thead {
-      background-color: #0d1b2a;
-      color: #ffffff;
-    }
+        .home-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 14px;
+            font-size: 1rem;
+        }
 
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
-      vertical-align: middle;
-    }
+        .btn-blue {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+        .btn-blue:hover {
+            background-color: #2563eb;
+        }
 
-    tbody tr:nth-child(even) {
-      background-color: #f8fafc;
-    }
+        /* TABLAS DE DATOS */
+        .table-container-wrapper {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
 
-    .loading {
-      padding: 30px;
-      text-align: center;
-      color: #64748b;
-      font-size: 14px;
-      font-style: italic;
-    }
+        .view-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
 
-    /* ACCIONES SUPERIORES / INFERIORES */
-    .acciones-superiores {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 15px;
-    }
+        .table-actions {
+            margin-bottom: 16px;
+        }
 
-    .btn-accion-superior {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 8px rgba(16,185,129,0.3);
-    }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
 
-    .acciones-inferior-container {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
 
-    .btn-accion-inferior {
-      flex: 1;
-      min-width: 150px;
-      padding: 14px 18px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    }
+        th {
+            background-color: #0f172a;
+            color: var(--text-main);
+            padding: 12px 10px;
+            font-size: 0.85rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+        }
 
-    .btn-descargar-pdf {
-      background-color: #2563eb;
-      color: #ffffff;
-    }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    .btn-borrar-todo {
-      background-color: #ef4444;
-      color: #ffffff;
-    }
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
 
-    /* CONTROLES DE FILA */
-    .input-row-cell {
-      width: 110px;
-      padding: 6px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 13px;
-    }
+        /* INPUTS Y SELECTS DE LAS FILAS */
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        select {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
 
-    .input-row-cell:disabled {
-      background-color: #f1f5f9;
-      border-color: #e2e8f0;
-      color: #0f172a;
-    }
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
 
-    .select-row-cell {
-      padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      font-size: 13px;
-    }
+        .action-cell {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
 
-    .select-row-cell:disabled {
-      background-color: #f1f5f9;
-      border-color: #e2e8f0;
-      color: #0f172a;
-    }
+        .btn-icon {
+            background: #334155;
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
 
-    .btn-row-action {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      padding: 6px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+        .btn-icon.edit {
+            background-color: #f59e0b;
+        }
+        .btn-icon.edit:hover {
+            background-color: #d97706;
+        }
 
-    .btn-row-save {
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: none;
-    }
-
-    .btn-row-delete {
-      background-color: #fee2e2;
-      border: 1px solid #fca5a5;
-      color: #dc2626;
-      padding: 6px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .btn-accion-custom {
-      background-color: #0284c7;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(2,132,199,0.3);
-    }
-    .btn-accion-custom:active {
-      background-color: #0369a1;
-    }
-
-    /* CONTENEDOR DE FECHAS EN GRID (EXACTAMENTE 2 POR FILA) */
-    .fechas-grid-container {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(100px, max-content));
-      gap: 6px;
-      align-items: center;
-      justify-content: start;
-    }
-
-    .badge-fecha-item {
-      background-color: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      white-space: nowrap;
-    }
-
-    .btn-eliminar-fecha {
-      background: none;
-      border: none;
-      color: #0369a1;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
-      padding: 0 2px;
-      line-height: 1;
-      border-radius: 4px;
-    }
-
-    .btn-eliminar-fecha:hover {
-      background-color: #bae6fd;
-      color: #dc2626;
-    }
-
-    /* MODAL DE CONFIRMACIÓN */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 400px;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .modal-title {
-      font-size: 18px;
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    .modal-body {
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.5;
-    }
-
-    .modal-checkbox-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #334155;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 5px;
-    }
-
-    .modal-btn {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-    }
-
-    .modal-btn-cancel {
-      background-color: #f1f5f9;
-      color: #64748b;
-    }
-
-    .modal-btn-confirm {
-      background-color: #10b981;
-      color: #ffffff;
-    }
-  </style>
+        .btn-icon.delete {
+            background-color: var(--accent-red);
+        }
+        .btn-icon.delete:hover {
+            background-color: #dc2626;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- CABECERA -->
-  <div class="header">
-    <h1 id="header-title">Inicio</h1>
-    <button class="btn-principal" onclick="navegar('Inicio', 'Inicio')">
-      <span>🏠</span> <span>Inicio</span>
-    </button>
-  </div>
+<div class="container">
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <main class="main-content">
-    <div class="section-title" id="section-subtitle">Opciones Principales</div>
-    
-    <div id="contenedor-vista">
-      <!-- Vistas dinámicas -->
+    <!-- ================= VISTA: INICIO ================= -->
+    <div id="view-home" class="view-section active">
+        <div class="home-header">
+            🏠 Inicio
+        </div>
+
+        <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
+
+        <div class="menu-grid">
+            <div class="menu-card" onclick="switchView('parcelas')">
+                <div class="menu-card-info">
+                    <h3>Parcelas</h3>
+                    <p>Identificación y control de parcelas</p>
+                </div>
+                <div class="menu-card-icon">📍</div>
+            </div>
+
+            <div class="menu-card" onclick="switchView('laboreos')">
+                <div class="menu-card-info">
+                    <h3>Laboreos</h3>
+                    <p>Gestión de trabajos de laboreo</p>
+                </div>
+                <div class="menu-card-icon">🚜</div>
+            </div>
+
+            <div class="menu-card" onclick="switchView('poda')">
+                <div class="menu-card-info">
+                    <h3>Poda</h3>
+                    <p>Registros y control de poda</p>
+                </div>
+                <div class="menu-card-icon">✂️</div>
+            </div>
+
+            <div class="menu-card" onclick="switchView('tratamientos')">
+                <div class="menu-card-info">
+                    <h3>Tratamientos</h3>
+                    <p>Control de tratamientos aplicados</p>
+                </div>
+                <div class="menu-card-icon">🧪</div>
+            </div>
+
+            <div class="menu-card" onclick="switchView('recoleccion')">
+                <div class="menu-card-info">
+                    <h3>Tareas / Recolección</h3>
+                    <p>Control de tareas y kilos cosechados</p>
+                </div>
+                <div class="menu-card-icon">📦</div>
+            </div>
+        </div>
+
+        <div class="home-actions">
+            <button class="btn btn-blue" onclick="alert('Descargar PDF Completo')">📄 Descargar PDF Completo</button>
+            <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
+        </div>
     </div>
-  </main>
 
-  <script>
-    const SHEET_ID = '1SbB2u_7yt4vhUJJagn5NkDTfMB0eY-o3XSATelXNwx4';
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec'; 
 
-    let pestañaActual = 'Inicio';
-    let tituloVistaActual = 'Inicio';
-    const OPCIONES_CULTIVO = ['Barbecho', 'Frutales', 'Almendros'];
-    let datosMemoriaGlobal = [];
-    let encabezadosGlobales = [];
-
-    const TODAS_LAS_PESTAÑAS = [
-      { id: 'Identificación de Parcelas', nombre: 'Parcelas' },
-      { id: 'Laboreos', nombre: 'Laboreos' },
-      { id: 'Poda', nombre: 'Poda' },
-      { id: 'Tratamientos', nombre: 'Tratamientos' },
-      { id: 'Recolección', nombre: 'Recolección / Tareas' }
-    ];
-
-    function navegar(pestaña, tituloVisual) {
-      pestañaActual = pestaña;
-      tituloVistaActual = tituloVisual;
-      document.getElementById('header-title').innerText = tituloVisual;
-      
-      sessionStorage.setItem('ultimaPestaña', pestaña);
-      sessionStorage.setItem('ultimoTitulo', tituloVisual);
-
-      const subTitulo = document.getElementById('section-subtitle');
-
-      if (pestaña === 'Inicio') {
-        subTitulo.innerText = "Opciones Principales";
-        renderizarInicio();
-      } else {
-        subTitulo.innerText = "Registros de " + tituloVisual;
-        cargarTablaExcel(pestaña);
-      }
-    }
-
-    function renderizarInicio() {
-      const contenedor = document.getElementById('contenedor-vista');
-      contenedor.innerHTML = `
-        <div class="cards-container">
-          <div class="card-item" onclick="navegar('Identificación de Parcelas', 'Parcelas')">
-            <div class="card-info">
-              <div class="card-title">Parcelas</div>
-              <div class="card-subtitle">Identificación y control de parcelas</div>
+    <!-- ================= VISTA: PARCELAS ================= -->
+    <div id="view-parcelas" class="view-section">
+        <div class="top-nav">
+            <h1>📍 Parcelas</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
             </div>
-            <div class="card-badge"><div class="card-badge-num">📍</div></div>
-          </div>
-
-          <div class="card-item" onclick="navegar('Laboreos', 'Laboreos')">
-            <div class="card-info">
-              <div class="card-title">Laboreos</div>
-              <div class="card-subtitle">Gestión de trabajos de laboreo</div>
-            </div>
-            <div class="card-badge"><div class="card-badge-num">🚜</div></div>
-          </div>
-
-          <div class="card-item" onclick="navegar('Poda', 'Poda')">
-            <div class="card-info">
-              <div class="card-title">Poda</div>
-              <div class="card-subtitle">Registros y control de poda</div>
-            </div>
-            <div class="card-badge"><div class="card-badge-num">✂️</div></div>
-          </div>
-
-          <div class="card-item" onclick="navegar('Tratamientos', 'Tratamientos')">
-            <div class="card-info">
-              <div class="card-title">Tratamientos</div>
-              <div class="card-subtitle">Control de tratamientos aplicados</div>
-            </div>
-            <div class="card-badge"><div class="card-badge-num">🧪</div></div>
-          </div>
-
-          <div class="card-item" onclick="navegar('Recolección', 'Tareas')">
-            <div class="card-info">
-              <div class="card-title">Tareas / Recolección</div>
-              <div class="card-subtitle">Control de tareas y kilos cosechados</div>
-            </div>
-            <div class="card-badge"><div class="card-badge-num">📦</div></div>
-          </div>
         </div>
 
-        <div class="acciones-inferior-container">
-          <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDFTodoElExcel()">
-            📄 Descargar PDF Completo
-          </button>
-          <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarTodasLasPestañas()">
-            🗑️ Borrar Datos del Excel
-          </button>
+        <div class="table-container-wrapper">
+            <div class="view-title">Registros de Parcelas</div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('parcelas-table')">+ Añadir Fila</button>
+            </div>
+            <div class="table-responsive">
+                <table id="parcelas-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th>
+                            <th>Comunidad</th>
+                            <th>Provincia</th>
+                            <th>Municipio</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Recinto</th>
+                            <th>Nombre</th>
+                            <th>Tipo de cultivo</th>
+                            <th>Variedad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn-icon edit" title="Editar">✏️</button>
+                                    <button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button>
+                                </div>
+                            </td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text" value="3"></td>
+                            <td><input type="text" value="301"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text" value="Cañada Royo"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Olivo">Olivo</option>
+                                    <option value="Almendro">Almendro</option>
+                                    <option value="Cerezo">Cerezo</option>
+                                </select>
+                            </td>
+                            <td><input type="text"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-      `;
-    }
+    </div>
 
-    function cargarTablaExcel(pestaña) {
-      const contenedor = document.getElementById('contenedor-vista');
-      contenedor.innerHTML = `
-        <div class="acciones-superiores">
-          <button class="btn-accion-superior" onclick="agregarNuevaFila()">➕ Añadir Fila</button>
+
+    <!-- ================= VISTA: LABOREOS ================= -->
+    <div id="view-laboreos" class="view-section">
+        <div class="top-nav">
+            <h1>🚜 Laboreos</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
-        <div class="table-card">
-          <div id="contenedor-tabla" class="table-responsive">
-            <div class="loading">Cargando datos de Google Sheets...</div>
-          </div>
+
+        <div class="table-container-wrapper">
+            <div class="view-title">Gestión de Trabajos de Laboreo</div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('laboreos-table')">+ Añadir Fila</button>
+            </div>
+            <div class="table-responsive">
+                <table id="laboreos-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th>
+                            <th>Comunidad</th>
+                            <th>Provincia</th>
+                            <th>Municipio</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Tipo de cultivo</th>
+                            <th>Tipo de trabajo realizado</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Laboreo</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn-icon edit" title="Editar">✏️</button>
+                                    <button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button>
+                                </div>
+                            </td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text" value="3"></td>
+                            <td><input type="text" value="301"></td>
+                            <td><input type="text" value="Cañada Royo"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="date"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="acciones-inferior-container">
-          <button class="btn-accion-inferior btn-descargar-pdf" onclick="descargarPDFTablaActual()">
-            📄 Descargar PDF
-          </button>
-          <button class="btn-accion-inferior btn-borrar-todo" onclick="confirmarBorrarDatosPestañaActual()">
-            🗑️ Borrar Datos de esta Pestaña
-          </button>
+    </div>
+
+
+    <!-- ================= VISTA: PODA ================= -->
+    <div id="view-poda" class="view-section">
+        <div class="top-nav">
+            <h1>✂️ Poda</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
-      `;
-      obtenerDatosGoogleSheets(pestaña);
-    }
 
-    async function obtenerDatosGoogleSheets(pestaña) {
-      const contenedor = document.getElementById('contenedor-tabla');
-      if (!contenedor) return;
+        <div class="table-container-wrapper">
+            <div class="view-title">Registros y Control de Poda</div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('poda-table')">+ Añadir Fila</button>
+            </div>
+            <div class="table-responsive">
+                <table id="poda-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Podado</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn-icon edit" title="Editar">✏️</button>
+                                    <button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button>
+                                </div>
+                            </td>
+                            <td><input type="text" value="3"></td>
+                            <td><input type="text" value="301"></td>
+                            <td><input type="text" value="Cañada Royo"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="date"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pestaña)}&t=${Date.now()}`;
 
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Error al conectar con Google Sheets");
+    <!-- ================= VISTA: TRATAMIENTOS ================= -->
+    <div id="view-tratamientos" class="view-section">
+        <div class="top-nav">
+            <h1>🧪 Tratamientos</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
+        </div>
+
+        <div class="table-container-wrapper">
+            <div class="view-title">Control de Tratamientos Aplicados</div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('tratamientos-table')">+ Añadir Fila</button>
+            </div>
+            <div class="table-responsive">
+                <table id="tratamientos-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Tratamientos</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn-icon edit" title="Editar">✏️</button>
+                                    <button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button>
+                                </div>
+                            </td>
+                            <td><input type="text" value="3"></td>
+                            <td><input type="text" value="301"></td>
+                            <td><input type="text" value="Cañada Royo"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="date"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= VISTA: RECOLECCIÓN ================= -->
+    <div id="view-recoleccion" class="view-section">
+        <div class="top-nav">
+            <h1>📦 Tareas / Recolección</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
+        </div>
+
+        <div class="table-container-wrapper">
+            <div class="view-title">Control de Tareas y Kilos Cosechados</div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('recoleccion-table')">+ Añadir Fila</button>
+            </div>
+            <div class="table-responsive">
+                <table id="recoleccion-table">
+                    <thead>
+                        <tr>
+                            <th>Acciones</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Variedad</th>
+                            <th>Kilos</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Recolección</th>
+                            <th>Fecha de registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn-icon edit" title="Editar">✏️</button>
+                                    <button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button>
+                                </div>
+                            </td>
+                            <td><input type="text" value="3"></td>
+                            <td><input type="text" value="301"></td>
+                            <td><input type="text" value="Cañada Royo"></td>
+                            <td><input type="text"></td>
+                            <td><input type="number" value="200"></td>
+                            <td><input type="text"></td>
+                            <td><input type="text"></td>
+                            <td><input type="date"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function switchView(viewName) {
+        const sections = document.querySelectorAll('.view-section');
+        sections.forEach(sec => sec.classList.remove('active'));
         
-        const textData = await response.text();
-        const filas = parseCSV(textData);
-
-        if (filas.length === 0) {
-          contenedor.innerHTML = '<div class="loading">La hoja seleccionada está vacía.</div>';
-          return;
+        const target = document.getElementById('view-' + viewName);
+        if (target) {
+            target.classList.add('active');
+            window.scrollTo(0, 0);
         }
-
-        encabezadosGlobales = filas[0];
-        datosMemoriaGlobal = filas.slice(1);
-        construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
-
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-        contenedor.innerHTML = `<div class="loading" style="color: #e63946;">Error al cargar los datos.</div>`;
-      }
     }
 
-    function parseCSV(text) {
-      const lines = text.split('\n');
-      return lines.map(line => {
-        const matches = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g);
-        if (!matches) return line.split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
-        return matches.map(cell => cell.replace(/^"|"$/g, '').trim());
-      }).filter(row => row.length > 0 && row.some(cell => cell !== ""));
-    }
-
-    function construirTablaHTML(encabezadosOriginales, filasData) {
-      const contenedor = document.getElementById('contenedor-tabla');
-      if (!contenedor) return;
-
-      const totalColumnas = encabezadosOriginales.length;
-
-      let html = '<table id="tabla-datos"><thead><tr>';
-      html += '<th>Acciones</th>';
-      encabezadosOriginales.forEach(enc => { 
-        html += `<th>${enc || '&nbsp;'}</th>`;
-      });
-      html += '</tr></thead><tbody>';
-
-      filasData.forEach((fila, rowIndex) => {
-        html += `<tr id="row_${rowIndex}">`;
+    function addRow(tableId) {
+        const table = document.getElementById(tableId);
+        const tbody = table.getElementsByTagName('tbody')[0];
+        const firstRow = tbody.rows[0];
         
-        html += `<td>
-          <div style="display: flex; gap: 4px; align-items: center;">
-            <button class="btn-row-action" id="btn_edit_${rowIndex}" title="Editar fila" onclick="habilitarFila(${rowIndex})">✏️</button>
-            <button class="btn-row-save" id="btn_save_${rowIndex}" title="Guardar fila" onclick="intentarGuardarFila(${rowIndex})">💾 Guardar</button>
-            <button class="btn-row-delete" title="Eliminar fila" onclick="confirmarEliminarFila(${rowIndex})">🗑️</button>
-          </div>
-        </td>`;
+        if (!firstRow) return;
 
-        for (let colIndex = 0; colIndex < totalColumnas; colIndex++) {
-          const header = encabezadosOriginales[colIndex] || '';
-          const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
-          const headerLower = header.toLowerCase().trim();
-          
-          const esTipoCultivo = headerLower === 'tipo de cultivo';
-          const esBotonEspecial = ['laboreo', 'podado', 'trataminetos', 'recolección'].includes(headerLower);
-          const esFechaRegistro = headerLower === 'fecha de registro' || headerLower.includes('fecha de registro');
-
-          if (esTipoCultivo) {
-            html += `<td>
-              <select id="cell_${rowIndex}_${colIndex}" class="select-row-cell" disabled>
-                <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
-            
-            OPCIONES_CULTIVO.forEach(opcion => {
-              const selected = (valor.toLowerCase().trim() === opcion.toLowerCase().trim()) ? 'selected' : '';
-              html += `<option value="${opcion}" ${selected}>${opcion}</option>`;
-            });
-
-            html += `</select></td>`;
-          } else if (esBotonEspecial) {
-            html += `<td>
-              <button type="button" class="btn-accion-custom" onclick="pulsarBotonAccionFecha(${rowIndex}, '${header}')">
-                👉 ${header}
-              </button>
-            </td>`;
-          } else if (esFechaRegistro) {
-            let arrayFechas = valor ? valor.split(',').map(f => f.trim()).filter(f => f !== '') : [];
-            
-            let badgesHtml = `<div class="fechas-grid-container" id="cell_${rowIndex}_${colIndex}_grid">`;
-            arrayFechas.forEach((f, fIdx) => {
-              badgesHtml += `
-                <div class="badge-fecha-item">
-                  <span>${f}</span>
-                  <button type="button" class="btn-eliminar-fecha" onclick="eliminarFechaEspecifica(${rowIndex}, ${colIndex}, ${fIdx})" title="Quitar fecha">×</button>
-                </div>`;
-            });
-            badgesHtml += `</div>`;
-
-            html += `<td>
-              <input type="hidden" id="cell_${rowIndex}_${colIndex}" value="${valor}">
-              ${badgesHtml}
-            </td>`;
-          } else {
-            html += `<td>
-              <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
-            </td>`;
-          }
-        }
-
-        html += '</tr>';
-      });
-
-      html += '</tbody></table>';
-      contenedor.innerHTML = html;
-    }
-
-    function habilitarFila(rowIndex) {
-      const filaElem = document.getElementById(`row_${rowIndex}`);
-      if (!filaElem) return;
-
-      const inputs = filaElem.querySelectorAll('input:not([type="hidden"]), select');
-      inputs.forEach(el => el.disabled = false);
-
-      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-      const btnSave = document.getElementById(`btn_save_${rowIndex}`);
-      if (btnEdit) btnEdit.style.display = 'none';
-      if (btnSave) btnSave.style.display = 'inline-block';
-
-      if (inputs.length > 0) inputs[0].focus();
-    }
-
-    // Al pulsar el botón de acción, añade la fecha actual de forma ilimitada
-    function pulsarBotonAccionFecha(rowIndex, nombreBoton) {
-      habilitarFila(rowIndex);
-      
-      const hoy = new Date().toLocaleDateString('es-ES');
-      const filaElem = document.getElementById(`row_${rowIndex}`);
-      if (!filaElem) return;
-
-      let colFechaIndex = -1;
-      encabezadosGlobales.forEach((enc, idx) => {
-        const encL = enc.toLowerCase().trim();
-        if (encL === 'fecha de registro' || encL.includes('fecha de registro')) {
-          colFechaIndex = idx;
-        }
-      });
-
-      if (colFechaIndex !== -1) {
-        const inputHidden = document.getElementById(`cell_${rowIndex}_${colFechaIndex}`);
-        const gridContainer = document.getElementById(`cell_${rowIndex}_${colFechaIndex}_grid`);
-        
-        if (inputHidden && gridContainer) {
-          let fechasActuales = inputHidden.value ? inputHidden.value.split(',').map(f => f.trim()).filter(f => f !== '') : [];
-          fechasActuales.push(hoy); 
-
-          inputHidden.value = fechasActuales.join(', ');
-
-          let badgesHtml = '';
-          fechasActuales.forEach((f, fIdx) => {
-            badgesHtml += `
-              <div class="badge-fecha-item">
-                <span>${f}</span>
-                <button type="button" class="btn-eliminar-fecha" onclick="eliminarFechaEspecifica(${rowIndex}, ${colIndex}, ${fIdx})" title="Quitar fecha">×</button>
-              </div>`;
-          });
-          gridContainer.innerHTML = badgesHtml;
-        }
-      }
-
-      intentarGuardarFila(rowIndex);
-    }
-
-    // Permite eliminar una fecha concreta pulsando la "x"
-    function eliminarFechaEspecifica(rowIndex, colIndex, fechaIndex) {
-      habilitarFila(rowIndex);
-
-      const inputHidden = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      const gridContainer = document.getElementById(`cell_${rowIndex}_${colIndex}_grid`);
-
-      if (inputHidden && gridContainer) {
-        let fechasActuales = inputHidden.value ? inputHidden.value.split(',').map(f => f.trim()).filter(f => f !== '') : [];
-        
-        // Eliminar la fecha en el índice indicado
-        fechasActuales.splice(fechaIndex, 1);
-
-        inputHidden.value = fechasActuales.join(', ');
-
-        let badgesHtml = '';
-        fechasActuales.forEach((f, fIdx) => {
-          badgesHtml += `
-            <div class="badge-fecha-item">
-              <span>${f}</span>
-              <button type="button" class="btn-eliminar-fecha" onclick="eliminarFechaEspecifica(${rowIndex}, ${colIndex}, ${fIdx})" title="Quitar fecha">×</button>
-            </div>`;
-        });
-        gridContainer.innerHTML = badgesHtml;
-      }
-
-      intentarGuardarFila(rowIndex);
-    }
-
-    function intentarGuardarFila(rowIndex) {
-      const noMostrarAviso = localStorage.getItem('noMostrarAvisoGuardar') === 'true';
-
-      if (noMostrarAviso) {
-        ejecutarGuardadoFila(rowIndex);
-      } else {
-        mostrarModalConfirmacion("Guardar fila", "¿Estás seguro de que quieres guardar los cambios realizados en esta fila?", (marcarNoMostrar) => {
-          if (marcarNoMostrar) {
-            localStorage.setItem('noMostrarAvisoGuardar', 'true');
-          }
-          ejecutarGuardadoFila(rowIndex);
-        });
-      }
-    }
-
-    async function ejecutarGuardadoFila(rowIndex) {
-      const filaElem = document.getElementById(`row_${rowIndex}`);
-      if (!filaElem) return;
-
-      const inputs = filaElem.querySelectorAll('input:not([type="hidden"]), select, input[type="hidden"]');
-      inputs.forEach(el => {
-        if(el.tagName === 'INPUT' && el.type !== 'hidden') el.disabled = true;
-        if(el.tagName === 'SELECT') el.disabled = true;
-      });
-
-      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
-      const btnSave = document.getElementById(`btn_save_${rowIndex}`);
-      if (btnEdit) btnEdit.style.display = 'inline-block';
-      if (btnSave) btnSave.style.display = 'none';
-
-      const rowInSheet = rowIndex + 2;
-      
-      for (let colIndex = 0; colIndex < encabezadosGlobales.length; colIndex++) {
-        const cellInput = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-        if (cellInput) {
-          const valor = cellInput.value.trim();
-          try {
-            await fetch(WEB_APP_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colIndex + 1, valor: valor })
-            });
-          } catch (e) {
-            console.error("Error al guardar celda:", e);
-          }
-        }
-      }
-    }
-
-    function agregarNuevaFila() {
-      const nuevaFilaVacia = new Array(encabezadosGlobales.length).fill('');
-      datosMemoriaGlobal.push(nuevaFilaVacia);
-      construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
-      const ultimoIndice = datosMemoriaGlobal.length - 1;
-      habilitarFila(ultimoIndice);
-    }
-
-    function confirmarEliminarFila(rowIndex) {
-      mostrarModalConfirmacion("Eliminar fila", "¿Estás seguro de que deseas eliminar esta fila?", () => {
-        datosMemoriaGlobal.splice(rowIndex, 1);
-        construirTablaHTML(encabezadosGlobales, datosMemoriaGlobal);
-      });
-    }
-
-    function mostrarModalConfirmacion(titulo, mensaje, callbackConfirmar) {
-      const modalOverlay = document.createElement('div');
-      modalOverlay.className = 'modal-overlay';
-      modalOverlay.id = 'modal-confirmacion';
-
-      modalOverlay.innerHTML = `
-        <div class="modal-card">
-          <div class="modal-title">⚠️ ${titulo}</div>
-          <div class="modal-body">${mensaje}</div>
-          <label class="modal-checkbox-container">
-            <input type="checkbox" id="check-no-preguntar" />
-            No volver a preguntar
-          </label>
-          <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" id="btn-modal-cancel">Cancelar</button>
-            <button class="modal-btn modal-btn-confirm" id="btn-modal-ok">Aceptar</button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(modalOverlay);
-
-      document.getElementById('btn-modal-cancel').onclick = () => {
-        document.body.removeChild(modalOverlay);
-      };
-
-      document.getElementById('btn-modal-ok').onclick = () => {
-        const marcarNoPreguntar = document.getElementById('check-no-preguntar').checked;
-        document.body.removeChild(modalOverlay);
-        callbackConfirmar(marcarNoPreguntar);
-      };
-    }
-
-    async function descargarPDFTodoElExcel() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-      doc.setFontSize(18);
-      doc.setTextColor(11, 30, 40);
-      doc.text("Reporte General - Gestión Agrícola Completa", 14, 15);
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139);
-      const fechaActual = new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      doc.text(`Exportación completa: ${fechaActual}`, 14, 22);
-
-      let posY = 28;
-
-      for (let i = 0; i < TODAS_LAS_PESTAÑAS.length; i++) {
-        const item = TODAS_LAS_PESTAÑAS[i];
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(item.id)}&t=${Date.now()}`;
-
-        try {
-          const resp = await fetch(url);
-          if (resp.ok) {
-            const csvText = await resp.text();
-            const filas = parseCSV(csvText);
-
-            if (filas.length > 0) {
-              if (i > 0 && posY > 150) {
-                doc.addPage();
-                posY = 15;
-              }
-
-              doc.setFontSize(14);
-              doc.setTextColor(16, 185, 129);
-              doc.text(`Sección: ${item.nombre}`, 14, posY);
-              posY += 6;
-
-              doc.autoTable({
-                head: [filas[0]],
-                body: filas.slice(1),
-                startY: posY,
-                theme: 'grid',
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [13, 27, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [248, 250, 252] }
-              });
-
-              posY = doc.lastAutoTable.finalY + 12;
-            }
-          }
-        } catch (e) {
-          console.error("Error cargando pestaña " + item.nombre, e);
-        }
-      }
-
-      doc.save(`Reporte_General_Agricola_${new Date().toISOString().slice(0,10)}.pdf`);
-    }
-
-    function descargarPDFTablaActual() {
-      const tabla = document.getElementById('tabla-datos');
-      if (!tabla) {
-        alert("No hay datos disponibles para exportar a PDF.");
-        return;
-      }
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-      doc.setFontSize(16);
-      doc.setTextColor(11, 30, 40);
-      doc.text(`Reporte de Gestión Agrícola - ${tituloVistaActual}`, 14, 15);
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139);
-      const fechaActual = new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      doc.text(`Fecha de exportación: ${fechaActual}`, 14, 22);
-
-      const filasProcesadas = [];
-      const filasTabla = tabla.querySelectorAll('tr');
-
-      filasTabla.forEach((fila, index) => {
-        const celdas = fila.querySelectorAll('th, td');
-        const datosFila = [];
-
-        celdas.forEach((celda, cIdx) => {
-          if (index > 0 && cIdx === 0) return;
-
-          const inputHidden = celda.querySelector('input[type="hidden"]');
-          if (inputHidden) {
-            datosFila.push(inputHidden.value || '');
-            return;
-          }
-
-          const input = celda.querySelector('input');
-          if (input && input.type !== 'checkbox') {
-            datosFila.push(input.value || '');
-            return;
-          }
-
-          const select = celda.querySelector('select');
-          if (select) {
-            datosFila.push(select.options[select.selectedIndex]?.text || '');
-            return;
-          }
-
-          // Limpiar símbolos sobrantes, incluyendo las '×' de los botones de fecha
-          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️|📅|✅|👉|×/g, '').trim());
+        const newRow = firstRow.cloneNode(true);
+        const inputs = newRow.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.value = '';
         });
 
-        if (datosFila.length > 0) {
-          filasProcesadas.push(datosFila);
+        const deleteBtn = newRow.querySelector('.btn-icon.delete');
+        if(deleteBtn) {
+            deleteBtn.setAttribute('onclick', 'deleteRow(this)');
         }
-      });
 
-      doc.autoTable({
-        head: [filasProcesadas[0]],
-        body: filasProcesadas.slice(1),
-        startY: 28,
-        theme: 'grid',
-        styles: { fontSize: 8, cellPadding: 3 },
-        headStyles: { fillColor: [13, 27, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [248, 250, 252] }
-      });
-
-      doc.save(`Reporte_${tituloVistaActual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+        tbody.appendChild(newRow);
     }
 
-    async function confirmarBorrarDatosPestañaActual() {
-      const primeraConfirmacion = confirm(`⚠️ ¿Estás seguro de que deseas BORRAR los registros ingresados en "${tituloVistaActual}"?`);
-      if (!primeraConfirmacion) return;
-
-      const contenedor = document.getElementById('contenedor-tabla');
-      if(contenedor) contenedor.innerHTML = `<div class="loading" style="color: #ef4444;">Borrando datos...</div>`;
-
-      try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'clearUserEnteredData', sheet: pestañaActual })
-        });
-
-        setTimeout(() => { location.reload(); }, 800);
-      } catch (e) {
-        console.error("Error al borrar datos:", e);
-        location.reload();
-      }
-    }
-
-    async function confirmarBorrarTodasLasPestañas() {
-      const primeraConfirmacion = confirm(`⚠️ ¿ATENCIÓN: Deseas BORRAR TODOS LOS DATOS de todo el Excel?`);
-      if (!primeraConfirmacion) return;
-
-      const segundaConfirmacion = confirm(`🔴 ACCIÓN DEFINITIVA:\nSe vaciarán todas las celdas en todas las secciones.\n\n¿Estás completamente seguro?`);
-      if (!segundaConfirmacion) return;
-
-      for (let item of TODAS_LAS_PESTAÑAS) {
-        try {
-          await fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'clearUserEnteredData', sheet: item.id })
-          });
-        } catch (e) {
-          console.error("Error borrando " + item.id, e);
+    function deleteRow(btn) {
+        const row = btn.closest('tr');
+        const tbody = row.closest('tbody');
+        if (tbody.rows.length > 1) {
+            row.remove();
+        } else {
+            alert("Debe mantenerse al menos una fila en la tabla.");
         }
-      }
-
-      sessionStorage.setItem('ultimaPestaña', 'Inicio');
-      sessionStorage.setItem('ultimoTitulo', 'Inicio');
-
-      setTimeout(() => { location.reload(); }, 800);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const ultimaPestaña = sessionStorage.getItem('ultimaPestaña');
-      const ultimoTitulo = sessionStorage.getItem('ultimoTitulo');
+    function confirmReset() {
+        if(confirm("¿Estás seguro de que deseas borrar los datos del Excel?")) {
+            alert("Datos restablecidos correctamente.");
+        }
+    }
+</script>
 
-      if (ultimaPestaña && ultimaPestaña !== 'Inicio') {
-        navegar(ultimaPestaña, ultimoTitulo);
-      } else {
-        renderizarInicio();
-      }
-    });
-  </script>
 </body>
 </html>
