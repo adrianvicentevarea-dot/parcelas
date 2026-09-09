@@ -168,7 +168,28 @@
       font-style: italic;
     }
 
-    /* BOTONES ACCIÓN */
+    /* BOTONES ACCIÓN SUPERIOR / INFERIOR */
+    .acciones-superiores {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .btn-accion-superior {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+    }
+
     .acciones-inferior-container {
       display: flex;
       gap: 12px;
@@ -190,11 +211,6 @@
       justify-content: center;
       gap: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      transition: transform 0.1s, opacity 0.2s;
-    }
-
-    .btn-accion-inferior:active {
-      transform: scale(0.97);
     }
 
     .btn-descargar-pdf {
@@ -207,49 +223,44 @@
       color: #ffffff;
     }
 
-    /* CONTROLES EDITABLES UNIVERSALES */
-    .editable-cell-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .input-editable {
-      width: 130px;
+    /* CONTROLES DE FILA */
+    .input-row-cell {
+      width: 120px;
       padding: 6px;
       border: 1.5px solid #cbd5e1;
       border-radius: 6px;
       font-size: 13px;
     }
 
-    .input-editable:disabled {
+    .input-row-cell:disabled {
       background-color: #f1f5f9;
       border-color: #e2e8f0;
       color: #0f172a;
     }
 
-    .select-editable {
+    .select-row-cell {
       padding: 6px 8px;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
       font-size: 13px;
     }
 
-    .select-editable:disabled {
+    .select-row-cell:disabled {
       background-color: #f1f5f9;
       border-color: #e2e8f0;
       color: #0f172a;
     }
 
-    .btn-edit-row {
+    .btn-row-action {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      padding: 5px;
+      padding: 6px 8px;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 14px;
     }
 
-    .btn-save-row {
+    .btn-row-save {
       background-color: #2563eb;
       color: white;
       border: none;
@@ -258,6 +269,17 @@
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
+      display: none;
+    }
+
+    .btn-row-delete {
+      background-color: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
     }
 
     /* MODAL DE CONFIRMACIÓN */
@@ -449,6 +471,9 @@
     function cargarTablaExcel(pestaña) {
       const contenedor = document.getElementById('contenedor-vista');
       contenedor.innerHTML = `
+        <div class="acciones-superiores">
+          <button class="btn-accion-superior" onclick="agregarNuevaFila()">➕ Añadir Fila</button>
+        </div>
         <div class="table-card">
           <div id="contenedor-tabla" class="table-responsive">
             <div class="loading">Cargando datos de Google Sheets...</div>
@@ -510,49 +535,44 @@
       const filasData = data.slice(1);
 
       let html = '<table id="tabla-datos"><thead><tr>';
+      html += '<th>Acciones</th>'; // Columna fija para Editar/Guardar/Borrar
       encabezadosOriginales.forEach(enc => { 
         html += `<th>${enc || '&nbsp;'}</th>`;
       });
       html += '</tr></thead><tbody>';
 
       filasData.forEach((fila, rowIndex) => {
-        html += '<tr>';
+        html += `<tr id="row_${rowIndex}">`;
         
+        // Celda de botones de acción de fila
+        html += `<td>
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button class="btn-row-action" id="btn_edit_${rowIndex}" title="Editar fila" onclick="habilitarFila(${rowIndex})">✏️</button>
+            <button class="btn-row-save" id="btn_save_${rowIndex}" title="Guardar fila" onclick="intentarGuardarFila(${rowIndex})">💾 Guardar</button>
+            <button class="btn-row-delete" title="Eliminar fila" onclick="confirmarEliminarFila(${rowIndex})">🗑️</button>
+          </div>
+        </td>`;
+
         for (let colIndex = 0; colIndex < totalColumnas; colIndex++) {
           const header = encabezadosOriginales[colIndex] || '';
           const valor = fila[colIndex] !== undefined ? fila[colIndex] : '';
           const headerLower = header.toLowerCase().trim();
-
           const esTipoCultivo = headerLower === 'tipo de cultivo';
-          
+
           if (esTipoCultivo) {
             html += `<td>
-              <div class="editable-cell-container">
-                <select id="cell_${rowIndex}_${colIndex}" class="select-editable" disabled>
-                  <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
+              <select id="cell_${rowIndex}_${colIndex}" class="select-row-cell" disabled>
+                <option value="" ${!valor ? 'selected' : ''}>-- Seleccionar --</option>`;
             
             OPCIONES_CULTIVO.forEach(opcion => {
               const selected = (valor.toLowerCase().trim() === opcion.toLowerCase().trim()) ? 'selected' : '';
               html += `<option value="${opcion}" ${selected}>${opcion}</option>`;
             });
 
-            html += `</select>
-                <button id="btn_edit_${rowIndex}_${colIndex}" class="btn-edit-row" title="Editar" onclick="habilitarCelda(${rowIndex}, ${colIndex})">✏️</button>
-                <button id="btn_save_${rowIndex}_${colIndex}" class="btn-save-row" style="display: none;" onclick="intentarGuardarCelda(${rowIndex}, ${colIndex}, '${header}', '${valor}')">💾 Guardar</button>
-              </div>
-            </td>`;
+            html += `</select></td>`;
           } else {
-            // Celda de texto / número genérica con lápiz y guardar
             html += `<td>
-              <div class="editable-cell-container">
-                <input type="text" 
-                       id="cell_${rowIndex}_${colIndex}" 
-                       class="input-editable" 
-                       value="${valor}" 
-                       disabled />
-                <button id="btn_edit_${rowIndex}_${colIndex}" class="btn-edit-row" title="Editar" onclick="habilitarCelda(${rowIndex}, ${colIndex})">✏️</button>
-                <button id="btn_save_${rowIndex}_${colIndex}" class="btn-save-row" style="display: none;" onclick="intentarGuardarCelda(${rowIndex}, ${colIndex}, '${header}', '${valor}')">💾 Guardar</button>
-              </div>
+              <input type="text" id="cell_${rowIndex}_${colIndex}" class="input-row-cell" value="${valor}" disabled />
             </td>`;
           }
         }
@@ -564,62 +584,95 @@
       contenedor.innerHTML = html;
     }
 
-    function habilitarCelda(rowIndex, colIndex) {
-      const input = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      const btnEdit = document.getElementById(`btn_edit_${rowIndex}_${colIndex}`);
-      const btnSave = document.getElementById(`btn_save_${rowIndex}_${colIndex}`);
+    function habilitarFila(rowIndex) {
+      const filaElem = document.getElementById(`row_${rowIndex}`);
+      if (!filaElem) return;
 
-      if (input) {
-        input.disabled = false;
-        input.focus();
-        if (input.tagName === 'INPUT') {
-          input.select();
-        }
-        if (btnEdit) btnEdit.style.display = 'none';
-        if (btnSave) btnSave.style.display = 'inline-block';
-      }
+      const inputs = filaElem.querySelectorAll('input, select');
+      inputs.forEach(el => el.disabled = false);
+
+      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+      const btnSave = document.getElementById(`btn_save_${rowIndex}`);
+      if (btnEdit) btnEdit.style.display = 'none';
+      if (btnSave) btnSave.style.display = 'inline-block';
+
+      // Poner foco en el primer input
+      if (inputs.length > 0) inputs[0].focus();
     }
 
-    function intentarGuardarCelda(rowIndex, colIndex, nombreColumna, valorAnterior) {
-      const elemento = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      if (!elemento) return;
-
-      const nuevoValor = elemento.value.trim();
+    function intentarGuardarFila(rowIndex) {
       const noMostrarAviso = localStorage.getItem('noMostrarAvisoGuardar') === 'true';
 
       if (noMostrarAviso) {
-        ejecutarGuardadoCelda(rowIndex, colIndex, nuevoValor);
+        ejecutarGuardadoFila(rowIndex);
       } else {
-        mostrarModalConfirmacion(nombreColumna, valorAnterior, nuevoValor, (marcarNoMostrar) => {
+        mostrarModalConfirmacion("Guardar fila", "¿Estás seguro de que quieres guardar los cambios realizados en esta fila?", (marcarNoMostrar) => {
           if (marcarNoMostrar) {
             localStorage.setItem('noMostrarAvisoGuardar', 'true');
           }
-          ejecutarGuardadoCelda(rowIndex, colIndex, nuevoValor);
+          ejecutarGuardadoFila(rowIndex);
         });
       }
     }
 
-    function mostrarModalConfirmacion(columna, valorAnt, valorNuevo, callbackConfirmar) {
+    async function ejecutarGuardadoFila(rowIndex) {
+      const filaElem = document.getElementById(`row_${rowIndex}`);
+      if (!filaElem) return;
+
+      const inputs = filaElem.querySelectorAll('input, select');
+      inputs.forEach(el => el.disabled = true);
+
+      const btnEdit = document.getElementById(`btn_edit_${rowIndex}`);
+      const btnSave = document.getElementById(`btn_save_${rowIndex}`);
+      if (btnEdit) btnEdit.style.display = 'inline-block';
+      if (btnSave) btnSave.style.display = 'none';
+
+      // Guardar cada celda de la fila en Google Sheets
+      const rowInSheet = rowIndex + 2;
+      inputs.forEach(async (el, colIndex) => {
+        const valor = el.value.trim();
+        try {
+          await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colIndex + 1, valor: valor })
+          });
+        } catch (e) {
+          console.error("Error al guardar celda:", e);
+        }
+      });
+    }
+
+    function agregarNuevaFila() {
+      // Simula añadir fila localmente o recargar tras insertar en hoja
+      alert("Para añadir una nueva fila, agrégala directamente en tu Google Sheets y recarga la aplicación, o usa los controles de la hoja.");
+    }
+
+    function confirmarEliminarFila(rowIndex) {
+      mostrarModalConfirmacion("Eliminar fila", "¿Estás seguro de que deseas eliminar esta fila?", () => {
+        const filaElem = document.getElementById(`row_${rowIndex}`);
+        if (filaElem) filaElem.remove();
+        // Aquí podrías enviar petición de borrado de fila si tu Web App lo soporta
+      });
+    }
+
+    function mostrarModalConfirmacion(titulo, mensaje, callbackConfirmar) {
       const modalOverlay = document.createElement('div');
       modalOverlay.className = 'modal-overlay';
       modalOverlay.id = 'modal-confirmacion';
 
       modalOverlay.innerHTML = `
         <div class="modal-card">
-          <div class="modal-title">⚠️ Confirmar cambios</div>
-          <div class="modal-body">
-            ¿Estás seguro de que quieres guardar los datos que has cambiado?<br><br>
-            <strong>Columna:</strong> ${columna}<br>
-            <strong>Valor anterior:</strong> "${valorAnt || 'Vacío'}"<br>
-            <strong>Nuevo valor:</strong> "${valorNuevo || 'Vacío'}"
-          </div>
+          <div class="modal-title">⚠️ ${titulo}</div>
+          <div class="modal-body">${mensaje}</div>
           <label class="modal-checkbox-container">
             <input type="checkbox" id="check-no-preguntar" />
             No volver a preguntar
           </label>
           <div class="modal-buttons">
             <button class="modal-btn modal-btn-cancel" id="btn-modal-cancel">Cancelar</button>
-            <button class="modal-btn modal-btn-confirm" id="btn-modal-ok">Guardar</button>
+            <button class="modal-btn modal-btn-confirm" id="btn-modal-ok">Aceptar</button>
           </div>
         </div>
       `;
@@ -635,31 +688,6 @@
         document.body.removeChild(modalOverlay);
         callbackConfirmar(marcarNoPreguntar);
       };
-    }
-
-    async function ejecutarGuardadoCelda(rowIndex, colIndex, nuevoValor) {
-      const elemento = document.getElementById(`cell_${rowIndex}_${colIndex}`);
-      const btnEdit = document.getElementById(`btn_edit_${rowIndex}_${colIndex}`);
-      const btnSave = document.getElementById(`btn_save_${rowIndex}_${colIndex}`);
-
-      if (elemento) elemento.disabled = true;
-      if (btnEdit) btnEdit.style.display = 'inline-block';
-      if (btnSave) btnSave.style.display = 'none';
-
-      // Fila real en Google Sheets (fila visual + 2 por cabecera)
-      const rowInSheet = rowIndex + 2;
-      const colInSheet = colIndex + 1;
-
-      try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sheet: pestañaActual, row: rowInSheet, column: colInSheet, valor: nuevoValor })
-        });
-      } catch (e) {
-        console.error("Error al guardar en Google Sheets:", e);
-      }
     }
 
     async function descargarPDFTodoElExcel() {
@@ -698,12 +726,9 @@
               doc.text(`Sección: ${item.nombre}`, 14, posY);
               posY += 6;
 
-              const encabezados = filas[0];
-              const cuerpo = filas.slice(1);
-
               doc.autoTable({
-                head: [encabezados],
-                body: cuerpo,
+                head: [filas[0]],
+                body: filas.slice(1),
                 startY: posY,
                 theme: 'grid',
                 styles: { fontSize: 8, cellPadding: 2 },
@@ -719,8 +744,7 @@
         }
       }
 
-      const nombreArchivo = `Reporte_General_Agricola_${new Date().toISOString().slice(0,10)}.pdf`;
-      doc.save(nombreArchivo);
+      doc.save(`Reporte_General_Agricola_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
     function descargarPDFTablaActual() {
@@ -745,11 +769,14 @@
       const filasProcesadas = [];
       const filasTabla = tabla.querySelectorAll('tr');
 
-      filasTabla.forEach((fila) => {
+      filasTabla.forEach((fila, index) => {
         const celdas = fila.querySelectorAll('th, td');
         const datosFila = [];
 
-        celdas.forEach(celda => {
+        // Omitir la primera celda si es la columna de botones de acción
+        celdas.forEach((celda, cIdx) => {
+          if (index > 0 && cIdx === 0) return; // Saltar columna de acciones en filas de datos
+
           const input = celda.querySelector('input');
           if (input && input.type !== 'checkbox') {
             datosFila.push(input.value || '');
@@ -762,18 +789,13 @@
             return;
           }
 
-          datosFila.push(celda.innerText.replace(/✏️|💾/g, '').trim());
+          datosFila.push(celda.innerText.replace(/✏️|💾|🗑️/g, '').trim());
         });
 
         if (datosFila.length > 0) {
           filasProcesadas.push(datosFila);
         }
       });
-
-      if (filasProcesadas.length <= 1) {
-        alert("La tabla no contiene datos para exportar.");
-        return;
-      }
 
       doc.autoTable({
         head: [filasProcesadas[0]],
@@ -785,8 +807,7 @@
         alternateRowStyles: { fillColor: [248, 250, 252] }
       });
 
-      const nombreArchivo = `Reporte_${tituloVistaActual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
-      doc.save(nombreArchivo);
+      doc.save(`Reporte_${tituloVistaActual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
     async function confirmarBorrarDatosPestañaActual() {
