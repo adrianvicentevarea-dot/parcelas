@@ -307,7 +307,7 @@
 
         .date-chip {
             background-color: #334155;
-            color: #f8fafc;
+            color: var(--text-main);
             padding: 6px 10px;
             border-radius: 4px;
             font-size: 0.85rem;
@@ -610,9 +610,9 @@
         let html = "";
         for (let i = 0; i < dates.length; i += 2) {
             html += `<div class="dates-row">`;
-            html += `<span class="date-chip"><span>${dates[i]}</span><button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
+            html += `<span class="date-chip"><span class="date-text">${dates[i]}</span><button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
             if (i + 1 < dates.length) {
-                html += `<span class="date-chip"><span>${dates[i+1]}</span><button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
+                html += `<span class="date-chip"><span class="date-text">${dates[i+1]}</span><button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
             }
             html += `</div>`;
         }
@@ -669,7 +669,7 @@
         const dateStr = `${year}-${month}-${day}`;
 
         let currentDates = [];
-        dateTd.querySelectorAll('.date-chip span span').forEach(span => {
+        dateTd.querySelectorAll('.date-text').forEach(span => {
             let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
@@ -691,7 +691,7 @@
         const container = td.querySelector('.dates-container');
         
         let currentDates = [];
-        td.querySelectorAll('.date-chip span span').forEach(span => {
+        td.querySelectorAll('.date-text').forEach(span => {
             let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
