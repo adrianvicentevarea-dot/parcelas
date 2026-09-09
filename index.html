@@ -672,7 +672,7 @@
         const rowIndex = tr.rowIndex + 1; 
 
         try {
-            await fetch(WEB_APP_URL, {
+            const response = await fetch(WEB_APP_URL, {
                 method: 'POST',
                 redirect: 'follow',
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -682,8 +682,12 @@
                     value: value
                 })
             });
+            const result = await response.json();
+            if (result.status !== "success") {
+                console.error("El servidor indicó un fallo al guardar:", result.message);
+            }
         } catch (err) {
-            console.error("Error al actualizar el Excel:", err);
+            console.error("Error de red al actualizar el Excel:", err);
         }
     }
 
