@@ -417,6 +417,7 @@
                         </div>
                     </td>`;
                 } else {
+                    // Aquí entra Variedad y el resto de campos de texto
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
                     html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
@@ -445,6 +446,7 @@
 
     async function autoSaveFromSelect(select) {
         const td = select.closest('td');
+        if (!td.dataset.row) return;
         const table = select.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         await sendUpdate(sheet, td.dataset.row, td.dataset.col, select.value);
@@ -473,14 +475,13 @@
         tr.querySelector('.save').style.display = 'inline-flex';
     }
 
-    // ========== AÑADIR FILA SOLO EN LA APP ==========
+    // Añadir fila solo en la app
     function addRow(tableId) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector('tbody');
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
 
-        // Creamos una fila nueva vacía con el mismo formato
         let html = `<td><div class="action-cell">
             <button class="btn-icon edit" style="display:none;">✏️</button>
             <button class="btn-icon save" style="display:inline-flex;" onclick="saveNewRow(this)">💾</button>
@@ -528,27 +529,24 @@
                     </div>
                 </td>`;
             } else {
+                // Variedad y resto → campo de texto
                 html += `<td><input type="text" value=""></td>`;
             }
         });
 
         const tr = document.createElement('tr');
-        tr.classList.add('nueva-fila'); // Marcamos que es una fila nueva
+        tr.classList.add('nueva-fila');
         tr.innerHTML = html;
         tbody.appendChild(tr);
-
-        // Hacemos scroll hasta la nueva fila
         tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // ========== GUARDAR FILA NUEVA EN EL EXCEL ==========
+    // Guardar fila nueva en el Excel
     async function saveNewRow(btn) {
         const tr = btn.closest('tr');
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        const headers = Array.from(table.querySelectorAll('th')).slice(1);
 
-        // Recogemos todos los valores de la fila
         const values = [];
         const tds = tr.querySelectorAll('td');
 
@@ -571,16 +569,20 @@
             values.push(value);
         }
 
+        // Guardamos la pestaña actual
+        const active = document.querySelector('.view-section.active');
+        if (active) {
+            sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+        }
+
         showSaving();
 
-        // Enviamos al Excel como nueva fila
         await sendToSheet({
             action: "append",
             sheet: sheet,
             values: values
         });
 
-        // Recargamos para que la fila tenga los data-row correctos
         await new Promise(r => setTimeout(r, 800));
         await silentReload();
     }
@@ -604,7 +606,7 @@
 
     async function autoSave(el) {
         const td = el.closest('td');
-        if (!td.dataset.row) return; // Si es fila nueva, no guardamos todavía
+        if (!td.dataset.row) return;
         const table = el.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         await sendUpdate(sheet, td.dataset.row, td.dataset.col, el.value);
@@ -654,15 +656,16 @@
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         const td = tr.querySelector('[data-row]');
 
-        // Si es una fila nueva que aún no está en Excel, solo la borramos de la app
-        if (!td || !td.dataset.row) {
-            tr.remove();
-            return;
-        }
-
+        // Guardamos la pestaña actual ANTES de borrar
         const active = document.querySelector('.view-section.active');
         if (active) {
             sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+        }
+
+        // Si es una fila nueva (aún no está en Excel)
+        if (!td || !td.dataset.row) {
+            tr.remove();
+            return;
         }
 
         showSaving();
@@ -673,15 +676,22 @@
             row: parseInt(td.dataset.row)
         });
 
-        await new Promise(r => setTimeout(r, 800));
+        // Recargamos y volvemos a la misma pestaña
+        await new Promise(r => setTimeout(r, 600));
         await silentReload();
     }
 
     async function confirmReset() {
         if (!confirm("¿Borrar TODOS los datos del Excel?")) return;
+
+        const active = document.querySelector('.view-section.active');
+        if (active) {
+            sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+        }
+
         showSaving();
         await sendToSheet({ action: "clear" });
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, 600));
         await silentReload();
     }
 
@@ -711,6 +721,7 @@
             populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
             populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
 
+            // Volvemos a la misma pestaña
             const saved = sessionStorage.getItem('activeView');
             switchView(saved || 'home');
         } catch (e) {
