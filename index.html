@@ -574,7 +574,6 @@
             const tratamientoKey = keys.find(k => k.trim().toLowerCase().includes("tratamientos"));
             const recoleccionKey = keys.find(k => k.trim().toLowerCase().includes("recolección") || k.trim().toLowerCase().includes("recoleccion"));
 
-            // Se omite la primera fila (Row 1) del Excel ya que contiene las cabeceras
             populateTable('parcelas-table', parcelaKey ? data[parcelaKey].slice(1) : []);
             populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
             populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
@@ -615,7 +614,7 @@
         }
 
         rowsData.forEach((rowData, rowIndex) => {
-            const excelRowNumber = rowIndex + 2; // +2 porque el índice 0 es fila 2 (descontando cabecera)
+            const excelRowNumber = rowIndex + 2; // Fila real en Google Sheets (fila 1 son cabeceras)
             const tr = document.createElement('tr');
             let htmlContent = `
                 <td>
@@ -627,27 +626,30 @@
                 </td>
             `;
 
+            // Recorremos las cabeceras de la tabla omitiendo la primera (Acciones)
             headers.slice(1).forEach((th, index) => {
-                const colIndexAdjusted = index; 
-                const cellValue = (rowData[colIndexAdjusted] !== undefined && rowData[colIndexAdjusted] !== null) ? rowData[colIndexAdjusted] : '';
-                const actualColIndex = colIndexAdjusted + 1; 
+                const colIndexInHTML = index; 
+                const cellValue = (rowData[colIndexInHTML] !== undefined && rowData[colIndexInHTML] !== null) ? rowData[colIndexInHTML] : '';
+                
+                // IMPORTANTE: El número de columna real en Google Sheets corresponde exactamente 
+                // al orden de la cabecera en el HTML. Como la cabecera 1 (Comunidad) es la columna 1 del Excel,
+                // su índice real de columna es (índice en el bucle + 1).
+                const actualExcelColIndex = colIndexInHTML + 1; 
 
                 const headerTextLower = th.textContent.trim().toLowerCase();
                 const isFechaRegistro = headerTextLower.includes('fecha de registro');
                 const isTratamientosRealizados = (sheetName === "Tratamientos" && headerTextLower === "tratamientos realizados");
                 const isTipoCultivo = headerTextLower === "tipo de cultivo";
-
-                // Buscamos la columna previa a "Fecha de Registro" para poner el botón de añadir fecha
-                const isBtnCol = headers[actualColIndex + 1] && headers[actualColIndex + 1].textContent.toLowerCase().includes('fecha de registro');
+                const isBtnCol = headers[colIndexInHTML + 2] && headers[colIndexInHTML + 2].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtnCol) {
                     htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
                 } else if (isFechaRegistro) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualColIndex}" data-is-date-col="true">`;
+                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}" data-is-date-col="true">`;
                     htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue)}</div>`;
                     htmlContent += `</td>`;
                 } else if (isTratamientosRealizados) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualColIndex}">
+                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
                         <select onchange="autoSaveSelect(this)">
                             <option value="" ${cellValue === "" ? "selected" : ""}>-- Selecciona --</option>
                             <option value="Abonado" ${cellValue === "Abonado" ? "selected" : ""}>Abonado</option>
@@ -656,7 +658,7 @@
                         </select>
                     </td>`;
                 } else if (isTipoCultivo) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualColIndex}">
+                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
                         <select onchange="autoSaveSelect(this)">
                             <option value="" ${cellValue === "" ? "selected" : ""}>-- Selecciona --</option>
                             <option value="Secano" ${cellValue === "Secano" ? "selected" : ""}>Secano</option>
@@ -667,7 +669,7 @@
                 } else {
                     let val = String(cellValue);
                     if (val.includes('T') && val.endsWith('Z')) val = val.split('T')[0];
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualColIndex}"><input type="text" value="${val}" disabled></td>`;
+                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}"><input type="text" value="${val}" disabled></td>`;
                 }
             });
 
