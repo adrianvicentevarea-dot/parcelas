@@ -398,7 +398,6 @@
                             <option value="Frutales" ${val==="Frutales"?"selected":""}>Frutales</option>
                         </select></td>`;
                 } else if (isTrabajoPor) {
-                    // Desplegable con opción Subempresa o escribir texto
                     const isSubempresa = val === "Subempresa";
                     const isCustom = val && val !== "Subempresa";
 
@@ -433,16 +432,13 @@
     function handleTrabajoChange(select) {
         const container = select.closest('.trabajo-container');
         const input = container.querySelector('input[type="text"]');
-        const td = select.closest('td');
 
         if (select.value === "__custom__") {
             input.style.display = 'block';
             input.focus();
-            // No guardamos todavía, esperamos a que escriba
         } else {
             input.style.display = 'none';
             input.value = '';
-            // Guardamos directamente el valor del select (Subempresa o vacío)
             autoSaveFromSelect(select);
         }
     }
@@ -477,6 +473,118 @@
         tr.querySelector('.save').style.display = 'inline-flex';
     }
 
+    // ========== AÑADIR FILA SOLO EN LA APP ==========
+    function addRow(tableId) {
+        const table = document.getElementById(tableId);
+        const tbody = table.querySelector('tbody');
+        const headers = Array.from(table.querySelectorAll('th'));
+        const sheetName = table.getAttribute('data-sheet');
+
+        // Creamos una fila nueva vacía con el mismo formato
+        let html = `<td><div class="action-cell">
+            <button class="btn-icon edit" style="display:none;">✏️</button>
+            <button class="btn-icon save" style="display:inline-flex;" onclick="saveNewRow(this)">💾</button>
+            <button class="btn-icon delete" onclick="this.closest('tr').remove()">🗑️</button>
+        </div></td>`;
+
+        headers.slice(1).forEach((th, idx) => {
+            const h = th.textContent.trim().toLowerCase();
+            const isFecha = h.includes('fecha de registro');
+            const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
+            const isCultivo = h === "tipo de cultivo";
+            const isTipoTrabajo = h === "tipo de trabajo realizado";
+            const isTrabajoPor = h === "trabajo realizado por";
+            const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
+
+            if (isBtn) {
+                html += `<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
+            } else if (isFecha) {
+                html += `<td data-is-date-col="true"><div class="dates-container"></div></td>`;
+            } else if (isTrat) {
+                html += `<td>
+                    <select>
+                        <option value="">-- Selecciona --</option>
+                        <option value="Abonado">Abonado</option>
+                        <option value="Insecticida">Insecticida</option>
+                        <option value="Fungicida">Fungicida</option>
+                    </select></td>`;
+            } else if (isCultivo || isTipoTrabajo) {
+                html += `<td>
+                    <select>
+                        <option value="">-- Selecciona --</option>
+                        <option value="Secano">Secano</option>
+                        <option value="Almendros">Almendros</option>
+                        <option value="Frutales">Frutales</option>
+                    </select></td>`;
+            } else if (isTrabajoPor) {
+                html += `<td>
+                    <div class="trabajo-container">
+                        <select onchange="handleTrabajoChange(this)">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Subempresa">Subempresa</option>
+                            <option value="__custom__">Escribir texto...</option>
+                        </select>
+                        <input type="text" placeholder="Escribe aquí..." style="display:none;">
+                    </div>
+                </td>`;
+            } else {
+                html += `<td><input type="text" value=""></td>`;
+            }
+        });
+
+        const tr = document.createElement('tr');
+        tr.classList.add('nueva-fila'); // Marcamos que es una fila nueva
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+
+        // Hacemos scroll hasta la nueva fila
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ========== GUARDAR FILA NUEVA EN EL EXCEL ==========
+    async function saveNewRow(btn) {
+        const tr = btn.closest('tr');
+        const table = tr.closest('table');
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        const headers = Array.from(table.querySelectorAll('th')).slice(1);
+
+        // Recogemos todos los valores de la fila
+        const values = [];
+        const tds = tr.querySelectorAll('td');
+
+        for (let i = 1; i < tds.length; i++) {
+            const td = tds[i];
+            let value = "";
+
+            const input = td.querySelector('input[type="text"]');
+            const select = td.querySelector('select');
+            const dates = td.querySelectorAll('.date-text');
+
+            if (input && input.style.display !== 'none') {
+                value = input.value;
+            } else if (select) {
+                value = select.value === "__custom__" ? (td.querySelector('input')?.value || "") : select.value;
+            } else if (dates.length) {
+                value = Array.from(dates).map(d => d.innerText).join(', ');
+            }
+
+            values.push(value);
+        }
+
+        showSaving();
+
+        // Enviamos al Excel como nueva fila
+        await sendToSheet({
+            action: "append",
+            sheet: sheet,
+            values: values
+        });
+
+        // Recargamos para que la fila tenga los data-row correctos
+        await new Promise(r => setTimeout(r, 800));
+        await silentReload();
+    }
+
     async function saveRow(btn) {
         const tr = btn.closest('tr');
         const table = tr.closest('table');
@@ -487,13 +595,16 @@
 
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
-            await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
+            if (td.dataset.row) {
+                await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
+            }
         }
         showSaving();
     }
 
     async function autoSave(el) {
         const td = el.closest('td');
+        if (!td.dataset.row) return; // Si es fila nueva, no guardamos todavía
         const table = el.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         await sendUpdate(sheet, td.dataset.row, td.dataset.col, el.value);
@@ -512,10 +623,12 @@
         dates.push(dateStr);
         container.innerHTML = renderDatesHTML(dates.join(', '));
 
-        const table = tr.closest('table');
-        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
-        showSaving();
+        if (td.dataset.row) {
+            const table = tr.closest('table');
+            const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+            await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
+            showSaving();
+        }
     }
 
     async function removeDate(btn, idx) {
@@ -525,54 +638,11 @@
         dates.splice(idx, 1);
         td.querySelector('.dates-container').innerHTML = renderDatesHTML(dates.join(', '));
 
-        const table = td.closest('table');
-        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
-        showSaving();
-    }
-
-    async function addRow(tableId) {
-        try {
-            const table = document.getElementById(tableId);
-            if (!table) {
-                alert("No se encontró la tabla");
-                return;
-            }
-
-            let sheet = window.realSheetNames?.[tableId];
-            if (!sheet) {
-                alert("Recargando datos... vuelve a pulsar el botón en unos segundos");
-                await loadDataFromExcel();
-                return;
-            }
-
-            const cols = table.querySelectorAll('th').length - 1;
-            const values = new Array(cols).fill("");
-
-            const active = document.querySelector('.view-section.active');
-            if (active) {
-                sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-            }
-
+        if (td.dataset.row) {
+            const table = td.closest('table');
+            const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+            await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
             showSaving();
-
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                redirect: 'follow',
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({
-                    action: "append",
-                    sheet: sheet,
-                    values: values
-                })
-            });
-
-            await new Promise(r => setTimeout(r, 1000));
-            await silentReload();
-
-        } catch (error) {
-            console.error("Error al añadir fila:", error);
-            alert("Error al añadir la fila. Abre la consola (F12) y revisa el error.");
         }
     }
 
@@ -583,7 +653,12 @@
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         const td = tr.querySelector('[data-row]');
-        if (!td) return;
+
+        // Si es una fila nueva que aún no está en Excel, solo la borramos de la app
+        if (!td || !td.dataset.row) {
+            tr.remove();
+            return;
+        }
 
         const active = document.querySelector('.view-section.active');
         if (active) {
