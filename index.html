@@ -120,6 +120,7 @@
             padding: 10px 18px; border-radius: 8px; font-weight: 600; z-index: 9998; display: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
+        .trabajo-container { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
     </style>
 </head>
 <body>
@@ -128,11 +129,6 @@
     <div id="loading-text">Conectando con Google Sheets...</div>
 </div>
 <div id="saving-msg" class="saving-msg">Guardado ✓</div>
-
-<!-- Lista de sugerencias para "Trabajo realizado por" -->
-<datalist id="lista-trabajo">
-    <option value="Subempresa">
-</datalist>
 
 <div class="container">
     <!-- INICIO -->
@@ -371,7 +367,7 @@
             </div></td>`;
 
             headers.slice(1).forEach((th, idx) => {
-                const val = rowData[idx] !== undefined && rowData[idx] !== null ? rowData[idx] : '';
+                const val = rowData[idx] !== undefined && rowData[idx] !== null ? String(rowData[idx]) : '';
                 const col = idx + 1;
                 const h = th.textContent.trim().toLowerCase();
                 const isFecha = h.includes('fecha de registro');
@@ -402,9 +398,24 @@
                             <option value="Frutales" ${val==="Frutales"?"selected":""}>Frutales</option>
                         </select></td>`;
                 } else if (isTrabajoPor) {
-                    // Campo de texto + sugerencia "Subempresa"
+                    // Desplegable con opción Subempresa o escribir texto
+                    const isSubempresa = val === "Subempresa";
+                    const isCustom = val && val !== "Subempresa";
+
                     html += `<td data-row="${excelRow}" data-col="${col}">
-                        <input type="text" list="lista-trabajo" value="${val}" disabled onblur="autoSave(this)" placeholder="Subempresa o escribe...">
+                        <div class="trabajo-container">
+                            <select onchange="handleTrabajoChange(this)">
+                                <option value="">-- Selecciona --</option>
+                                <option value="Subempresa" ${isSubempresa ? "selected" : ""}>Subempresa</option>
+                                <option value="__custom__" ${isCustom ? "selected" : ""}>Escribir texto...</option>
+                            </select>
+                            <input type="text" 
+                                   value="${isCustom ? val : ''}" 
+                                   placeholder="Escribe aquí..." 
+                                   style="display: ${isCustom ? 'block' : 'none'};"
+                                   onblur="autoSave(this)"
+                                   onchange="autoSave(this)">
+                        </div>
                     </td>`;
                 } else {
                     let v = String(val);
@@ -417,6 +428,31 @@
             tr.innerHTML = html;
             tbody.appendChild(tr);
         });
+    }
+
+    function handleTrabajoChange(select) {
+        const container = select.closest('.trabajo-container');
+        const input = container.querySelector('input[type="text"]');
+        const td = select.closest('td');
+
+        if (select.value === "__custom__") {
+            input.style.display = 'block';
+            input.focus();
+            // No guardamos todavía, esperamos a que escriba
+        } else {
+            input.style.display = 'none';
+            input.value = '';
+            // Guardamos directamente el valor del select (Subempresa o vacío)
+            autoSaveFromSelect(select);
+        }
+    }
+
+    async function autoSaveFromSelect(select) {
+        const td = select.closest('td');
+        const table = select.closest('table');
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        await sendUpdate(sheet, td.dataset.row, td.dataset.col, select.value);
+        showSaving();
     }
 
     function renderDatesHTML(raw) {
@@ -665,8 +701,8 @@
                     const input = td.querySelector('input');
                     const select = td.querySelector('select');
                     const dates = td.querySelectorAll('.date-text');
-                    if (input) row.push(input.value);
-                    else if (select) row.push(select.value);
+                    if (input && input.style.display !== 'none') row.push(input.value);
+                    else if (select) row.push(select.value === "__custom__" ? (td.querySelector('input')?.value || '') : select.value);
                     else if (dates.length) row.push(Array.from(dates).map(d => d.innerText).join(', '));
                     else row.push(td.innerText.replace('📅 Añadir Fecha', '').trim());
                 });
