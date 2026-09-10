@@ -367,7 +367,6 @@
                 const isFecha = h.includes('fecha de registro');
                 const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
                 const isCultivo = h === "tipo de cultivo";
-                const isTipoTrabajo = h === "tipo de trabajo realizado";
                 const isTrabajoPor = h === "trabajo realizado por";
                 const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
@@ -383,7 +382,7 @@
                             <option value="Insecticida" ${val==="Insecticida"?"selected":""}>Insecticida</option>
                             <option value="Fungicida" ${val==="Fungicida"?"selected":""}>Fungicida</option>
                         </select></td>`;
-                } else if (isCultivo || isTipoTrabajo) {
+                } else if (isCultivo) {
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <select onchange="autoSave(this)">
                             <option value="">-- Selecciona --</option>
@@ -407,6 +406,7 @@
                         </div>
                     </td>`;
                 } else {
+                    // Aquí entra "Tipo de trabajo realizado", Variedad, Kilos, etc. → campo de texto
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
                     html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
@@ -477,7 +477,6 @@
             const isFecha = h.includes('fecha de registro');
             const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
             const isCultivo = h === "tipo de cultivo";
-            const isTipoTrabajo = h === "tipo de trabajo realizado";
             const isTrabajoPor = h === "trabajo realizado por";
             const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
@@ -487,7 +486,7 @@
                 html += `<td data-is-date-col="true"><div class="dates-container"></div></td>`;
             } else if (isTrat) {
                 html += `<td><select><option value="">-- Selecciona --</option><option value="Abonado">Abonado</option><option value="Insecticida">Insecticida</option><option value="Fungicida">Fungicida</option></select></td>`;
-            } else if (isCultivo || isTipoTrabajo) {
+            } else if (isCultivo) {
                 html += `<td><select><option value="">-- Selecciona --</option><option value="Secano">Secano</option><option value="Almendros">Almendros</option><option value="Frutales">Frutales</option></select></td>`;
             } else if (isTrabajoPor) {
                 html += `<td><div class="trabajo-container">
@@ -499,6 +498,7 @@
                     <input type="text" placeholder="Escribe aquí..." style="display:none;">
                 </div></td>`;
             } else {
+                // Tipo de trabajo realizado, Variedad, Kilos... → texto
                 html += `<td><input type="text" value=""></td>`;
             }
         });
