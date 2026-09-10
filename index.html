@@ -568,7 +568,8 @@
             const data = await response.json();
             const keys = Object.keys(data);
 
-            const parcelaKey = keys.find(k => k.trim() === "Identificación de Parcelas") || keys[0];
+            // Búsqueda inteligente y flexible para evitar fallos por espacios o acentos
+            const parcelaKey = keys.find(k => k.trim().toLowerCase().includes("parcelas") || k.trim().toLowerCase().includes("identificación")) || keys[0];
             const laboreoKey = keys.find(k => k.trim().toLowerCase().includes("laboreos"));
             const podaKey = keys.find(k => k.trim().toLowerCase().includes("poda"));
             const tratamientoKey = keys.find(k => k.trim().toLowerCase().includes("tratamientos"));
@@ -626,14 +627,9 @@
                 </td>
             `;
 
-            // Recorremos las cabeceras de la tabla omitiendo la primera (Acciones)
             headers.slice(1).forEach((th, index) => {
                 const colIndexInHTML = index; 
                 const cellValue = (rowData[colIndexInHTML] !== undefined && rowData[colIndexInHTML] !== null) ? rowData[colIndexInHTML] : '';
-                
-                // IMPORTANTE: El número de columna real en Google Sheets corresponde exactamente 
-                // al orden de la cabecera en el HTML. Como la cabecera 1 (Comunidad) es la columna 1 del Excel,
-                // su índice real de columna es (índice en el bucle + 1).
                 const actualExcelColIndex = colIndexInHTML + 1; 
 
                 const headerTextLower = th.textContent.trim().toLowerCase();
