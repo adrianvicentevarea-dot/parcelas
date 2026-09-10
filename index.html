@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión Agrícola - Aplicación de Parcelas</title>
-    <!-- Librerías para generar el PDF automáticamente -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
@@ -38,7 +37,6 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-        /* PANTALLA DE CARGA */
         #loading-overlay {
             position: fixed;
             top: 0;
@@ -69,7 +67,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* HEADER / NAVBAR */
         .top-nav {
             background-color: var(--primary);
             color: white;
@@ -122,14 +119,16 @@
             background-color: var(--accent-red);
             color: white;
         }
-        /* VISTAS */
+        .btn-blue {
+            background-color: var(--accent-blue);
+            color: white;
+        }
         .view-section {
             display: none;
         }
         .view-section.active {
             display: block;
         }
-        /* HOME MENU GRID */
         .home-header {
             background-color: var(--primary);
             color: white;
@@ -211,11 +210,6 @@
             padding: 14px;
             font-size: 1rem;
         }
-        .btn-blue {
-            background-color: var(--accent-blue);
-            color: white;
-        }
-        /* TABLAS DE DATOS */
         .table-container-wrapper {
             background-color: var(--card-bg);
             border-radius: 8px;
@@ -231,6 +225,9 @@
         }
         .table-actions {
             margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         .table-responsive {
             width: 100%;
@@ -263,9 +260,8 @@
             border-radius: 4px;
             font-size: 0.85rem;
             width: 100%;
-            min-width: 180px;
+            min-width: 160px;
             outline: none;
-            transition: background 0.2s, border 0.2s;
         }
         input[type="text"]:disabled {
             background-color: var(--input-disabled-bg);
@@ -331,7 +327,6 @@
             font-size: 1rem;
             padding: 0 2px;
             line-height: 1;
-            display: inline-block;
         }
         .date-chip button:hover {
             color: #dc2626;
@@ -356,13 +351,13 @@
     </style>
 </head>
 <body>
-<!-- Pantalla de carga inicial -->
 <div id="loading-overlay">
     <div class="spinner"></div>
     <div id="loading-text">Conectando con Google Sheets...</div>
 </div>
+
 <div class="container">
-    <!-- ================= VISTA: INICIO ================= -->
+    <!-- VISTA INICIO -->
     <div id="view-home" class="view-section">
         <div class="home-header">🏠 Inicio</div>
         <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
@@ -390,23 +385,39 @@
         </div>
         <div class="home-actions">
             <button class="btn btn-blue" onclick="descargarPDF()">📄 Descargar Excel en PDF</button>
+            <button class="btn btn-primary" onclick="refrescarDesdeExcel()">🔄 Actualizar datos desde Excel</button>
             <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
         </div>
     </div>
-    <!-- ================= VISTA: PARCELAS ================= -->
+
+    <!-- VISTA PARCELAS -->
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
             <h1>📍 Parcelas</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Registros de Parcelas</div>
-            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('parcelas-table')">+ Añadir Fila</button></div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('parcelas-table')">+ Añadir Fila</button>
+                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
+            </div>
             <div class="table-responsive">
                 <table id="parcelas-table" data-sheet="Identificación de Parcelas">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Recinto</th><th>Nombre</th><th>Tipo de cultivo</th><th>Variedad</th>
+                            <th>Acciones</th>
+                            <th>Comunidad</th>
+                            <th>Provincia</th>
+                            <th>Municipio</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Recinto</th>
+                            <th>Nombre</th>
+                            <th>Tipo de cultivo</th>
+                            <th>Variedad</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -414,20 +425,37 @@
             </div>
         </div>
     </div>
-    <!-- ================= VISTA: LABOREOS ================= -->
+
+    <!-- VISTA LABOREOS -->
     <div id="view-laboreos" class="view-section">
         <div class="top-nav">
             <h1>🚜 Laboreos</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Gestión de Trabajos de Laboreo</div>
-            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('laboreos-table')">+ Añadir Fila</button></div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('laboreos-table')">+ Añadir Fila</button>
+                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
+            </div>
             <div class="table-responsive">
                 <table id="laboreos-table" data-sheet="Laboreos">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tipo de cultivo</th><th>Tipo de trabajo realizado</th><th>Trabajo realizado por</th><th>Laboreo</th><th>Fecha de Registro</th>
+                            <th>Acciones</th>
+                            <th>Comunidad</th>
+                            <th>Provincia</th>
+                            <th>Municipio</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Tipo de cultivo</th>
+                            <th>Tipo de trabajo realizado</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Laboreo</th>
+                            <th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -435,20 +463,32 @@
             </div>
         </div>
     </div>
-    <!-- ================= VISTA: PODA ================= -->
+
+    <!-- VISTA PODA -->
     <div id="view-poda" class="view-section">
         <div class="top-nav">
             <h1>✂️ Poda</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Registros y Control de Poda</div>
-            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('poda-table')">+ Añadir Fila</button></div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('poda-table')">+ Añadir Fila</button>
+                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
+            </div>
             <div class="table-responsive">
                 <table id="poda-table" data-sheet="Poda">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Trabajo realizado por</th><th>Podado</th><th>Fecha de Registro</th>
+                            <th>Acciones</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Podado</th>
+                            <th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -456,20 +496,33 @@
             </div>
         </div>
     </div>
-    <!-- ================= VISTA: TRATAMIENTOS ================= -->
+
+    <!-- VISTA TRATAMIENTOS -->
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
             <h1>🧪 Tratamientos</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Control de Tratamientos Aplicados</div>
-            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('tratamientos-table')">+ Añadir Fila</button></div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('tratamientos-table')">+ Añadir Fila</button>
+                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
+            </div>
             <div class="table-responsive">
                 <table id="tratamientos-table" data-sheet="Tratamientos">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tratamientos realizados</th><th>Trabajo realizado por</th><th>Tratamientos</th><th>Fecha de Registro</th>
+                            <th>Acciones</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Tratamientos realizados</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Tratamientos</th>
+                            <th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -477,20 +530,34 @@
             </div>
         </div>
     </div>
-    <!-- ================= VISTA: RECOLECCIÓN ================= -->
+
+    <!-- VISTA RECOLECCIÓN -->
     <div id="view-recoleccion" class="view-section">
         <div class="top-nav">
             <h1>📦 Tareas / Recolección</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <div class="nav-buttons">
+                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
+            </div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Control de Tareas y Kilos Cosechados</div>
-            <div class="table-actions"><button class="btn btn-primary" onclick="addRow('recoleccion-table')">+ Añadir Fila</button></div>
+            <div class="table-actions">
+                <button class="btn btn-primary" onclick="addRow('recoleccion-table')">+ Añadir Fila</button>
+                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
+            </div>
             <div class="table-responsive">
                 <table id="recoleccion-table" data-sheet="Recolección">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Variedad</th><th>Kilos</th><th>Trabajo realizado por</th><th>Recolección</th><th>Fecha de Registro</th>
+                            <th>Acciones</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Nombre Parcela</th>
+                            <th>Variedad</th>
+                            <th>Kilos</th>
+                            <th>Trabajo realizado por</th>
+                            <th>Recolección</th>
+                            <th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -499,14 +566,18 @@
         </div>
     </div>
 </div>
+
 <script>
+    // ========== PEGA AQUÍ TU NUEVA URL DE APPS SCRIPT ==========
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
-    // Aquí se guardarán los nombres REALES de las hojas
     window.realSheetNames = {};
 
     async function loadDataFromExcel() {
         try {
+            document.getElementById('loading-text').textContent = "Cargando datos desde Excel...";
+            document.getElementById('loading-overlay').style.display = 'flex';
+
             const response = await fetch(WEB_APP_URL, { method: 'GET', redirect: 'follow' });
             if (!response.ok) throw new Error("Error en red: " + response.status);
             
@@ -519,7 +590,6 @@
             const tratamientoKey = keys.find(k => k.trim().toLowerCase().includes("tratamientos"));
             const recoleccionKey = keys.find(k => k.trim().toLowerCase().includes("recolección") || k.trim().toLowerCase().includes("recoleccion"));
 
-            // Guardamos los nombres REALES que devuelve Google Sheets
             window.realSheetNames = {
                 'parcelas-table': parcelaKey,
                 'laboreos-table': laboreoKey,
@@ -535,6 +605,7 @@
             populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
             
             document.getElementById('loading-overlay').style.display = 'none';
+
             const savedView = sessionStorage.getItem('activeView');
             if (savedView) {
                 switchView(savedView);
@@ -545,7 +616,7 @@
             console.error("Error:", error);
             document.getElementById('loading-overlay').style.display = 'none';
             switchView('home');
-            alert("No se pudieron cargar los datos del Excel.");
+            alert("No se pudieron cargar los datos del Excel.\n\nComprueba la URL del Apps Script.");
         }
     }
 
@@ -556,13 +627,19 @@
         tbody.innerHTML = ''; 
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
+
         if (!rowsData || rowsData.length === 0) {
             const tr = document.createElement('tr');
-            let colsCount = headers.length;
-            tr.innerHTML = `<td><div class="action-cell"><button class="btn-icon edit" onclick="toggleEditRow(this)" title="Editar">✏️</button><button class="btn-icon save" onclick="saveRow(this)" title="Guardar">💾</button><button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button></div></td><td colspan="${colsCount - 1}" style="text-align:center; color:var(--text-muted);">Sin datos en esta pestaña del Excel</td>`;
+            tr.innerHTML = `<td><div class="action-cell">
+                <button class="btn-icon edit" onclick="toggleEditRow(this)">✏️</button>
+                <button class="btn-icon save" onclick="saveRow(this)">💾</button>
+                <button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>
+            </div></td>
+            <td colspan="${headers.length - 1}" style="text-align:center; color:var(--text-muted);">Sin datos en esta pestaña</td>`;
             tbody.appendChild(tr);
             return;
         }
+
         rowsData.forEach((rowData, rowIndex) => {
             const excelRowNumber = rowIndex + 2; 
             const tr = document.createElement('tr');
@@ -575,21 +652,24 @@
                     </div>
                 </td>
             `;
+
             headers.slice(1).forEach((th, index) => {
                 const colIndexInHTML = index; 
                 const cellValue = (rowData[colIndexInHTML] !== undefined && rowData[colIndexInHTML] !== null) ? rowData[colIndexInHTML] : '';
                 const actualExcelColIndex = colIndexInHTML + 1; 
                 const headerTextLower = th.textContent.trim().toLowerCase();
+                
                 const isFechaRegistro = headerTextLower.includes('fecha de registro');
                 const isTratamientosRealizados = (sheetName === "Tratamientos" && headerTextLower === "tratamientos realizados");
                 const isTipoCultivo = headerTextLower === "tipo de cultivo";
                 const isBtnCol = headers[colIndexInHTML + 2] && headers[colIndexInHTML + 2].textContent.toLowerCase().includes('fecha de registro');
+
                 if (isBtnCol) {
                     htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
                 } else if (isFechaRegistro) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}" data-is-date-col="true">`;
-                    htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue)}</div>`;
-                    htmlContent += `</td>`;
+                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}" data-is-date-col="true">
+                        <div class="dates-container">${renderDatesHTML(cellValue)}</div>
+                    </td>`;
                 } else if (isTratamientosRealizados) {
                     htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
                         <select onchange="autoSaveSelect(this)">
@@ -611,9 +691,12 @@
                 } else {
                     let val = String(cellValue);
                     if (val.includes('T') && val.endsWith('Z')) val = val.split('T')[0];
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}"><input type="text" value="${val}" disabled></td>`;
+                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
+                        <input type="text" value="${val}" disabled onblur="autoSaveInput(this)">
+                    </td>`;
                 }
             });
+
             tr.innerHTML = htmlContent;
             tbody.appendChild(tr);
         });
@@ -639,9 +722,7 @@
         const tr = btn.closest('tr');
         const editBtn = tr.querySelector('.btn-icon.edit');
         const saveBtn = tr.querySelector('.btn-icon.save');
-        tr.querySelectorAll('input[type="text"]').forEach(element => {
-            element.disabled = false;
-        });
+        tr.querySelectorAll('input[type="text"]').forEach(el => el.disabled = false);
         editBtn.style.display = 'none';
         saveBtn.style.display = 'inline-flex';
     }
@@ -651,13 +732,12 @@
         const editBtn = tr.querySelector('.btn-icon.edit');
         const saveBtn = tr.querySelector('.btn-icon.save');
         const table = tr.closest('table');
-        // Usamos el nombre REAL de la hoja
         const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
-        tr.querySelectorAll('input[type="text"]').forEach(element => {
-            element.disabled = true;
-        });
+
+        tr.querySelectorAll('input[type="text"]').forEach(el => el.disabled = true);
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-flex';
+
         const inputs = tr.querySelectorAll('input[type="text"]');
         for (let element of inputs) {
             const td = element.closest('td');
@@ -667,10 +747,19 @@
         }
     }
 
+    // Guardado automático al salir del input (más cómodo)
+    async function autoSaveInput(inputElement) {
+        const td = inputElement.closest('td');
+        const table = inputElement.closest('table');
+        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
+        const rowIndex = parseInt(td.getAttribute('data-row'));
+        const colIndex = parseInt(td.getAttribute('data-col'));
+        await sendDataToSheet(sheetName, rowIndex, colIndex, inputElement.value);
+    }
+
     async function autoSaveSelect(selectElement) {
         const td = selectElement.closest('td');
         const table = selectElement.closest('table');
-        // Usamos el nombre REAL de la hoja
         const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const rowIndex = parseInt(td.getAttribute('data-row'));
         const colIndex = parseInt(td.getAttribute('data-col'));
@@ -684,10 +773,8 @@
         const container = dateTd.querySelector('.dates-container');
         
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
+        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        
         let currentDates = [];
         dateTd.querySelectorAll('.date-text').forEach(span => {
             let text = span.textContent.trim();
@@ -695,8 +782,8 @@
         });
         currentDates.push(dateStr);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
+
         const table = tr.closest('table');
-        // Usamos el nombre REAL de la hoja
         const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const rowIndex = parseInt(dateTd.getAttribute('data-row'));
         const colIndex = parseInt(dateTd.getAttribute('data-col'));
@@ -714,8 +801,8 @@
         });
         currentDates.splice(indexToRemove, 1);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
+
         const table = td.closest('table');
-        // Usamos el nombre REAL de la hoja
         const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const rowIndex = parseInt(td.getAttribute('data-row'));
         const colIndex = parseInt(td.getAttribute('data-col'));
@@ -724,29 +811,96 @@
 
     async function deleteRow(btn) {
         const row = btn.closest('tr');
-        const tbody = row.closest('tbody');
         const table = row.closest('table');
-        // Usamos el nombre REAL de la hoja
         const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const firstTd = row.querySelector('td[data-row]');
-        const rowIndex = firstTd ? parseInt(firstTd.getAttribute('data-row')) : (row.rowIndex + 1);
-        const headers = table.querySelectorAll('th');
-        if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
-            if (tbody.rows.length > 1) {
-                const activeSection = document.querySelector('.view-section.active');
-                if (activeSection) {
-                    const viewId = activeSection.id.replace('view-', '');
-                    sessionStorage.setItem('activeView', viewId);
-                }
-                document.getElementById('loading-text').textContent = "Eliminando registro y sincronizando...";
-                document.getElementById('loading-overlay').style.display = 'flex';
-                for (let i = 1; i <= headers.length; i++) {
-                    await sendDataToSheet(sheetName, rowIndex, i, "");
-                }
-                location.reload();
-            } else {
-                alert("Debe mantenerse al menos una fila en la tabla.");
-            }
+        const rowIndex = firstTd ? parseInt(firstTd.getAttribute('data-row')) : null;
+
+        if (!rowIndex) {
+            alert("No se puede eliminar esta fila");
+            return;
+        }
+
+        if (!confirm("¿Estás seguro de que deseas eliminar este registro?")) return;
+
+        document.getElementById('loading-text').textContent = "Eliminando registro...";
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        const activeSection = document.querySelector('.view-section.active');
+        if (activeSection) {
+            sessionStorage.setItem('activeView', activeSection.id.replace('view-', ''));
+        }
+
+        await sendToSheet({
+            action: "delete",
+            sheet: sheetName,
+            row: rowIndex
+        });
+
+        location.reload();
+    }
+
+    async function addRow(tableId) {
+        const table = document.getElementById(tableId);
+        const sheetName = window.realSheetNames?.[tableId] || table.getAttribute('data-sheet');
+        const headers = Array.from(table.querySelectorAll('th')).slice(1);
+        const emptyValues = new Array(headers.length).fill("");
+
+        document.getElementById('loading-text').textContent = "Añadiendo fila nueva...";
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        const activeSection = document.querySelector('.view-section.active');
+        if (activeSection) {
+            sessionStorage.setItem('activeView', activeSection.id.replace('view-', ''));
+        }
+
+        await sendToSheet({
+            action: "append",
+            sheet: sheetName,
+            values: emptyValues
+        });
+
+        location.reload();
+    }
+
+    async function confirmReset() {
+        if (!confirm("¿Estás seguro de que deseas borrar TODOS los datos del Excel?\nEsta acción no se puede deshacer.")) return;
+
+        document.getElementById('loading-text').textContent = "Borrando todos los datos...";
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        await sendToSheet({ action: "clear" });
+        location.reload();
+    }
+
+    function refrescarDesdeExcel() {
+        const activeSection = document.querySelector('.view-section.active');
+        if (activeSection) {
+            sessionStorage.setItem('activeView', activeSection.id.replace('view-', ''));
+        }
+        loadDataFromExcel();
+    }
+
+    async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
+        await sendToSheet({
+            action: "update",
+            sheet: sheetName,
+            row: rowIndex,
+            col: colIndex,
+            value: value
+        });
+    }
+
+    async function sendToSheet(payload) {
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.error("Error de red:", err);
         }
     }
 
@@ -757,6 +911,7 @@
         doc.setFontSize(16);
         doc.text("Reporte Completo - Gestión Agrícola", 14, startY);
         startY += 10;
+
         const tables = document.querySelectorAll('.table-responsive table');
         tables.forEach((table, index) => {
             const sheetName = table.getAttribute('data-sheet') || `Pestaña ${index + 1}`;
@@ -770,29 +925,29 @@
             doc.setTextColor(40);
             doc.text(`Hoja: ${sheetName}`, 14, startY);
             startY += 6;
+
             const headers = [];
             const headerThs = table.querySelectorAll('thead th');
             for (let i = 1; i < headerThs.length; i++) {
                 headers.push(headerThs[i].innerText);
             }
+
             const rows = [];
             const trs = table.querySelectorAll('tbody tr');
             trs.forEach(tr => {
                 const rowData = [];
                 const tds = tr.querySelectorAll('td');
-                
-                if(tds.length <= 1 && tds[0].getAttribute('colspan')) return;
+                if (tds.length <= 1 && tds[0].getAttribute('colspan')) return;
+
                 for (let i = 1; i < tds.length; i++) {
                     const td = tds[i];
                     let text = "";
                     const input = td.querySelector('input');
                     const select = td.querySelector('select');
                     const datesContainer = td.querySelector('.dates-container');
-                    if (input) {
-                        text = input.value;
-                    } else if (select) {
-                        text = select.value;
-                    } else if (datesContainer) {
+                    if (input) text = input.value;
+                    else if (select) text = select.value;
+                    else if (datesContainer) {
                         const dateSpans = datesContainer.querySelectorAll('.date-text');
                         let datesArr = [];
                         dateSpans.forEach(span => datesArr.push(span.innerText));
@@ -802,10 +957,9 @@
                     }
                     rowData.push(text);
                 }
-                if(rowData.length > 0) {
-                    rows.push(rowData);
-                }
+                if (rowData.length > 0) rows.push(rowData);
             });
+
             doc.autoTable({
                 startY: startY,
                 head: [headers],
@@ -820,32 +974,8 @@
         doc.save("Gestion_Agricola_Completa.pdf");
     }
 
-    async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
-        try {
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                redirect: 'follow',
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({
-                    sheet: sheetName,
-                    row: rowIndex,
-                    col: colIndex,
-                    value: value
-                })
-            });
-        } catch (err) {
-            console.error("Error de red al actualizar el Excel:", err);
-        }
-    }
-
-    window.onload = function() {
-        loadDataFromExcel();
-    };
-
     function switchView(viewName) {
-        const sections = document.querySelectorAll('.view-section');
-        sections.forEach(sec => sec.classList.remove('active'));
-        
+        document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
         const target = document.getElementById('view-' + viewName);
         if (target) {
             target.classList.add('active');
@@ -854,33 +984,9 @@
         }
     }
 
-    function addRow(tableId) {
-        const table = document.getElementById(tableId);
-        const tbody = table.getElementsByTagName('tbody')[0];
-        const firstRow = tbody.rows[0];
-        
-        if (!firstRow) return;
-        const newRow = firstRow.cloneNode(true);
-        newRow.querySelectorAll('input').forEach(input => { 
-            input.value = ''; 
-            input.disabled = false; 
-        });
-        newRow.querySelectorAll('select').forEach(select => { 
-            select.value = ''; 
-        });
-        newRow.querySelectorAll('.dates-container').forEach(container => { container.innerHTML = ''; });
-        const editBtn = newRow.querySelector('.btn-icon.edit');
-        const saveBtn = newRow.querySelector('.btn-icon.save');
-        if(editBtn) editBtn.style.display = 'none';
-        if(saveBtn) saveBtn.style.display = 'inline-flex';
-        tbody.appendChild(newRow);
-    }
-
-    function confirmReset() {
-        if(confirm("¿Estás seguro de que deseas borrar los datos del Excel?")) {
-            alert("Datos restablecidos correctamente.");
-        }
-    }
+    window.onload = function() {
+        loadDataFromExcel();
+    };
 </script>
 </body>
 </html>
