@@ -129,6 +129,11 @@
 </div>
 <div id="saving-msg" class="saving-msg">Guardado ✓</div>
 
+<!-- Lista de sugerencias para "Trabajo realizado por" -->
+<datalist id="lista-trabajo">
+    <option value="Subempresa">
+</datalist>
+
 <div class="container">
     <!-- INICIO -->
     <div id="view-home" class="view-section">
@@ -373,6 +378,7 @@
                 const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
                 const isCultivo = h === "tipo de cultivo";
                 const isTipoTrabajo = h === "tipo de trabajo realizado";
+                const isTrabajoPor = h === "trabajo realizado por";
                 const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtn) {
@@ -395,6 +401,11 @@
                             <option value="Almendros" ${val==="Almendros"?"selected":""}>Almendros</option>
                             <option value="Frutales" ${val==="Frutales"?"selected":""}>Frutales</option>
                         </select></td>`;
+                } else if (isTrabajoPor) {
+                    // Campo de texto + sugerencia "Subempresa"
+                    html += `<td data-row="${excelRow}" data-col="${col}">
+                        <input type="text" list="lista-trabajo" value="${val}" disabled onblur="autoSave(this)" placeholder="Subempresa o escribe...">
+                    </td>`;
                 } else {
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
