@@ -291,7 +291,6 @@
 </div>
 
 <script>
-    // ========== URL DEL APPS SCRIPT ==========
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
     window.realSheetNames = {};
@@ -373,6 +372,7 @@
                 const isFecha = h.includes('fecha de registro');
                 const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
                 const isCultivo = h === "tipo de cultivo";
+                const isTipoTrabajo = h === "tipo de trabajo realizado";
                 const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtn) {
@@ -387,7 +387,7 @@
                             <option value="Insecticida" ${val==="Insecticida"?"selected":""}>Insecticida</option>
                             <option value="Fungicida" ${val==="Fungicida"?"selected":""}>Fungicida</option>
                         </select></td>`;
-                } else if (isCultivo) {
+                } else if (isCultivo || isTipoTrabajo) {
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <select onchange="autoSave(this)">
                             <option value="">-- Selecciona --</option>
@@ -520,7 +520,6 @@
                 })
             });
 
-            // Esperamos un poco y recargamos
             await new Promise(r => setTimeout(r, 1000));
             await silentReload();
 
