@@ -118,6 +118,7 @@
         .saving-msg {
             position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white;
             padding: 10px 18px; border-radius: 8px; font-weight: 600; z-index: 9998; display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -129,6 +130,7 @@
 <div id="saving-msg" class="saving-msg">Guardado ✓</div>
 
 <div class="container">
+    <!-- INICIO -->
     <div id="view-home" class="view-section">
         <div class="home-header">🏠 Inicio</div>
         <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
@@ -160,6 +162,7 @@
         </div>
     </div>
 
+    <!-- PARCELAS -->
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
             <h1>📍 Parcelas</h1>
@@ -185,6 +188,7 @@
         </div>
     </div>
 
+    <!-- LABOREOS -->
     <div id="view-laboreos" class="view-section">
         <div class="top-nav">
             <h1>🚜 Laboreos</h1>
@@ -210,6 +214,7 @@
         </div>
     </div>
 
+    <!-- PODA -->
     <div id="view-poda" class="view-section">
         <div class="top-nav">
             <h1>✂️ Poda</h1>
@@ -234,6 +239,7 @@
         </div>
     </div>
 
+    <!-- TRATAMIENTOS -->
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
             <h1>🧪 Tratamientos</h1>
@@ -258,6 +264,7 @@
         </div>
     </div>
 
+    <!-- RECOLECCIÓN -->
     <div id="view-recoleccion" class="view-section">
         <div class="top-nav">
             <h1>📦 Tareas / Recolección</h1>
@@ -284,7 +291,7 @@
 </div>
 
 <script>
-    // ========== PEGA AQUÍ LA NUEVA URL DESPUÉS DE IMPLEMENTAR ==========
+    // ========== URL DEL APPS SCRIPT ==========
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
     window.realSheetNames = {};
@@ -292,7 +299,7 @@
     function showSaving() {
         const msg = document.getElementById('saving-msg');
         msg.style.display = 'block';
-        setTimeout(() => msg.style.display = 'none', 1200);
+        setTimeout(() => msg.style.display = 'none', 1500);
     }
 
     async function loadDataFromExcel() {
@@ -478,23 +485,54 @@
     }
 
     async function addRow(tableId) {
-        const table = document.getElementById(tableId);
-        const sheet = window.realSheetNames[tableId] || table.getAttribute('data-sheet');
-        const cols = table.querySelectorAll('th').length - 1;
-        const values = new Array(cols).fill("");
+        try {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                alert("No se encontró la tabla");
+                return;
+            }
 
-        // Guardamos la vista actual
-        const active = document.querySelector('.view-section.active');
-        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+            let sheet = window.realSheetNames?.[tableId];
+            if (!sheet) {
+                alert("Recargando datos... vuelve a pulsar el botón en unos segundos");
+                await loadDataFromExcel();
+                return;
+            }
 
-        await sendToSheet({ action: "append", sheet, values });
-        showSaving();
-        // Recargamos sin spinner grande
-        await silentReload();
+            const cols = table.querySelectorAll('th').length - 1;
+            const values = new Array(cols).fill("");
+
+            const active = document.querySelector('.view-section.active');
+            if (active) {
+                sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+            }
+
+            showSaving();
+
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "append",
+                    sheet: sheet,
+                    values: values
+                })
+            });
+
+            // Esperamos un poco y recargamos
+            await new Promise(r => setTimeout(r, 1000));
+            await silentReload();
+
+        } catch (error) {
+            console.error("Error al añadir fila:", error);
+            alert("Error al añadir la fila. Abre la consola (F12) y revisa el error.");
+        }
     }
 
     async function deleteRow(btn) {
         if (!confirm("¿Eliminar este registro?")) return;
+
         const tr = btn.closest('tr');
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
@@ -502,17 +540,27 @@
         if (!td) return;
 
         const active = document.querySelector('.view-section.active');
-        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+        if (active) {
+            sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+        }
 
-        await sendToSheet({ action: "delete", sheet, row: parseInt(td.dataset.row) });
         showSaving();
+
+        await sendToSheet({
+            action: "delete",
+            sheet: sheet,
+            row: parseInt(td.dataset.row)
+        });
+
+        await new Promise(r => setTimeout(r, 800));
         await silentReload();
     }
 
     async function confirmReset() {
         if (!confirm("¿Borrar TODOS los datos del Excel?")) return;
-        await sendToSheet({ action: "clear" });
         showSaving();
+        await sendToSheet({ action: "clear" });
+        await new Promise(r => setTimeout(r, 800));
         await silentReload();
     }
 
@@ -550,7 +598,13 @@
     }
 
     async function sendUpdate(sheet, row, col, value) {
-        await sendToSheet({ action: "update", sheet, row: parseInt(row), col: parseInt(col), value });
+        await sendToSheet({
+            action: "update",
+            sheet: sheet,
+            row: parseInt(row),
+            col: parseInt(col),
+            value: value
+        });
     }
 
     async function sendToSheet(payload) {
