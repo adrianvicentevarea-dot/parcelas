@@ -159,33 +159,33 @@
         .menu-grid {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
             margin-bottom: 24px;
         }
 
-        /* Tarjetas más grandes para lucir las imágenes */
+        /* Tarjetas más pequeñas y compactas */
         .menu-card {
             background-color: white;
             color: #1e293b;
-            padding: 48px 32px;
-            border-radius: 12px;
+            padding: 24px 24px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
             transition: transform 0.1s, box-shadow 0.1s;
-            min-height: 200px;
+            min-height: 110px;
         }
 
         .menu-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
         }
 
-        /* Laboreos: ajustado a center para mostrar el tractor y el apero completos */
+        /* Laboreos: ajustado a center para mostrar el tractor completo y el apero */
         .menu-card-laboreos {
-            background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
+            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
@@ -198,20 +198,20 @@
         }
 
         .menu-card-recoleccion {
-            background: linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.65)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
+            background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
             background-size: cover;
             background-position: center center;
         }
 
         .menu-card-info h3 {
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             color: #0f172a;
         }
 
         .menu-card-info p {
-            font-size: 1.15rem;
+            font-size: 0.95rem;
             color: #0f172a;
             font-weight: 700;
         }
@@ -287,7 +287,7 @@
             vertical-align: middle;
         }
 
-        input[type="text"] {
+        input[type="text"], select {
             background-color: var(--input-disabled-bg);
             border: 1px solid transparent;
             color: var(--text-main);
@@ -300,9 +300,15 @@
             transition: background 0.2s, border 0.2s;
         }
 
-        input[type="text"]:not(:disabled) {
+        input[type="text"]:not(:disabled), select:not(:disabled) {
             background-color: var(--input-bg);
             border: 1px solid var(--primary);
+        }
+
+        select:disabled {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
         }
 
         .action-cell {
@@ -411,25 +417,25 @@
         <div class="menu-grid">
             <div class="menu-card" onclick="switchView('parcelas')">
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
-                <div style="font-size: 2.2rem;">📍</div>
+                <div style="font-size: 1.8rem;">📍</div>
             </div>
             <!-- Tarjeta de Laboreos -->
             <div class="menu-card menu-card-laboreos" onclick="switchView('laboreos')">
                 <div class="menu-card-info"><h3>Laboreos</h3><p>Gestión de trabajos de laboreo</p></div>
-                <div style="font-size: 2.2rem;">🚜</div>
+                <div style="font-size: 1.8rem;">🚜</div>
             </div>
             <div class="menu-card" onclick="switchView('poda')">
                 <div class="menu-card-info"><h3>Poda</h3><p>Registros y control de poda</p></div>
-                <div style="font-size: 2.2rem;">✂️</div>
+                <div style="font-size: 1.8rem;">✂️</div>
             </div>
             <div class="menu-card" onclick="switchView('tratamientos')">
                 <div class="menu-card-info"><h3>Tratamientos</h3><p>Control de tratamientos aplicados</p></div>
-                <div style="font-size: 2.2rem;">🧪</div>
+                <div style="font-size: 1.8rem;">🧪</div>
             </div>
             <!-- Tarjeta de Recolección -->
             <div class="menu-card menu-card-recoleccion" onclick="switchView('recoleccion')">
                 <div class="menu-card-info"><h3>Tareas / Recolección</h3><p>Control de tareas y kilos cosechados</p></div>
-                <div style="font-size: 2.2rem;">📦</div>
+                <div style="font-size: 1.8rem;">📦</div>
             </div>
         </div>
 
@@ -597,6 +603,7 @@
         tbody.innerHTML = ''; 
 
         const headers = Array.from(table.querySelectorAll('th'));
+        const sheetName = table.getAttribute('data-sheet');
 
         let dateColIndex = -1;
         headers.forEach((th, idx) => {
@@ -634,6 +641,7 @@
 
                 const isBtnCol = (actualColIndex === btnColIndex);
                 const isDateCol = (actualColIndex === dateColIndex);
+                const isTratamientosRealizados = (sheetName === "Tratamientos" && th.textContent.trim().toLowerCase() === "tratamientos realizados");
 
                 if (isBtnCol) {
                     htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
@@ -641,6 +649,15 @@
                     htmlContent += `<td data-col="${actualColIndex}" data-is-date-col="true">`;
                     htmlContent += `<div class="dates-container">${renderDatesHTML(cellValue)}</div>`;
                     htmlContent += `</td>`;
+                } else if (isTratamientosRealizados) {
+                    htmlContent += `<td data-col="${actualColIndex}">
+                        <select disabled>
+                            <option value="" ${cellValue === "" ? "selected" : ""}>-- Selecciona --</option>
+                            <option value="Abonado" ${cellValue === "Abonado" ? "selected" : ""}>Abonado</option>
+                            <option value="Insecticida" ${cellValue === "Insecticida" ? "selected" : ""}>Insecticida</option>
+                            <option value="Fungicida" ${cellValue === "Fungicida" ? "selected" : ""}>Fungicida</option>
+                        </select>
+                    </td>`;
                 } else {
                     let val = String(cellValue);
                     if (val.includes('T') && val.endsWith('Z')) val = val.split('T')[0];
@@ -674,8 +691,8 @@
         const editBtn = tr.querySelector('.btn-icon.edit');
         const saveBtn = tr.querySelector('.btn-icon.save');
 
-        tr.querySelectorAll('input[type="text"]').forEach(input => {
-            input.disabled = false;
+        tr.querySelectorAll('input[type="text"], select').forEach(element => {
+            element.disabled = false;
         });
 
         editBtn.style.display = 'none';
@@ -690,18 +707,18 @@
         const sheetName = table.getAttribute('data-sheet');
         const rowIndex = tr.rowIndex + 1;
 
-        tr.querySelectorAll('input[type="text"]').forEach(input => {
-            input.disabled = true;
+        tr.querySelectorAll('input[type="text"], select').forEach(element => {
+            element.disabled = true;
         });
 
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-flex';
 
-        const inputs = tr.querySelectorAll('input[type="text"]');
-        for (let input of inputs) {
-            const td = input.closest('td');
+        const inputs = tr.querySelectorAll('input[type="text"], select');
+        for (let element of inputs) {
+            const td = element.closest('td');
             const colIndex = parseInt(td.getAttribute('data-col'));
-            await sendDataToSheet(sheetName, rowIndex, colIndex, input.value);
+            await sendDataToSheet(sheetName, rowIndex, colIndex, element.value);
         }
     }
 
@@ -827,10 +844,13 @@
                     const td = tds[i];
                     let text = "";
                     const input = td.querySelector('input');
+                    const select = td.querySelector('select');
                     const datesContainer = td.querySelector('.dates-container');
 
                     if (input) {
                         text = input.value;
+                    } else if (select) {
+                        text = select.value;
                     } else if (datesContainer) {
                         const dateSpans = datesContainer.querySelectorAll('.date-text');
                         let datesArr = [];
@@ -907,6 +927,10 @@
         newRow.querySelectorAll('input').forEach(input => { 
             input.value = ''; 
             input.disabled = false; 
+        });
+        newRow.querySelectorAll('select').forEach(select => { 
+            select.value = ''; 
+            select.disabled = false; 
         });
         newRow.querySelectorAll('.dates-container').forEach(container => { container.innerHTML = ''; });
 
