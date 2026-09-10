@@ -131,7 +131,6 @@
 <div id="saving-msg" class="saving-msg">Guardado ✓</div>
 
 <div class="container">
-    <!-- INICIO -->
     <div id="view-home" class="view-section">
         <div class="home-header">🏠 Inicio</div>
         <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
@@ -163,7 +162,6 @@
         </div>
     </div>
 
-    <!-- PARCELAS -->
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
             <h1>📍 Parcelas</h1>
@@ -189,7 +187,6 @@
         </div>
     </div>
 
-    <!-- LABOREOS -->
     <div id="view-laboreos" class="view-section">
         <div class="top-nav">
             <h1>🚜 Laboreos</h1>
@@ -215,7 +212,6 @@
         </div>
     </div>
 
-    <!-- PODA -->
     <div id="view-poda" class="view-section">
         <div class="top-nav">
             <h1>✂️ Poda</h1>
@@ -240,7 +236,6 @@
         </div>
     </div>
 
-    <!-- TRATAMIENTOS -->
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
             <h1>🧪 Tratamientos</h1>
@@ -265,7 +260,6 @@
         </div>
     </div>
 
-    <!-- RECOLECCIÓN -->
     <div id="view-recoleccion" class="view-section">
         <div class="top-nav">
             <h1>📦 Tareas / Recolección</h1>
@@ -408,16 +402,11 @@
                                 <option value="Subempresa" ${isSubempresa ? "selected" : ""}>Subempresa</option>
                                 <option value="__custom__" ${isCustom ? "selected" : ""}>Escribir texto...</option>
                             </select>
-                            <input type="text" 
-                                   value="${isCustom ? val : ''}" 
-                                   placeholder="Escribe aquí..." 
-                                   style="display: ${isCustom ? 'block' : 'none'};"
-                                   onblur="autoSave(this)"
-                                   onchange="autoSave(this)">
+                            <input type="text" value="${isCustom ? val : ''}" placeholder="Escribe aquí..." 
+                                   style="display: ${isCustom ? 'block' : 'none'};" onblur="autoSave(this)">
                         </div>
                     </td>`;
                 } else {
-                    // Aquí entra Variedad y el resto de campos de texto
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
                     html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
@@ -433,7 +422,6 @@
     function handleTrabajoChange(select) {
         const container = select.closest('.trabajo-container');
         const input = container.querySelector('input[type="text"]');
-
         if (select.value === "__custom__") {
             input.style.display = 'block';
             input.focus();
@@ -458,11 +446,8 @@
         const dates = String(raw).split(',').map(d => d.trim()).filter(Boolean);
         let html = "";
         for (let i = 0; i < dates.length; i += 2) {
-            html += `<div class="dates-row">
-                <span class="date-chip"><span class="date-text">${dates[i]}</span><button onclick="removeDate(this,${i})">&times;</button></span>`;
-            if (i + 1 < dates.length) {
-                html += `<span class="date-chip"><span class="date-text">${dates[i+1]}</span><button onclick="removeDate(this,${i+1})">&times;</button></span>`;
-            }
+            html += `<div class="dates-row"><span class="date-chip"><span class="date-text">${dates[i]}</span><button onclick="removeDate(this,${i})">&times;</button></span>`;
+            if (i + 1 < dates.length) html += `<span class="date-chip"><span class="date-text">${dates[i+1]}</span><button onclick="removeDate(this,${i+1})">&times;</button></span>`;
             html += `</div>`;
         }
         return html;
@@ -475,7 +460,6 @@
         tr.querySelector('.save').style.display = 'inline-flex';
     }
 
-    // Añadir fila solo en la app
     function addRow(tableId) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector('tbody');
@@ -502,87 +486,55 @@
             } else if (isFecha) {
                 html += `<td data-is-date-col="true"><div class="dates-container"></div></td>`;
             } else if (isTrat) {
-                html += `<td>
-                    <select>
-                        <option value="">-- Selecciona --</option>
-                        <option value="Abonado">Abonado</option>
-                        <option value="Insecticida">Insecticida</option>
-                        <option value="Fungicida">Fungicida</option>
-                    </select></td>`;
+                html += `<td><select><option value="">-- Selecciona --</option><option value="Abonado">Abonado</option><option value="Insecticida">Insecticida</option><option value="Fungicida">Fungicida</option></select></td>`;
             } else if (isCultivo || isTipoTrabajo) {
-                html += `<td>
-                    <select>
-                        <option value="">-- Selecciona --</option>
-                        <option value="Secano">Secano</option>
-                        <option value="Almendros">Almendros</option>
-                        <option value="Frutales">Frutales</option>
-                    </select></td>`;
+                html += `<td><select><option value="">-- Selecciona --</option><option value="Secano">Secano</option><option value="Almendros">Almendros</option><option value="Frutales">Frutales</option></select></td>`;
             } else if (isTrabajoPor) {
-                html += `<td>
-                    <div class="trabajo-container">
-                        <select onchange="handleTrabajoChange(this)">
-                            <option value="">-- Selecciona --</option>
-                            <option value="Subempresa">Subempresa</option>
-                            <option value="__custom__">Escribir texto...</option>
-                        </select>
-                        <input type="text" placeholder="Escribe aquí..." style="display:none;">
-                    </div>
-                </td>`;
+                html += `<td><div class="trabajo-container">
+                    <select onchange="handleTrabajoChange(this)">
+                        <option value="">-- Selecciona --</option>
+                        <option value="Subempresa">Subempresa</option>
+                        <option value="__custom__">Escribir texto...</option>
+                    </select>
+                    <input type="text" placeholder="Escribe aquí..." style="display:none;">
+                </div></td>`;
             } else {
-                // Variedad y resto → campo de texto
                 html += `<td><input type="text" value=""></td>`;
             }
         });
 
         const tr = document.createElement('tr');
-        tr.classList.add('nueva-fila');
         tr.innerHTML = html;
         tbody.appendChild(tr);
         tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Guardar fila nueva en el Excel
     async function saveNewRow(btn) {
         const tr = btn.closest('tr');
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-
         const values = [];
         const tds = tr.querySelectorAll('td');
 
         for (let i = 1; i < tds.length; i++) {
             const td = tds[i];
             let value = "";
-
             const input = td.querySelector('input[type="text"]');
             const select = td.querySelector('select');
             const dates = td.querySelectorAll('.date-text');
 
-            if (input && input.style.display !== 'none') {
-                value = input.value;
-            } else if (select) {
-                value = select.value === "__custom__" ? (td.querySelector('input')?.value || "") : select.value;
-            } else if (dates.length) {
-                value = Array.from(dates).map(d => d.innerText).join(', ');
-            }
+            if (input && input.style.display !== 'none') value = input.value;
+            else if (select) value = select.value === "__custom__" ? (td.querySelector('input')?.value || "") : select.value;
+            else if (dates.length) value = Array.from(dates).map(d => d.innerText).join(', ');
 
             values.push(value);
         }
 
-        // Guardamos la pestaña actual
         const active = document.querySelector('.view-section.active');
-        if (active) {
-            sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-        }
+        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
 
         showSaving();
-
-        await sendToSheet({
-            action: "append",
-            sheet: sheet,
-            values: values
-        });
-
+        await sendToSheet({ action: "append", sheet: sheet, values: values });
         await new Promise(r => setTimeout(r, 800));
         await silentReload();
     }
@@ -597,9 +549,7 @@
 
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
-            if (td.dataset.row) {
-                await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
-            }
+            if (td.dataset.row) await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
         }
         showSaving();
     }
@@ -656,42 +606,29 @@
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         const td = tr.querySelector('[data-row]');
 
-        // Guardamos la pestaña actual ANTES de borrar
         const active = document.querySelector('.view-section.active');
-        if (active) {
-            sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-        }
+        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
 
-        // Si es una fila nueva (aún no está en Excel)
         if (!td || !td.dataset.row) {
             tr.remove();
             return;
         }
 
         showSaving();
-
-        await sendToSheet({
-            action: "delete",
-            sheet: sheet,
-            row: parseInt(td.dataset.row)
-        });
-
-        // Recargamos y volvemos a la misma pestaña
+        await sendToSheet({ action: "delete", sheet: sheet, row: parseInt(td.dataset.row) });
         await new Promise(r => setTimeout(r, 600));
         await silentReload();
     }
 
     async function confirmReset() {
-        if (!confirm("¿Borrar TODOS los datos del Excel?")) return;
+        if (!confirm("¿Vaciar las columnas de trabajo (Tipo de cultivo, Variedad, Fechas, Kilos, etc.)?\n\nLos datos de las parcelas (Comunidad, Provincia, Nombre...) se mantendrán.")) return;
 
         const active = document.querySelector('.view-section.active');
-        if (active) {
-            sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-        }
+        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
 
         showSaving();
         await sendToSheet({ action: "clear" });
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 800));
         await silentReload();
     }
 
@@ -721,7 +658,6 @@
             populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
             populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
 
-            // Volvemos a la misma pestaña
             const saved = sessionStorage.getItem('activeView');
             switchView(saved || 'home');
         } catch (e) {
@@ -730,13 +666,7 @@
     }
 
     async function sendUpdate(sheet, row, col, value) {
-        await sendToSheet({
-            action: "update",
-            sheet: sheet,
-            row: parseInt(row),
-            col: parseInt(col),
-            value: value
-        });
+        await sendToSheet({ action: "update", sheet: sheet, row: parseInt(row), col: parseInt(col), value: value });
     }
 
     async function sendToSheet(payload) {
@@ -796,10 +726,7 @@
             });
 
             doc.autoTable({
-                startY: y,
-                head: [headers],
-                body: rows,
-                theme: 'grid',
+                startY: y, head: [headers], body: rows, theme: 'grid',
                 headStyles: { fillColor: [16, 185, 129] },
                 styles: { fontSize: 8, cellPadding: 3 },
                 margin: { left: 14, right: 14 }
