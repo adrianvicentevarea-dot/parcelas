@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Agrícola - Aplicación de Parcelas</title>
+    <title>Gestión Agrícola</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -21,332 +20,104 @@
             --input-bg: #0f172a;
             --input-disabled-bg: #1e293b;
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 15px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1400px; margin: 0 auto; }
         #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(15, 23, 42, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            font-size: 1.2rem;
-            gap: 15px;
-            text-align: center;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999; color: white; font-size: 1.2rem; gap: 15px;
         }
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--border-color);
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width: 50px; height: 50px; border: 5px solid var(--border-color);
+            border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .top-nav {
-            background-color: var(--primary);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background-color: var(--primary); color: white; padding: 12px 20px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
         }
-        .top-nav h1 {
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-        }
+        .top-nav h1 { font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
         .btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
+            padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        .btn-home {
-            background-color: white;
-            color: var(--primary);
-        }
-        .btn-home:hover {
-            background-color: #f1f5f9;
-        }
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-        .btn-danger {
-            background-color: var(--accent-red);
-            color: white;
-        }
-        .btn-blue {
-            background-color: var(--accent-blue);
-            color: white;
-        }
-        .view-section {
-            display: none;
-        }
-        .view-section.active {
-            display: block;
-        }
+        .btn-home { background-color: white; color: var(--primary); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--accent-red); color: white; }
+        .btn-blue { background-color: var(--accent-blue); color: white; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
         .home-header {
-            background-color: var(--primary);
-            color: white;
-            padding: 16px 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 20px;
+            background-color: var(--primary); color: white; padding: 16px 20px; border-radius: 8px;
+            text-align: center; font-size: 1.4rem; font-weight: bold; margin-bottom: 20px;
         }
-        .menu-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
+        .menu-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
         .menu-card {
-            background-color: white;
-            color: #1e293b;
-            padding: 24px 24px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-            transition: transform 0.1s, box-shadow 0.1s;
-            min-height: 110px;
+            background-color: white; color: #1e293b; padding: 24px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15); min-height: 110px;
         }
-        .menu-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-        }
+        .menu-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.25); }
         .menu-card-laboreos {
-            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
+            background: linear-gradient(rgba(15,23,42,0.45), rgba(15,23,42,0.45)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
+            background-size: cover; background-position: center;
         }
-        .menu-card-laboreos h3, 
-        .menu-card-laboreos p {
-            color: white !important;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-        }
+        .menu-card-laboreos h3, .menu-card-laboreos p { color: white !important; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
         .menu-card-recoleccion {
-            background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
-            background-size: cover;
-            background-position: center center;
+            background: linear-gradient(rgba(15,23,42,0.35), rgba(15,23,42,0.35)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
+            background-size: cover; background-position: center;
         }
-        .menu-card-recoleccion h3,
-        .menu-card-recoleccion p {
-            color: white !important;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-        }
-        .menu-card-info h3 {
-            font-size: 1.3rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-            color: #0f172a;
-        }
-        .menu-card-info p {
-            font-size: 0.95rem;
-            color: #0f172a;
-            font-weight: 700;
-        }
-        .home-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        @media(min-width: 600px) {
-            .home-actions {
-                flex-direction: row;
-            }
-        }
-        .home-actions .btn {
-            width: 100%;
-            justify-content: center;
-            padding: 14px;
-            font-size: 1rem;
-        }
+        .menu-card-recoleccion h3, .menu-card-recoleccion p { color: white !important; text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
+        .menu-card-info h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; color: #0f172a; }
+        .menu-card-info p { font-size: 0.95rem; color: #0f172a; font-weight: 700; }
+        .home-actions { display: flex; flex-direction: column; gap: 12px; }
+        @media(min-width: 600px) { .home-actions { flex-direction: row; } }
+        .home-actions .btn { width: 100%; justify-content: center; padding: 14px; font-size: 1rem; }
         .table-container-wrapper {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
+            background-color: var(--card-bg); border-radius: 8px; padding: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); margin-bottom: 30px;
         }
-        .view-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 16px;
-            color: var(--text-main);
-        }
-        .table-actions {
-            margin-bottom: 16px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: auto;
-        }
+        .view-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 16px; }
+        .table-actions { margin-bottom: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
         th {
-            background-color: #0f172a;
-            color: var(--text-main);
-            padding: 12px 10px;
-            font-size: 0.85rem;
-            text-align: left;
-            border-bottom: 2px solid var(--border-color);
-            white-space: nowrap;
+            background-color: #0f172a; color: var(--text-main); padding: 12px 10px; font-size: 0.85rem;
+            text-align: left; border-bottom: 2px solid var(--border-color); white-space: nowrap;
         }
-        td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            vertical-align: middle;
-        }
+        td { padding: 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         input[type="text"], select {
-            background-color: var(--input-bg);
-            border: 1px solid var(--primary);
-            color: var(--text-main);
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            width: 100%;
-            min-width: 160px;
-            outline: none;
+            background-color: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main);
+            padding: 6px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%; min-width: 160px; outline: none;
         }
-        input[type="text"]:disabled {
-            background-color: var(--input-disabled-bg);
-            border: 1px solid transparent;
-        }
-        select {
-            cursor: pointer;
-        }
-        .action-cell {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
+        input[type="text"]:disabled { background-color: var(--input-disabled-bg); border: 1px solid transparent; }
+        select { cursor: pointer; }
+        .action-cell { display: flex; gap: 6px; align-items: center; }
         .btn-icon {
-            background: #334155;
-            border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            background: #334155; border: none; color: white; width: 32px; height: 32px; border-radius: 4px;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
         }
         .btn-icon.edit { background-color: #f59e0b; }
         .btn-icon.save { background-color: var(--primary); display: none; }
         .btn-icon.delete { background-color: var(--accent-red); }
-        .dates-container {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 240px;
-        }
-        .dates-row {
-            display: flex;
-            gap: 6px;
-            width: 100%;
-        }
+        .dates-container { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
+        .dates-row { display: flex; gap: 6px; width: 100%; }
         .date-chip {
-            background-color: #334155;
-            color: var(--text-main);
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #475569;
-            flex: 1;
-            min-width: 110px;
-            gap: 6px;
+            background-color: #334155; color: var(--text-main); padding: 6px 10px; border-radius: 4px;
+            font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between;
+            border: 1px solid #475569; flex: 1; min-width: 110px; gap: 6px;
         }
-        .date-chip span {
-            white-space: nowrap;
-        }
-        .date-chip button {
-            background: transparent;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-            padding: 0 2px;
-            line-height: 1;
-        }
-        .date-chip button:hover {
-            color: #dc2626;
-        }
+        .date-chip span { white-space: nowrap; }
+        .date-chip button { background: transparent; border: none; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 1rem; }
         .btn-action-date {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
+            background-color: var(--accent-blue); color: white; border: none; padding: 6px 12px;
+            border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 600; white-space: nowrap;
         }
-        .btn-action-date:hover {
-            background-color: #2563eb;
+        .saving-msg {
+            position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white;
+            padding: 10px 18px; border-radius: 8px; font-weight: 600; z-index: 9998; display: none;
         }
     </style>
 </head>
@@ -355,9 +126,9 @@
     <div class="spinner"></div>
     <div id="loading-text">Conectando con Google Sheets...</div>
 </div>
+<div id="saving-msg" class="saving-msg">Guardado ✓</div>
 
 <div class="container">
-    <!-- VISTA INICIO -->
     <div id="view-home" class="view-section">
         <div class="home-header">🏠 Inicio</div>
         <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
@@ -385,39 +156,27 @@
         </div>
         <div class="home-actions">
             <button class="btn btn-blue" onclick="descargarPDF()">📄 Descargar Excel en PDF</button>
-            <button class="btn btn-primary" onclick="refrescarDesdeExcel()">🔄 Actualizar datos desde Excel</button>
             <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
         </div>
     </div>
 
-    <!-- VISTA PARCELAS -->
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
             <h1>📍 Parcelas</h1>
-            <div class="nav-buttons">
-                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
-            </div>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Registros de Parcelas</div>
             <div class="table-actions">
                 <button class="btn btn-primary" onclick="addRow('parcelas-table')">+ Añadir Fila</button>
-                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
             </div>
             <div class="table-responsive">
                 <table id="parcelas-table" data-sheet="Identificación de Parcelas">
                     <thead>
                         <tr>
-                            <th>Acciones</th>
-                            <th>Comunidad</th>
-                            <th>Provincia</th>
-                            <th>Municipio</th>
-                            <th>Nº Polígono</th>
-                            <th>Nº Parcela</th>
-                            <th>Recinto</th>
-                            <th>Nombre</th>
-                            <th>Tipo de cultivo</th>
-                            <th>Variedad</th>
+                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th>
+                            <th>Nº Polígono</th><th>Nº Parcela</th><th>Recinto</th><th>Nombre</th>
+                            <th>Tipo de cultivo</th><th>Variedad</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -426,36 +185,23 @@
         </div>
     </div>
 
-    <!-- VISTA LABOREOS -->
     <div id="view-laboreos" class="view-section">
         <div class="top-nav">
             <h1>🚜 Laboreos</h1>
-            <div class="nav-buttons">
-                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
-            </div>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Gestión de Trabajos de Laboreo</div>
             <div class="table-actions">
                 <button class="btn btn-primary" onclick="addRow('laboreos-table')">+ Añadir Fila</button>
-                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
             </div>
             <div class="table-responsive">
                 <table id="laboreos-table" data-sheet="Laboreos">
                     <thead>
                         <tr>
-                            <th>Acciones</th>
-                            <th>Comunidad</th>
-                            <th>Provincia</th>
-                            <th>Municipio</th>
-                            <th>Nº Polígono</th>
-                            <th>Nº Parcela</th>
-                            <th>Nombre Parcela</th>
-                            <th>Tipo de cultivo</th>
-                            <th>Tipo de trabajo realizado</th>
-                            <th>Trabajo realizado por</th>
-                            <th>Laboreo</th>
-                            <th>Fecha de Registro</th>
+                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th>
+                            <th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tipo de cultivo</th>
+                            <th>Tipo de trabajo realizado</th><th>Trabajo realizado por</th><th>Laboreo</th><th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -464,31 +210,22 @@
         </div>
     </div>
 
-    <!-- VISTA PODA -->
     <div id="view-poda" class="view-section">
         <div class="top-nav">
             <h1>✂️ Poda</h1>
-            <div class="nav-buttons">
-                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
-            </div>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Registros y Control de Poda</div>
             <div class="table-actions">
                 <button class="btn btn-primary" onclick="addRow('poda-table')">+ Añadir Fila</button>
-                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
             </div>
             <div class="table-responsive">
                 <table id="poda-table" data-sheet="Poda">
                     <thead>
                         <tr>
-                            <th>Acciones</th>
-                            <th>Nº Polígono</th>
-                            <th>Nº Parcela</th>
-                            <th>Nombre Parcela</th>
-                            <th>Trabajo realizado por</th>
-                            <th>Podado</th>
-                            <th>Fecha de Registro</th>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th>
+                            <th>Trabajo realizado por</th><th>Podado</th><th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -497,32 +234,22 @@
         </div>
     </div>
 
-    <!-- VISTA TRATAMIENTOS -->
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
             <h1>🧪 Tratamientos</h1>
-            <div class="nav-buttons">
-                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
-            </div>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Control de Tratamientos Aplicados</div>
             <div class="table-actions">
                 <button class="btn btn-primary" onclick="addRow('tratamientos-table')">+ Añadir Fila</button>
-                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
             </div>
             <div class="table-responsive">
                 <table id="tratamientos-table" data-sheet="Tratamientos">
                     <thead>
                         <tr>
-                            <th>Acciones</th>
-                            <th>Nº Polígono</th>
-                            <th>Nº Parcela</th>
-                            <th>Nombre Parcela</th>
-                            <th>Tratamientos realizados</th>
-                            <th>Trabajo realizado por</th>
-                            <th>Tratamientos</th>
-                            <th>Fecha de Registro</th>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th>
+                            <th>Tratamientos realizados</th><th>Trabajo realizado por</th><th>Tratamientos</th><th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -531,33 +258,22 @@
         </div>
     </div>
 
-    <!-- VISTA RECOLECCIÓN -->
     <div id="view-recoleccion" class="view-section">
         <div class="top-nav">
             <h1>📦 Tareas / Recolección</h1>
-            <div class="nav-buttons">
-                <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
-            </div>
+            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Control de Tareas y Kilos Cosechados</div>
             <div class="table-actions">
                 <button class="btn btn-primary" onclick="addRow('recoleccion-table')">+ Añadir Fila</button>
-                <button class="btn btn-blue" onclick="refrescarDesdeExcel()">🔄 Actualizar desde Excel</button>
             </div>
             <div class="table-responsive">
                 <table id="recoleccion-table" data-sheet="Recolección">
                     <thead>
                         <tr>
-                            <th>Acciones</th>
-                            <th>Nº Polígono</th>
-                            <th>Nº Parcela</th>
-                            <th>Nombre Parcela</th>
-                            <th>Variedad</th>
-                            <th>Kilos</th>
-                            <th>Trabajo realizado por</th>
-                            <th>Recolección</th>
-                            <th>Fecha de Registro</th>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th>
+                            <th>Variedad</th><th>Kilos</th><th>Trabajo realizado por</th><th>Recolección</th><th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -568,27 +284,33 @@
 </div>
 
 <script>
-    // ========== PEGA AQUÍ TU NUEVA URL DE APPS SCRIPT ==========
+    // ========== PEGA AQUÍ LA NUEVA URL DESPUÉS DE IMPLEMENTAR ==========
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
     window.realSheetNames = {};
 
+    function showSaving() {
+        const msg = document.getElementById('saving-msg');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 1200);
+    }
+
     async function loadDataFromExcel() {
         try {
-            document.getElementById('loading-text').textContent = "Cargando datos desde Excel...";
             document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').textContent = "Cargando datos...";
 
-            const response = await fetch(WEB_APP_URL, { method: 'GET', redirect: 'follow' });
-            if (!response.ok) throw new Error("Error en red: " + response.status);
-            
+            const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
+            if (!response.ok) throw new Error("Error de red");
+
             const data = await response.json();
             const keys = Object.keys(data);
 
-            const parcelaKey = keys.find(k => k.trim().toLowerCase().includes("parcelas") || k.trim().toLowerCase().includes("identificación")) || keys[0];
-            const laboreoKey = keys.find(k => k.trim().toLowerCase().includes("laboreos"));
-            const podaKey = keys.find(k => k.trim().toLowerCase().includes("poda"));
-            const tratamientoKey = keys.find(k => k.trim().toLowerCase().includes("tratamientos"));
-            const recoleccionKey = keys.find(k => k.trim().toLowerCase().includes("recolección") || k.trim().toLowerCase().includes("recoleccion"));
+            const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
+            const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
+            const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
+            const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
+            const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
 
             window.realSheetNames = {
                 'parcelas-table': parcelaKey,
@@ -603,115 +325,91 @@
             populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
             populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
             populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
-            
+
             document.getElementById('loading-overlay').style.display = 'none';
 
             const savedView = sessionStorage.getItem('activeView');
-            if (savedView) {
-                switchView(savedView);
-            } else {
-                switchView('home');
-            }
-        } catch (error) {
-            console.error("Error:", error);
+            switchView(savedView || 'home');
+        } catch (err) {
+            console.error(err);
             document.getElementById('loading-overlay').style.display = 'none';
+            alert("Error al cargar datos. Revisa la URL del Apps Script.");
             switchView('home');
-            alert("No se pudieron cargar los datos del Excel.\n\nComprueba la URL del Apps Script.");
         }
     }
 
     function populateTable(tableId, rowsData) {
         const table = document.getElementById(tableId);
         if (!table) return;
-        const tbody = table.getElementsByTagName('tbody')[0];
-        tbody.innerHTML = ''; 
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
 
         if (!rowsData || rowsData.length === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="action-cell">
-                <button class="btn-icon edit" onclick="toggleEditRow(this)">✏️</button>
-                <button class="btn-icon save" onclick="saveRow(this)">💾</button>
-                <button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>
-            </div></td>
-            <td colspan="${headers.length - 1}" style="text-align:center; color:var(--text-muted);">Sin datos en esta pestaña</td>`;
-            tbody.appendChild(tr);
+            tbody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:var(--text-muted);padding:20px;">Sin datos</td></tr>`;
             return;
         }
 
         rowsData.forEach((rowData, rowIndex) => {
-            const excelRowNumber = rowIndex + 2; 
-            const tr = document.createElement('tr');
-            let htmlContent = `
-                <td>
-                    <div class="action-cell">
-                        <button class="btn-icon edit" onclick="toggleEditRow(this)" title="Editar">✏️</button>
-                        <button class="btn-icon save" onclick="saveRow(this)" title="Guardar">💾</button>
-                        <button class="btn-icon delete" onclick="deleteRow(this)" title="Eliminar">🗑️</button>
-                    </div>
-                </td>
-            `;
+            const excelRow = rowIndex + 2;
+            let html = `<td><div class="action-cell">
+                <button class="btn-icon edit" onclick="toggleEditRow(this)">✏️</button>
+                <button class="btn-icon save" onclick="saveRow(this)">💾</button>
+                <button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>
+            </div></td>`;
 
-            headers.slice(1).forEach((th, index) => {
-                const colIndexInHTML = index; 
-                const cellValue = (rowData[colIndexInHTML] !== undefined && rowData[colIndexInHTML] !== null) ? rowData[colIndexInHTML] : '';
-                const actualExcelColIndex = colIndexInHTML + 1; 
-                const headerTextLower = th.textContent.trim().toLowerCase();
-                
-                const isFechaRegistro = headerTextLower.includes('fecha de registro');
-                const isTratamientosRealizados = (sheetName === "Tratamientos" && headerTextLower === "tratamientos realizados");
-                const isTipoCultivo = headerTextLower === "tipo de cultivo";
-                const isBtnCol = headers[colIndexInHTML + 2] && headers[colIndexInHTML + 2].textContent.toLowerCase().includes('fecha de registro');
+            headers.slice(1).forEach((th, idx) => {
+                const val = rowData[idx] !== undefined && rowData[idx] !== null ? rowData[idx] : '';
+                const col = idx + 1;
+                const h = th.textContent.trim().toLowerCase();
+                const isFecha = h.includes('fecha de registro');
+                const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
+                const isCultivo = h === "tipo de cultivo";
+                const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
-                if (isBtnCol) {
-                    htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
-                } else if (isFechaRegistro) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}" data-is-date-col="true">
-                        <div class="dates-container">${renderDatesHTML(cellValue)}</div>
-                    </td>`;
-                } else if (isTratamientosRealizados) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
-                        <select onchange="autoSaveSelect(this)">
-                            <option value="" ${cellValue === "" ? "selected" : ""}>-- Selecciona --</option>
-                            <option value="Abonado" ${cellValue === "Abonado" ? "selected" : ""}>Abonado</option>
-                            <option value="Insecticida" ${cellValue === "Insecticida" ? "selected" : ""}>Insecticida</option>
-                            <option value="Fungicida" ${cellValue === "Fungicida" ? "selected" : ""}>Fungicida</option>
-                        </select>
-                    </td>`;
-                } else if (isTipoCultivo) {
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
-                        <select onchange="autoSaveSelect(this)">
-                            <option value="" ${cellValue === "" ? "selected" : ""}>-- Selecciona --</option>
-                            <option value="Secano" ${cellValue === "Secano" ? "selected" : ""}>Secano</option>
-                            <option value="Almendros" ${cellValue === "Almendros" ? "selected" : ""}>Almendros</option>
-                            <option value="Frutales" ${cellValue === "Frutales" ? "selected" : ""}>Frutales</option>
-                        </select>
-                    </td>`;
+                if (isBtn) {
+                    html += `<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
+                } else if (isFecha) {
+                    html += `<td data-row="${excelRow}" data-col="${col}" data-is-date-col="true"><div class="dates-container">${renderDatesHTML(val)}</div></td>`;
+                } else if (isTrat) {
+                    html += `<td data-row="${excelRow}" data-col="${col}">
+                        <select onchange="autoSave(this)">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Abonado" ${val==="Abonado"?"selected":""}>Abonado</option>
+                            <option value="Insecticida" ${val==="Insecticida"?"selected":""}>Insecticida</option>
+                            <option value="Fungicida" ${val==="Fungicida"?"selected":""}>Fungicida</option>
+                        </select></td>`;
+                } else if (isCultivo) {
+                    html += `<td data-row="${excelRow}" data-col="${col}">
+                        <select onchange="autoSave(this)">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Secano" ${val==="Secano"?"selected":""}>Secano</option>
+                            <option value="Almendros" ${val==="Almendros"?"selected":""}>Almendros</option>
+                            <option value="Frutales" ${val==="Frutales"?"selected":""}>Frutales</option>
+                        </select></td>`;
                 } else {
-                    let val = String(cellValue);
-                    if (val.includes('T') && val.endsWith('Z')) val = val.split('T')[0];
-                    htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}">
-                        <input type="text" value="${val}" disabled onblur="autoSaveInput(this)">
-                    </td>`;
+                    let v = String(val);
+                    if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
+                    html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
                 }
             });
 
-            tr.innerHTML = htmlContent;
+            const tr = document.createElement('tr');
+            tr.innerHTML = html;
             tbody.appendChild(tr);
         });
     }
 
-    function renderDatesHTML(rawValue) {
-        if (!rawValue || String(rawValue).trim() === "") return "";
-        let dates = String(rawValue).split(',').map(d => d.trim()).filter(d => d !== "");
-        
+    function renderDatesHTML(raw) {
+        if (!raw || !String(raw).trim()) return "";
+        const dates = String(raw).split(',').map(d => d.trim()).filter(Boolean);
         let html = "";
         for (let i = 0; i < dates.length; i += 2) {
-            html += `<div class="dates-row">`;
-            html += `<span class="date-chip"><span class="date-text">${dates[i]}</span><button type="button" onclick="removeDate(this, ${i})">&times;</button></span>`;
+            html += `<div class="dates-row">
+                <span class="date-chip"><span class="date-text">${dates[i]}</span><button onclick="removeDate(this,${i})">&times;</button></span>`;
             if (i + 1 < dates.length) {
-                html += `<span class="date-chip"><span class="date-text">${dates[i+1]}</span><button type="button" onclick="removeDate(this, ${i+1})">&times;</button></span>`;
+                html += `<span class="date-chip"><span class="date-text">${dates[i+1]}</span><button onclick="removeDate(this,${i+1})">&times;</button></span>`;
             }
             html += `</div>`;
         }
@@ -720,175 +418,139 @@
 
     function toggleEditRow(btn) {
         const tr = btn.closest('tr');
-        const editBtn = tr.querySelector('.btn-icon.edit');
-        const saveBtn = tr.querySelector('.btn-icon.save');
-        tr.querySelectorAll('input[type="text"]').forEach(el => el.disabled = false);
-        editBtn.style.display = 'none';
-        saveBtn.style.display = 'inline-flex';
+        tr.querySelectorAll('input[type="text"]').forEach(i => i.disabled = false);
+        tr.querySelector('.edit').style.display = 'none';
+        tr.querySelector('.save').style.display = 'inline-flex';
     }
 
     async function saveRow(btn) {
         const tr = btn.closest('tr');
-        const editBtn = tr.querySelector('.btn-icon.edit');
-        const saveBtn = tr.querySelector('.btn-icon.save');
         const table = tr.closest('table');
-        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        tr.querySelectorAll('input[type="text"]').forEach(i => i.disabled = true);
+        tr.querySelector('.save').style.display = 'none';
+        tr.querySelector('.edit').style.display = 'inline-flex';
 
-        tr.querySelectorAll('input[type="text"]').forEach(el => el.disabled = true);
-        saveBtn.style.display = 'none';
-        editBtn.style.display = 'inline-flex';
-
-        const inputs = tr.querySelectorAll('input[type="text"]');
-        for (let element of inputs) {
-            const td = element.closest('td');
-            const rowIndex = parseInt(td.getAttribute('data-row'));
-            const colIndex = parseInt(td.getAttribute('data-col'));
-            await sendDataToSheet(sheetName, rowIndex, colIndex, element.value);
+        for (const input of tr.querySelectorAll('input[type="text"]')) {
+            const td = input.closest('td');
+            await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
         }
+        showSaving();
     }
 
-    // Guardado automático al salir del input (más cómodo)
-    async function autoSaveInput(inputElement) {
-        const td = inputElement.closest('td');
-        const table = inputElement.closest('table');
-        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
-        const rowIndex = parseInt(td.getAttribute('data-row'));
-        const colIndex = parseInt(td.getAttribute('data-col'));
-        await sendDataToSheet(sheetName, rowIndex, colIndex, inputElement.value);
-    }
-
-    async function autoSaveSelect(selectElement) {
-        const td = selectElement.closest('td');
-        const table = selectElement.closest('table');
-        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
-        const rowIndex = parseInt(td.getAttribute('data-row'));
-        const colIndex = parseInt(td.getAttribute('data-col'));
-        await sendDataToSheet(sheetName, rowIndex, colIndex, selectElement.value);
+    async function autoSave(el) {
+        const td = el.closest('td');
+        const table = el.closest('table');
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        await sendUpdate(sheet, td.dataset.row, td.dataset.col, el.value);
+        showSaving();
     }
 
     async function triggerDateAction(btn) {
         const tr = btn.closest('tr');
-        const dateTd = tr.querySelector('td[data-is-date-col="true"]');
-        if (!dateTd) return;
-        const container = dateTd.querySelector('.dates-container');
-        
+        const td = tr.querySelector('[data-is-date-col]');
+        if (!td) return;
+        const container = td.querySelector('.dates-container');
         const now = new Date();
         const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        
-        let currentDates = [];
-        dateTd.querySelectorAll('.date-text').forEach(span => {
-            let text = span.textContent.trim();
-            if (text) currentDates.push(text);
-        });
-        currentDates.push(dateStr);
-        container.innerHTML = renderDatesHTML(currentDates.join(', '));
+        let dates = [];
+        td.querySelectorAll('.date-text').forEach(s => dates.push(s.textContent.trim()));
+        dates.push(dateStr);
+        container.innerHTML = renderDatesHTML(dates.join(', '));
 
         const table = tr.closest('table');
-        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
-        const rowIndex = parseInt(dateTd.getAttribute('data-row'));
-        const colIndex = parseInt(dateTd.getAttribute('data-col'));
-        await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
+        showSaving();
     }
 
-    async function removeDate(closeBtn, indexToRemove) {
-        const td = closeBtn.closest('td');
-        const container = td.querySelector('.dates-container');
-        
-        let currentDates = [];
-        td.querySelectorAll('.date-text').forEach(span => {
-            let text = span.textContent.trim();
-            if (text) currentDates.push(text);
-        });
-        currentDates.splice(indexToRemove, 1);
-        container.innerHTML = renderDatesHTML(currentDates.join(', '));
+    async function removeDate(btn, idx) {
+        const td = btn.closest('td');
+        let dates = [];
+        td.querySelectorAll('.date-text').forEach(s => dates.push(s.textContent.trim()));
+        dates.splice(idx, 1);
+        td.querySelector('.dates-container').innerHTML = renderDatesHTML(dates.join(', '));
 
         const table = td.closest('table');
-        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
-        const rowIndex = parseInt(td.getAttribute('data-row'));
-        const colIndex = parseInt(td.getAttribute('data-col'));
-        await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
-    }
-
-    async function deleteRow(btn) {
-        const row = btn.closest('tr');
-        const table = row.closest('table');
-        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
-        const firstTd = row.querySelector('td[data-row]');
-        const rowIndex = firstTd ? parseInt(firstTd.getAttribute('data-row')) : null;
-
-        if (!rowIndex) {
-            alert("No se puede eliminar esta fila");
-            return;
-        }
-
-        if (!confirm("¿Estás seguro de que deseas eliminar este registro?")) return;
-
-        document.getElementById('loading-text').textContent = "Eliminando registro...";
-        document.getElementById('loading-overlay').style.display = 'flex';
-
-        const activeSection = document.querySelector('.view-section.active');
-        if (activeSection) {
-            sessionStorage.setItem('activeView', activeSection.id.replace('view-', ''));
-        }
-
-        await sendToSheet({
-            action: "delete",
-            sheet: sheetName,
-            row: rowIndex
-        });
-
-        location.reload();
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
+        showSaving();
     }
 
     async function addRow(tableId) {
         const table = document.getElementById(tableId);
-        const sheetName = window.realSheetNames?.[tableId] || table.getAttribute('data-sheet');
-        const headers = Array.from(table.querySelectorAll('th')).slice(1);
-        const emptyValues = new Array(headers.length).fill("");
+        const sheet = window.realSheetNames[tableId] || table.getAttribute('data-sheet');
+        const cols = table.querySelectorAll('th').length - 1;
+        const values = new Array(cols).fill("");
 
-        document.getElementById('loading-text').textContent = "Añadiendo fila nueva...";
-        document.getElementById('loading-overlay').style.display = 'flex';
+        // Guardamos la vista actual
+        const active = document.querySelector('.view-section.active');
+        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
 
-        const activeSection = document.querySelector('.view-section.active');
-        if (activeSection) {
-            sessionStorage.setItem('activeView', activeSection.id.replace('view-', ''));
-        }
+        await sendToSheet({ action: "append", sheet, values });
+        showSaving();
+        // Recargamos sin spinner grande
+        await silentReload();
+    }
 
-        await sendToSheet({
-            action: "append",
-            sheet: sheetName,
-            values: emptyValues
-        });
+    async function deleteRow(btn) {
+        if (!confirm("¿Eliminar este registro?")) return;
+        const tr = btn.closest('tr');
+        const table = tr.closest('table');
+        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        const td = tr.querySelector('[data-row]');
+        if (!td) return;
 
-        location.reload();
+        const active = document.querySelector('.view-section.active');
+        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+
+        await sendToSheet({ action: "delete", sheet, row: parseInt(td.dataset.row) });
+        showSaving();
+        await silentReload();
     }
 
     async function confirmReset() {
-        if (!confirm("¿Estás seguro de que deseas borrar TODOS los datos del Excel?\nEsta acción no se puede deshacer.")) return;
-
-        document.getElementById('loading-text').textContent = "Borrando todos los datos...";
-        document.getElementById('loading-overlay').style.display = 'flex';
-
+        if (!confirm("¿Borrar TODOS los datos del Excel?")) return;
         await sendToSheet({ action: "clear" });
-        location.reload();
+        showSaving();
+        await silentReload();
     }
 
-    function refrescarDesdeExcel() {
-        const activeSection = document.querySelector('.view-section.active');
-        if (activeSection) {
-            sessionStorage.setItem('activeView', activeSection.id.replace('view-', ''));
+    async function silentReload() {
+        try {
+            const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
+            const data = await response.json();
+            const keys = Object.keys(data);
+
+            const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
+            const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
+            const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
+            const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
+            const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
+
+            window.realSheetNames = {
+                'parcelas-table': parcelaKey,
+                'laboreos-table': laboreoKey,
+                'poda-table': podaKey,
+                'tratamientos-table': tratamientoKey,
+                'recoleccion-table': recoleccionKey
+            };
+
+            populateTable('parcelas-table', parcelaKey ? data[parcelaKey].slice(1) : []);
+            populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
+            populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
+            populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
+            populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
+
+            const saved = sessionStorage.getItem('activeView');
+            switchView(saved || 'home');
+        } catch (e) {
+            console.error(e);
         }
-        loadDataFromExcel();
     }
 
-    async function sendDataToSheet(sheetName, rowIndex, colIndex, value) {
-        await sendToSheet({
-            action: "update",
-            sheet: sheetName,
-            row: rowIndex,
-            col: colIndex,
-            value: value
-        });
+    async function sendUpdate(sheet, row, col, value) {
+        await sendToSheet({ action: "update", sheet, row: parseInt(row), col: parseInt(col), value });
     }
 
     async function sendToSheet(payload) {
@@ -899,69 +561,56 @@
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             });
-        } catch (err) {
-            console.error("Error de red:", err);
+        } catch (e) {
+            console.error("Error al guardar:", e);
+        }
+    }
+
+    function switchView(name) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        const t = document.getElementById('view-' + name);
+        if (t) {
+            t.classList.add('active');
+            sessionStorage.setItem('activeView', name);
+            window.scrollTo(0, 0);
         }
     }
 
     function descargarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
-        let startY = 15;
+        let y = 15;
         doc.setFontSize(16);
-        doc.text("Reporte Completo - Gestión Agrícola", 14, startY);
-        startY += 10;
+        doc.text("Reporte Completo - Gestión Agrícola", 14, y);
+        y += 10;
 
-        const tables = document.querySelectorAll('.table-responsive table');
-        tables.forEach((table, index) => {
-            const sheetName = table.getAttribute('data-sheet') || `Pestaña ${index + 1}`;
-            
-            if (index > 0) {
-                doc.addPage();
-                startY = 15;
-            }
-            
+        document.querySelectorAll('.table-responsive table').forEach((table, idx) => {
+            const name = table.getAttribute('data-sheet') || `Hoja ${idx+1}`;
+            if (idx > 0) { doc.addPage(); y = 15; }
             doc.setFontSize(12);
-            doc.setTextColor(40);
-            doc.text(`Hoja: ${sheetName}`, 14, startY);
-            startY += 6;
+            doc.text(`Hoja: ${name}`, 14, y);
+            y += 6;
 
-            const headers = [];
-            const headerThs = table.querySelectorAll('thead th');
-            for (let i = 1; i < headerThs.length; i++) {
-                headers.push(headerThs[i].innerText);
-            }
-
+            const headers = Array.from(table.querySelectorAll('thead th')).slice(1).map(th => th.innerText);
             const rows = [];
-            const trs = table.querySelectorAll('tbody tr');
-            trs.forEach(tr => {
-                const rowData = [];
-                const tds = tr.querySelectorAll('td');
-                if (tds.length <= 1 && tds[0].getAttribute('colspan')) return;
-
-                for (let i = 1; i < tds.length; i++) {
-                    const td = tds[i];
-                    let text = "";
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                if (tr.querySelector('[colspan]')) return;
+                const row = [];
+                tr.querySelectorAll('td').forEach((td, i) => {
+                    if (i === 0) return;
                     const input = td.querySelector('input');
                     const select = td.querySelector('select');
-                    const datesContainer = td.querySelector('.dates-container');
-                    if (input) text = input.value;
-                    else if (select) text = select.value;
-                    else if (datesContainer) {
-                        const dateSpans = datesContainer.querySelectorAll('.date-text');
-                        let datesArr = [];
-                        dateSpans.forEach(span => datesArr.push(span.innerText));
-                        text = datesArr.join(', ');
-                    } else {
-                        text = td.innerText.replace('📅 Añadir Fecha', '').trim();
-                    }
-                    rowData.push(text);
-                }
-                if (rowData.length > 0) rows.push(rowData);
+                    const dates = td.querySelectorAll('.date-text');
+                    if (input) row.push(input.value);
+                    else if (select) row.push(select.value);
+                    else if (dates.length) row.push(Array.from(dates).map(d => d.innerText).join(', '));
+                    else row.push(td.innerText.replace('📅 Añadir Fecha', '').trim());
+                });
+                if (row.length) rows.push(row);
             });
 
             doc.autoTable({
-                startY: startY,
+                startY: y,
                 head: [headers],
                 body: rows,
                 theme: 'grid',
@@ -969,24 +618,12 @@
                 styles: { fontSize: 8, cellPadding: 3 },
                 margin: { left: 14, right: 14 }
             });
-            startY = doc.lastAutoTable.finalY + 15;
+            y = doc.lastAutoTable.finalY + 12;
         });
-        doc.save("Gestion_Agricola_Completa.pdf");
+        doc.save("Gestion_Agricola.pdf");
     }
 
-    function switchView(viewName) {
-        document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-        const target = document.getElementById('view-' + viewName);
-        if (target) {
-            target.classList.add('active');
-            window.scrollTo(0, 0);
-            sessionStorage.setItem('activeView', viewName);
-        }
-    }
-
-    window.onload = function() {
-        loadDataFromExcel();
-    };
+    window.onload = loadDataFromExcel;
 </script>
 </body>
 </html>
