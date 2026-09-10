@@ -568,7 +568,6 @@
             const data = await response.json();
             const keys = Object.keys(data);
 
-            // Búsqueda inteligente y flexible para evitar fallos por espacios o acentos
             const parcelaKey = keys.find(k => k.trim().toLowerCase().includes("parcelas") || k.trim().toLowerCase().includes("identificación")) || keys[0];
             const laboreoKey = keys.find(k => k.trim().toLowerCase().includes("laboreos"));
             const podaKey = keys.find(k => k.trim().toLowerCase().includes("poda"));
@@ -615,7 +614,7 @@
         }
 
         rowsData.forEach((rowData, rowIndex) => {
-            const excelRowNumber = rowIndex + 2; // Fila real en Google Sheets (fila 1 son cabeceras)
+            const excelRowNumber = rowIndex + 2; 
             const tr = document.createElement('tr');
             let htmlContent = `
                 <td>
