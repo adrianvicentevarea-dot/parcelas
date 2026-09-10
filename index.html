@@ -22,26 +22,22 @@
             --input-bg: #0f172a;
             --input-disabled-bg: #1e293b;
         }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
             min-height: 100vh;
             padding: 15px;
         }
-
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-
         /* PANTALLA DE CARGA */
         #loading-overlay {
             position: fixed;
@@ -61,7 +57,6 @@
             text-align: center;
             padding: 20px;
         }
-
         .spinner {
             width: 50px;
             height: 50px;
@@ -70,12 +65,10 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         /* HEADER / NAVBAR */
         .top-nav {
             background-color: var(--primary);
@@ -88,19 +81,16 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-
         .top-nav h1 {
             font-size: 1.1rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
         .nav-buttons {
             display: flex;
             gap: 10px;
         }
-
         .btn {
             padding: 8px 16px;
             border-radius: 6px;
@@ -114,7 +104,6 @@
             gap: 6px;
             text-decoration: none;
         }
-
         .btn-home {
             background-color: white;
             color: var(--primary);
@@ -122,7 +111,6 @@
         .btn-home:hover {
             background-color: #f1f5f9;
         }
-
         .btn-primary {
             background-color: var(--primary);
             color: white;
@@ -130,12 +118,10 @@
         .btn-primary:hover {
             background-color: var(--primary-hover);
         }
-
         .btn-danger {
             background-color: var(--accent-red);
             color: white;
         }
-
         /* VISTAS */
         .view-section {
             display: none;
@@ -143,7 +129,6 @@
         .view-section.active {
             display: block;
         }
-
         /* HOME MENU GRID */
         .home-header {
             background-color: var(--primary);
@@ -155,14 +140,12 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
-
         .menu-grid {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-bottom: 24px;
         }
-
         .menu-card {
             background-color: white;
             color: #1e293b;
@@ -176,74 +159,62 @@
             transition: transform 0.1s, box-shadow 0.1s;
             min-height: 110px;
         }
-
         .menu-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(0,0,0,0.25);
         }
-
         .menu-card-laboreos {
             background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
         }
-
         .menu-card-laboreos h3, 
         .menu-card-laboreos p {
             color: white !important;
             text-shadow: 0 2px 6px rgba(0,0,0,0.9);
         }
-
         .menu-card-recoleccion {
             background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('WhatsApp Image 2026-09-08 at 21.31.29.jpeg');
             background-size: cover;
             background-position: center center;
         }
-
         .menu-card-recoleccion h3,
         .menu-card-recoleccion p {
             color: white !important;
             text-shadow: 0 2px 6px rgba(0,0,0,0.9);
         }
-
         .menu-card-info h3 {
             font-size: 1.3rem;
             font-weight: 800;
             margin-bottom: 4px;
             color: #0f172a;
         }
-
         .menu-card-info p {
             font-size: 0.95rem;
             color: #0f172a;
             font-weight: 700;
         }
-
         .home-actions {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-
         @media(min-width: 600px) {
             .home-actions {
                 flex-direction: row;
             }
         }
-
         .home-actions .btn {
             width: 100%;
             justify-content: center;
             padding: 14px;
             font-size: 1rem;
         }
-
         .btn-blue {
             background-color: var(--accent-blue);
             color: white;
         }
-
         /* TABLAS DE DATOS */
         .table-container-wrapper {
             background-color: var(--card-bg);
@@ -252,29 +223,24 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
             margin-bottom: 30px;
         }
-
         .view-title {
             font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 16px;
             color: var(--text-main);
         }
-
         .table-actions {
             margin-bottom: 16px;
         }
-
         .table-responsive {
             width: 100%;
             overflow-x: auto;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             table-layout: auto;
         }
-
         th {
             background-color: #0f172a;
             color: var(--text-main);
@@ -284,13 +250,11 @@
             border-bottom: 2px solid var(--border-color);
             white-space: nowrap;
         }
-
         td {
             padding: 10px;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
         }
-
         input[type="text"], select {
             background-color: var(--input-bg);
             border: 1px solid var(--primary);
@@ -303,22 +267,18 @@
             outline: none;
             transition: background 0.2s, border 0.2s;
         }
-
         input[type="text"]:disabled {
             background-color: var(--input-disabled-bg);
             border: 1px solid transparent;
         }
-
         select {
             cursor: pointer;
         }
-
         .action-cell {
             display: flex;
             gap: 6px;
             align-items: center;
         }
-
         .btn-icon {
             background: #334155;
             border: none;
@@ -334,20 +294,17 @@
         .btn-icon.edit { background-color: #f59e0b; }
         .btn-icon.save { background-color: var(--primary); display: none; }
         .btn-icon.delete { background-color: var(--accent-red); }
-
         .dates-container {
             display: flex;
             flex-direction: column;
             gap: 6px;
             min-width: 240px;
         }
-
         .dates-row {
             display: flex;
             gap: 6px;
             width: 100%;
         }
-
         .date-chip {
             background-color: #334155;
             color: var(--text-main);
@@ -362,11 +319,9 @@
             min-width: 110px;
             gap: 6px;
         }
-
         .date-chip span {
             white-space: nowrap;
         }
-
         .date-chip button {
             background: transparent;
             border: none;
@@ -381,7 +336,6 @@
         .date-chip button:hover {
             color: #dc2626;
         }
-
         .btn-action-date {
             background-color: var(--accent-blue);
             color: white;
@@ -402,20 +356,16 @@
     </style>
 </head>
 <body>
-
 <!-- Pantalla de carga inicial -->
 <div id="loading-overlay">
     <div class="spinner"></div>
     <div id="loading-text">Conectando con Google Sheets...</div>
 </div>
-
 <div class="container">
-
     <!-- ================= VISTA: INICIO ================= -->
     <div id="view-home" class="view-section">
         <div class="home-header">🏠 Inicio</div>
         <div style="margin-bottom: 16px; font-weight: 600; color: var(--text-muted);">Opciones Principales</div>
-
         <div class="menu-grid">
             <div class="menu-card" onclick="switchView('parcelas')">
                 <div class="menu-card-info"><h3>Parcelas</h3><p>Identificación y control de parcelas</p></div>
@@ -438,13 +388,11 @@
                 <div style="font-size: 1.8rem;">📦</div>
             </div>
         </div>
-
         <div class="home-actions">
             <button class="btn btn-blue" onclick="descargarPDF()">📄 Descargar Excel en PDF</button>
             <button class="btn btn-danger" onclick="confirmReset()">🗑️ Borrar Datos del Excel</button>
         </div>
     </div>
-
     <!-- ================= VISTA: PARCELAS ================= -->
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
@@ -466,7 +414,6 @@
             </div>
         </div>
     </div>
-
     <!-- ================= VISTA: LABOREOS ================= -->
     <div id="view-laboreos" class="view-section">
         <div class="top-nav">
@@ -488,7 +435,6 @@
             </div>
         </div>
     </div>
-
     <!-- ================= VISTA: PODA ================= -->
     <div id="view-poda" class="view-section">
         <div class="top-nav">
@@ -510,7 +456,6 @@
             </div>
         </div>
     </div>
-
     <!-- ================= VISTA: TRATAMIENTOS ================= -->
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
@@ -524,7 +469,7 @@
                 <table id="tratamientos-table" data-sheet="Tratamientos">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tratamientos realizados</th><th>Trabajo realizado por</th><th>Trataminetos</th><th>Fecha de Registro</th>
+                            <th>Acciones</th><th>Nº Polígono</th><th>Nº Parcela</th><th>Nombre Parcela</th><th>Tratamientos realizados</th><th>Trabajo realizado por</th><th>Tratamientos</th><th>Fecha de Registro</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -532,7 +477,6 @@
             </div>
         </div>
     </div>
-
     <!-- ================= VISTA: RECOLECCIÓN ================= -->
     <div id="view-recoleccion" class="view-section">
         <div class="top-nav">
@@ -554,11 +498,12 @@
             </div>
         </div>
     </div>
-
 </div>
-
 <script>
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
+
+    // Aquí se guardarán los nombres REALES de las hojas
+    window.realSheetNames = {};
 
     async function loadDataFromExcel() {
         try {
@@ -574,6 +519,15 @@
             const tratamientoKey = keys.find(k => k.trim().toLowerCase().includes("tratamientos"));
             const recoleccionKey = keys.find(k => k.trim().toLowerCase().includes("recolección") || k.trim().toLowerCase().includes("recoleccion"));
 
+            // Guardamos los nombres REALES que devuelve Google Sheets
+            window.realSheetNames = {
+                'parcelas-table': parcelaKey,
+                'laboreos-table': laboreoKey,
+                'poda-table': podaKey,
+                'tratamientos-table': tratamientoKey,
+                'recoleccion-table': recoleccionKey
+            };
+
             populateTable('parcelas-table', parcelaKey ? data[parcelaKey].slice(1) : []);
             populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
             populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
@@ -581,7 +535,6 @@
             populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
             
             document.getElementById('loading-overlay').style.display = 'none';
-
             const savedView = sessionStorage.getItem('activeView');
             if (savedView) {
                 switchView(savedView);
@@ -601,10 +554,8 @@
         if (!table) return;
         const tbody = table.getElementsByTagName('tbody')[0];
         tbody.innerHTML = ''; 
-
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
-
         if (!rowsData || rowsData.length === 0) {
             const tr = document.createElement('tr');
             let colsCount = headers.length;
@@ -612,7 +563,6 @@
             tbody.appendChild(tr);
             return;
         }
-
         rowsData.forEach((rowData, rowIndex) => {
             const excelRowNumber = rowIndex + 2; 
             const tr = document.createElement('tr');
@@ -625,18 +575,15 @@
                     </div>
                 </td>
             `;
-
             headers.slice(1).forEach((th, index) => {
                 const colIndexInHTML = index; 
                 const cellValue = (rowData[colIndexInHTML] !== undefined && rowData[colIndexInHTML] !== null) ? rowData[colIndexInHTML] : '';
                 const actualExcelColIndex = colIndexInHTML + 1; 
-
                 const headerTextLower = th.textContent.trim().toLowerCase();
                 const isFechaRegistro = headerTextLower.includes('fecha de registro');
                 const isTratamientosRealizados = (sheetName === "Tratamientos" && headerTextLower === "tratamientos realizados");
                 const isTipoCultivo = headerTextLower === "tipo de cultivo";
                 const isBtnCol = headers[colIndexInHTML + 2] && headers[colIndexInHTML + 2].textContent.toLowerCase().includes('fecha de registro');
-
                 if (isBtnCol) {
                     htmlContent += `<td><button type="button" class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
                 } else if (isFechaRegistro) {
@@ -667,7 +614,6 @@
                     htmlContent += `<td data-row="${excelRowNumber}" data-col="${actualExcelColIndex}"><input type="text" value="${val}" disabled></td>`;
                 }
             });
-
             tr.innerHTML = htmlContent;
             tbody.appendChild(tr);
         });
@@ -693,11 +639,9 @@
         const tr = btn.closest('tr');
         const editBtn = tr.querySelector('.btn-icon.edit');
         const saveBtn = tr.querySelector('.btn-icon.save');
-
         tr.querySelectorAll('input[type="text"]').forEach(element => {
             element.disabled = false;
         });
-
         editBtn.style.display = 'none';
         saveBtn.style.display = 'inline-flex';
     }
@@ -707,15 +651,13 @@
         const editBtn = tr.querySelector('.btn-icon.edit');
         const saveBtn = tr.querySelector('.btn-icon.save');
         const table = tr.closest('table');
-        const sheetName = table.getAttribute('data-sheet');
-
+        // Usamos el nombre REAL de la hoja
+        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         tr.querySelectorAll('input[type="text"]').forEach(element => {
             element.disabled = true;
         });
-
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-flex';
-
         const inputs = tr.querySelectorAll('input[type="text"]');
         for (let element of inputs) {
             const td = element.closest('td');
@@ -728,7 +670,8 @@
     async function autoSaveSelect(selectElement) {
         const td = selectElement.closest('td');
         const table = selectElement.closest('table');
-        const sheetName = table.getAttribute('data-sheet');
+        // Usamos el nombre REAL de la hoja
+        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const rowIndex = parseInt(td.getAttribute('data-row'));
         const colIndex = parseInt(td.getAttribute('data-col'));
         await sendDataToSheet(sheetName, rowIndex, colIndex, selectElement.value);
@@ -738,7 +681,6 @@
         const tr = btn.closest('tr');
         const dateTd = tr.querySelector('td[data-is-date-col="true"]');
         if (!dateTd) return;
-
         const container = dateTd.querySelector('.dates-container');
         
         const now = new Date();
@@ -746,18 +688,16 @@
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
-
         let currentDates = [];
         dateTd.querySelectorAll('.date-text').forEach(span => {
             let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
-
         currentDates.push(dateStr);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
-
         const table = tr.closest('table');
-        const sheetName = table.getAttribute('data-sheet');
+        // Usamos el nombre REAL de la hoja
+        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const rowIndex = parseInt(dateTd.getAttribute('data-row'));
         const colIndex = parseInt(dateTd.getAttribute('data-col'));
         await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
@@ -772,12 +712,11 @@
             let text = span.textContent.trim();
             if (text) currentDates.push(text);
         });
-
         currentDates.splice(indexToRemove, 1);
         container.innerHTML = renderDatesHTML(currentDates.join(', '));
-
         const table = td.closest('table');
-        const sheetName = table.getAttribute('data-sheet');
+        // Usamos el nombre REAL de la hoja
+        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const rowIndex = parseInt(td.getAttribute('data-row'));
         const colIndex = parseInt(td.getAttribute('data-col'));
         await sendDataToSheet(sheetName, rowIndex, colIndex, currentDates.join(', '));
@@ -787,11 +726,11 @@
         const row = btn.closest('tr');
         const tbody = row.closest('tbody');
         const table = row.closest('table');
-        const sheetName = table.getAttribute('data-sheet');
+        // Usamos el nombre REAL de la hoja
+        const sheetName = window.realSheetNames?.[table.id] || table.getAttribute('data-sheet');
         const firstTd = row.querySelector('td[data-row]');
         const rowIndex = firstTd ? parseInt(firstTd.getAttribute('data-row')) : (row.rowIndex + 1);
         const headers = table.querySelectorAll('th');
-
         if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
             if (tbody.rows.length > 1) {
                 const activeSection = document.querySelector('.view-section.active');
@@ -799,14 +738,11 @@
                     const viewId = activeSection.id.replace('view-', '');
                     sessionStorage.setItem('activeView', viewId);
                 }
-
                 document.getElementById('loading-text').textContent = "Eliminando registro y sincronizando...";
                 document.getElementById('loading-overlay').style.display = 'flex';
-
                 for (let i = 1; i <= headers.length; i++) {
                     await sendDataToSheet(sheetName, rowIndex, i, "");
                 }
-
                 location.reload();
             } else {
                 alert("Debe mantenerse al menos una fila en la tabla.");
@@ -817,14 +753,11 @@
     function descargarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
-
         let startY = 15;
         doc.setFontSize(16);
         doc.text("Reporte Completo - Gestión Agrícola", 14, startY);
         startY += 10;
-
         const tables = document.querySelectorAll('.table-responsive table');
-
         tables.forEach((table, index) => {
             const sheetName = table.getAttribute('data-sheet') || `Pestaña ${index + 1}`;
             
@@ -837,13 +770,11 @@
             doc.setTextColor(40);
             doc.text(`Hoja: ${sheetName}`, 14, startY);
             startY += 6;
-
             const headers = [];
             const headerThs = table.querySelectorAll('thead th');
             for (let i = 1; i < headerThs.length; i++) {
                 headers.push(headerThs[i].innerText);
             }
-
             const rows = [];
             const trs = table.querySelectorAll('tbody tr');
             trs.forEach(tr => {
@@ -851,14 +782,12 @@
                 const tds = tr.querySelectorAll('td');
                 
                 if(tds.length <= 1 && tds[0].getAttribute('colspan')) return;
-
                 for (let i = 1; i < tds.length; i++) {
                     const td = tds[i];
                     let text = "";
                     const input = td.querySelector('input');
                     const select = td.querySelector('select');
                     const datesContainer = td.querySelector('.dates-container');
-
                     if (input) {
                         text = input.value;
                     } else if (select) {
@@ -877,7 +806,6 @@
                     rows.push(rowData);
                 }
             });
-
             doc.autoTable({
                 startY: startY,
                 head: [headers],
@@ -887,10 +815,8 @@
                 styles: { fontSize: 8, cellPadding: 3 },
                 margin: { left: 14, right: 14 }
             });
-
             startY = doc.lastAutoTable.finalY + 15;
         });
-
         doc.save("Gestion_Agricola_Completa.pdf");
     }
 
@@ -934,7 +860,6 @@
         const firstRow = tbody.rows[0];
         
         if (!firstRow) return;
-
         const newRow = firstRow.cloneNode(true);
         newRow.querySelectorAll('input').forEach(input => { 
             input.value = ''; 
@@ -944,12 +869,10 @@
             select.value = ''; 
         });
         newRow.querySelectorAll('.dates-container').forEach(container => { container.innerHTML = ''; });
-
         const editBtn = newRow.querySelector('.btn-icon.edit');
         const saveBtn = newRow.querySelector('.btn-icon.save');
         if(editBtn) editBtn.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'inline-flex';
-
         tbody.appendChild(newRow);
     }
 
@@ -959,6 +882,5 @@
         }
     }
 </script>
-
 </body>
 </html>
