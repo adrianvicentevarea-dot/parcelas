@@ -306,32 +306,9 @@
             if (!response.ok) throw new Error("Error de red");
 
             const data = await response.json();
-            const keys = Object.keys(data);
-
-            const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
-            const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
-            const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
-            const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
-            const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
-
-            window.realSheetNames = {
-                'parcelas-table': parcelaKey,
-                'laboreos-table': laboreoKey,
-                'poda-table': podaKey,
-                'tratamientos-table': tratamientoKey,
-                'recoleccion-table': recoleccionKey
-            };
-
-            window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
-
-            populateTable('parcelas-table', window.parcelasData);
-            populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
-            populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
-            populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
-            populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
+            processData(data);
 
             document.getElementById('loading-overlay').style.display = 'none';
-
             const savedView = sessionStorage.getItem('activeView');
             switchView(savedView || 'home');
         } catch (err) {
@@ -342,28 +319,60 @@
         }
     }
 
-    // Genera opciones del desplegable con Nombre + Polígono + Parcela
-    function getParcelasOptions(selectedName = "") {
-        let options = `<option value="">-- Selecciona parcela --</option>`;
-        window.parcelasData.forEach(row => {
-            const nombre = (row[6] || "").toString().trim();
-            if (!nombre) return; // Solo mostramos las que tienen Nombre
+    function processData(data) {
+        const keys = Object.keys(data);
 
+        const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
+        const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
+        const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
+        const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
+        const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
+
+        window.realSheetNames = {
+            'parcelas-table': parcelaKey,
+            'laboreos-table': laboreoKey,
+            'poda-table': podaKey,
+            'tratamientos-table': tratamientoKey,
+            'recoleccion-table': recoleccionKey
+        };
+
+        window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
+        console.log("Parcelas cargadas:", window.parcelasData.length);
+
+        populateTable('parcelas-table', window.parcelasData);
+        populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
+        populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
+        populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
+        populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
+    }
+
+    // Clave única = Polígono|Parcela
+    function getParcelaKey(row) {
+        return `${row[3] || ""}|${row[4] || ""}`;
+    }
+
+    function getParcelasOptions(selectedKey = "") {
+        let options = `<option value="">-- Selecciona parcela --</option>`;
+        
+        window.parcelasData.forEach(row => {
+            const key = getParcelaKey(row);
+            if (!key || key === "|") return;
+
+            const nombre = (row[6] || "").toString().trim();
             const poligono = row[3] || "";
             const parcela = row[4] || "";
-            const texto = `${nombre} (${poligono}-${parcela})`;
+            const texto = nombre ? `${nombre} (${poligono}-${parcela})` : `Polígono ${poligono} - Parcela ${parcela}`;
 
-            options += `<option value="${nombre}" ${nombre === selectedName ? "selected" : ""}>${texto}</option>`;
+            options += `<option value="${key}" ${key === selectedKey ? "selected" : ""}>${texto}</option>`;
         });
         return options;
     }
 
-    // Al seleccionar una parcela se rellenan el resto de campos
     function onParcelaSelected(select) {
-        const nombre = select.value;
-        if (!nombre) return;
+        const key = select.value;
+        if (!key) return;
 
-        const parcela = window.parcelasData.find(row => (row[6] || "").toString().trim() === nombre);
+        const parcela = window.parcelasData.find(row => getParcelaKey(row) === key);
         if (!parcela) return;
 
         const tr = select.closest('tr');
@@ -376,6 +385,7 @@
             "municipio": parcela[2] || "",
             "nº polígono": parcela[3] || "",
             "nº parcela": parcela[4] || "",
+            "nombre parcela": parcela[6] || "",
             "tipo de cultivo": parcela[7] || "",
             "variedad": parcela[8] || ""
         };
@@ -391,7 +401,7 @@
                 if (input) {
                     input.value = mapping[h];
                     if (td.dataset.row) autoSave(input);
-                } else if (selectEl && h === "tipo de cultivo") {
+                } else if (selectEl && (h === "tipo de cultivo")) {
                     selectEl.value = mapping[h];
                     if (td.dataset.row) autoSave(selectEl);
                 }
@@ -429,7 +439,7 @@
                 const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
                 const isCultivo = h === "tipo de cultivo";
                 const isTrabajoPor = h === "trabajo realizado por";
-                const isNombreParcela = h === "nombre parcela" || h === "nombre";
+                const isNombreParcela = h === "nombre parcela";
                 const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtn) {
@@ -467,9 +477,14 @@
                         </div>
                     </td>`;
                 } else if (isNombreParcela && !isParcelas) {
+                    // Buscamos la clave de esta fila (Polígono|Parcela)
+                    const pol = rowData[headers.findIndex(h => h.textContent.toLowerCase().includes("polígono")) ] || "";
+                    const par = rowData[headers.findIndex(h => h.textContent.toLowerCase().includes("parcela") && !h.textContent.toLowerCase().includes("nombre")) ] || "";
+                    const currentKey = `${pol}|${par}`;
+
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <select onchange="onParcelaSelected(this); autoSave(this);">
-                            ${getParcelasOptions(val)}
+                            ${getParcelasOptions(currentKey)}
                         </select>
                     </td>`;
                 } else {
@@ -545,7 +560,7 @@
             const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
             const isCultivo = h === "tipo de cultivo";
             const isTrabajoPor = h === "trabajo realizado por";
-            const isNombreParcela = h === "nombre parcela" || h === "nombre";
+            const isNombreParcela = h === "nombre parcela";
             const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
             if (isBtn) {
@@ -604,8 +619,10 @@
 
         showSaving();
         await sendToSheet({ action: "append", sheet: sheet, values: values });
-        await new Promise(r => setTimeout(r, 900));
-        await silentReload();   // Esto actualiza window.parcelasData
+        
+        // Esperamos un poco más y forzamos la recarga completa
+        await new Promise(r => setTimeout(r, 1200));
+        await silentReload();
     }
 
     async function saveRow(btn) {
@@ -621,6 +638,12 @@
             if (td.dataset.row) await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
         }
         showSaving();
+        
+        // Si estamos en Parcelas, actualizamos la lista
+        if (table.id === 'parcelas-table') {
+            await new Promise(r => setTimeout(r, 600));
+            await silentReload();
+        }
     }
 
     async function autoSave(el) {
@@ -685,12 +708,12 @@
 
         showSaving();
         await sendToSheet({ action: "delete", sheet: sheet, row: parseInt(td.dataset.row) });
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 700));
         await silentReload();
     }
 
     async function confirmReset() {
-        if (!confirm("¿Vaciar las columnas de trabajo (Tipo de cultivo, Variedad, Fechas, Kilos, etc.)?\n\nLos datos de las parcelas se mantendrán.")) return;
+        if (!confirm("¿Vaciar las columnas de trabajo?\n\nLos datos de las parcelas se mantendrán.")) return;
 
         const active = document.querySelector('.view-section.active');
         if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
@@ -705,29 +728,7 @@
         try {
             const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
             const data = await response.json();
-            const keys = Object.keys(data);
-
-            const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
-            const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
-            const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
-            const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
-            const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
-
-            window.realSheetNames = {
-                'parcelas-table': parcelaKey,
-                'laboreos-table': laboreoKey,
-                'poda-table': podaKey,
-                'tratamientos-table': tratamientoKey,
-                'recoleccion-table': recoleccionKey
-            };
-
-            window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
-
-            populateTable('parcelas-table', window.parcelasData);
-            populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
-            populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
-            populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
-            populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
+            processData(data);
 
             const saved = sessionStorage.getItem('activeView');
             switchView(saved || 'home');
