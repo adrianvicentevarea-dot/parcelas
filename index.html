@@ -289,7 +289,7 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
     window.realSheetNames = {};
-    window.parcelasData = []; // Aquí guardamos los datos de Parcelas para reutilizarlos
+    window.parcelasData = [];
 
     function showSaving() {
         const msg = document.getElementById('saving-msg');
@@ -322,7 +322,6 @@
                 'recoleccion-table': recoleccionKey
             };
 
-            // Guardamos los datos de parcelas para usarlos en los otros menús
             window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
 
             populateTable('parcelas-table', window.parcelasData);
@@ -343,31 +342,34 @@
         }
     }
 
-    // Genera las opciones del desplegable de parcelas
+    // Genera opciones del desplegable con Nombre + Polígono + Parcela
     function getParcelasOptions(selectedName = "") {
         let options = `<option value="">-- Selecciona parcela --</option>`;
         window.parcelasData.forEach(row => {
-            const nombre = row[6] || ""; // Columna Nombre (índice 6)
-            if (nombre) {
-                options += `<option value="${nombre}" ${nombre === selectedName ? "selected" : ""}>${nombre}</option>`;
-            }
+            const nombre = (row[6] || "").toString().trim();
+            if (!nombre) return; // Solo mostramos las que tienen Nombre
+
+            const poligono = row[3] || "";
+            const parcela = row[4] || "";
+            const texto = `${nombre} (${poligono}-${parcela})`;
+
+            options += `<option value="${nombre}" ${nombre === selectedName ? "selected" : ""}>${texto}</option>`;
         });
         return options;
     }
 
-    // Cuando se selecciona una parcela, rellena los campos relacionados
+    // Al seleccionar una parcela se rellenan el resto de campos
     function onParcelaSelected(select) {
         const nombre = select.value;
         if (!nombre) return;
 
-        const parcela = window.parcelasData.find(row => (row[6] || "") === nombre);
+        const parcela = window.parcelasData.find(row => (row[6] || "").toString().trim() === nombre);
         if (!parcela) return;
 
         const tr = select.closest('tr');
         const table = tr.closest('table');
         const headers = Array.from(table.querySelectorAll('th')).slice(1);
 
-        // Mapeo de campos
         const mapping = {
             "comunidad": parcela[0] || "",
             "provincia": parcela[1] || "",
@@ -380,7 +382,7 @@
 
         headers.forEach((th, idx) => {
             const h = th.textContent.trim().toLowerCase();
-            const td = tr.children[idx + 1]; // +1 por la columna Acciones
+            const td = tr.children[idx + 1];
 
             if (mapping[h] !== undefined) {
                 const input = td.querySelector('input');
@@ -388,15 +390,10 @@
 
                 if (input) {
                     input.value = mapping[h];
-                    // Guardamos automáticamente si la fila ya existe en Excel
-                    if (td.dataset.row) {
-                        autoSave(input);
-                    }
+                    if (td.dataset.row) autoSave(input);
                 } else if (selectEl && h === "tipo de cultivo") {
                     selectEl.value = mapping[h];
-                    if (td.dataset.row) {
-                        autoSave(selectEl);
-                    }
+                    if (td.dataset.row) autoSave(selectEl);
                 }
             }
         });
@@ -470,7 +467,6 @@
                         </div>
                     </td>`;
                 } else if (isNombreParcela && !isParcelas) {
-                    // Desplegable de parcelas (solo en los otros menús)
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <select onchange="onParcelaSelected(this); autoSave(this);">
                             ${getParcelasOptions(val)}
@@ -608,8 +604,8 @@
 
         showSaving();
         await sendToSheet({ action: "append", sheet: sheet, values: values });
-        await new Promise(r => setTimeout(r, 800));
-        await silentReload();
+        await new Promise(r => setTimeout(r, 900));
+        await silentReload();   // Esto actualiza window.parcelasData
     }
 
     async function saveRow(btn) {
@@ -694,7 +690,7 @@
     }
 
     async function confirmReset() {
-        if (!confirm("¿Vaciar las columnas de trabajo (Tipo de cultivo, Variedad, Fechas, Kilos, etc.)?\n\nLos datos de las parcelas (Comunidad, Provincia, Nombre...) se mantendrán.")) return;
+        if (!confirm("¿Vaciar las columnas de trabajo (Tipo de cultivo, Variedad, Fechas, Kilos, etc.)?\n\nLos datos de las parcelas se mantendrán.")) return;
 
         const active = document.querySelector('.view-section.active');
         if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
