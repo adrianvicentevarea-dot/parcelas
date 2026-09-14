@@ -289,6 +289,7 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
 
     window.realSheetNames = {};
+    window.parcelasData = []; // Aquí guardamos los datos de Parcelas para reutilizarlos
 
     function showSaving() {
         const msg = document.getElementById('saving-msg');
@@ -321,7 +322,10 @@
                 'recoleccion-table': recoleccionKey
             };
 
-            populateTable('parcelas-table', parcelaKey ? data[parcelaKey].slice(1) : []);
+            // Guardamos los datos de parcelas para usarlos en los otros menús
+            window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
+
+            populateTable('parcelas-table', window.parcelasData);
             populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
             populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
             populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
@@ -339,6 +343,65 @@
         }
     }
 
+    // Genera las opciones del desplegable de parcelas
+    function getParcelasOptions(selectedName = "") {
+        let options = `<option value="">-- Selecciona parcela --</option>`;
+        window.parcelasData.forEach(row => {
+            const nombre = row[6] || ""; // Columna Nombre (índice 6)
+            if (nombre) {
+                options += `<option value="${nombre}" ${nombre === selectedName ? "selected" : ""}>${nombre}</option>`;
+            }
+        });
+        return options;
+    }
+
+    // Cuando se selecciona una parcela, rellena los campos relacionados
+    function onParcelaSelected(select) {
+        const nombre = select.value;
+        if (!nombre) return;
+
+        const parcela = window.parcelasData.find(row => (row[6] || "") === nombre);
+        if (!parcela) return;
+
+        const tr = select.closest('tr');
+        const table = tr.closest('table');
+        const headers = Array.from(table.querySelectorAll('th')).slice(1);
+
+        // Mapeo de campos
+        const mapping = {
+            "comunidad": parcela[0] || "",
+            "provincia": parcela[1] || "",
+            "municipio": parcela[2] || "",
+            "nº polígono": parcela[3] || "",
+            "nº parcela": parcela[4] || "",
+            "tipo de cultivo": parcela[7] || "",
+            "variedad": parcela[8] || ""
+        };
+
+        headers.forEach((th, idx) => {
+            const h = th.textContent.trim().toLowerCase();
+            const td = tr.children[idx + 1]; // +1 por la columna Acciones
+
+            if (mapping[h] !== undefined) {
+                const input = td.querySelector('input');
+                const selectEl = td.querySelector('select');
+
+                if (input) {
+                    input.value = mapping[h];
+                    // Guardamos automáticamente si la fila ya existe en Excel
+                    if (td.dataset.row) {
+                        autoSave(input);
+                    }
+                } else if (selectEl && h === "tipo de cultivo") {
+                    selectEl.value = mapping[h];
+                    if (td.dataset.row) {
+                        autoSave(selectEl);
+                    }
+                }
+            }
+        });
+    }
+
     function populateTable(tableId, rowsData) {
         const table = document.getElementById(tableId);
         if (!table) return;
@@ -346,6 +409,7 @@
         tbody.innerHTML = '';
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
+        const isParcelas = tableId === 'parcelas-table';
 
         if (!rowsData || rowsData.length === 0) {
             tbody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:var(--text-muted);padding:20px;">Sin datos</td></tr>`;
@@ -368,6 +432,7 @@
                 const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
                 const isCultivo = h === "tipo de cultivo";
                 const isTrabajoPor = h === "trabajo realizado por";
+                const isNombreParcela = h === "nombre parcela" || h === "nombre";
                 const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtn) {
@@ -393,7 +458,6 @@
                 } else if (isTrabajoPor) {
                     const isSubempresa = val === "Subempresa";
                     const isCustom = val && val !== "Subempresa";
-
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <div class="trabajo-container">
                             <select onchange="handleTrabajoChange(this)">
@@ -405,8 +469,14 @@
                                    style="display: ${isCustom ? 'block' : 'none'};" onblur="autoSave(this)">
                         </div>
                     </td>`;
+                } else if (isNombreParcela && !isParcelas) {
+                    // Desplegable de parcelas (solo en los otros menús)
+                    html += `<td data-row="${excelRow}" data-col="${col}">
+                        <select onchange="onParcelaSelected(this); autoSave(this);">
+                            ${getParcelasOptions(val)}
+                        </select>
+                    </td>`;
                 } else {
-                    // Aquí entra "Tipo de trabajo realizado", Variedad, Kilos, etc. → campo de texto
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
                     html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
@@ -465,6 +535,7 @@
         const tbody = table.querySelector('tbody');
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
+        const isParcelas = tableId === 'parcelas-table';
 
         let html = `<td><div class="action-cell">
             <button class="btn-icon edit" style="display:none;">✏️</button>
@@ -478,6 +549,7 @@
             const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
             const isCultivo = h === "tipo de cultivo";
             const isTrabajoPor = h === "trabajo realizado por";
+            const isNombreParcela = h === "nombre parcela" || h === "nombre";
             const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
             if (isBtn) {
@@ -497,8 +569,9 @@
                     </select>
                     <input type="text" placeholder="Escribe aquí..." style="display:none;">
                 </div></td>`;
+            } else if (isNombreParcela && !isParcelas) {
+                html += `<td><select onchange="onParcelaSelected(this)">${getParcelasOptions()}</select></td>`;
             } else {
-                // Tipo de trabajo realizado, Variedad, Kilos... → texto
                 html += `<td><input type="text" value=""></td>`;
             }
         });
@@ -652,7 +725,9 @@
                 'recoleccion-table': recoleccionKey
             };
 
-            populateTable('parcelas-table', parcelaKey ? data[parcelaKey].slice(1) : []);
+            window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
+
+            populateTable('parcelas-table', window.parcelasData);
             populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
             populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
             populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
