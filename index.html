@@ -90,7 +90,7 @@
         td { padding: 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         input[type="text"], select {
             background-color: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main);
-            padding: 6px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%; min-width: 160px; outline: none;
+            padding: 6px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%; min-width: 140px; outline: none;
         }
         input[type="text"]:disabled { background-color: var(--input-disabled-bg); border: 1px solid transparent; }
         select { cursor: pointer; }
@@ -121,6 +121,34 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .trabajo-container { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
+        
+        /* Estilos para Nº Parcela + Link */
+        .parcela-link-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 180px;
+        }
+        .parcela-number-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .parcela-number-row a {
+            color: #38bdf8;
+            font-weight: 700;
+            text-decoration: underline;
+            cursor: pointer;
+            min-width: 40px;
+        }
+        .parcela-number-row a:hover {
+            color: #7dd3fc;
+        }
+        .link-input {
+            font-size: 0.8rem !important;
+            min-width: 160px;
+            border-color: #64748b !important;
+        }
     </style>
 </head>
 <body>
@@ -176,9 +204,17 @@
                 <table id="parcelas-table" data-sheet="Identificación de Parcelas">
                     <thead>
                         <tr>
-                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th>
-                            <th>Nº Polígono</th><th>Nº Parcela</th><th>Recinto</th><th>Nombre</th>
-                            <th>Tipo de cultivo</th><th>Variedad</th>
+                            <th>Acciones</th>
+                            <th>Comunidad</th>
+                            <th>Provincia</th>
+                            <th>Municipio</th>
+                            <th>Nº Polígono</th>
+                            <th>Nº Parcela</th>
+                            <th>Link</th>
+                            <th>Recinto</th>
+                            <th>Nombre</th>
+                            <th>Tipo de cultivo</th>
+                            <th>Variedad</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -355,7 +391,7 @@
             const key = getParcelaKey(row);
             if (!key || key === "|") return;
 
-            const nombre = (row[6] || "").toString().trim();
+            const nombre = (row[6] || row[7] || "").toString().trim();
             const poligono = row[3] || "";
             const parcela = row[4] || "";
             const texto = nombre ? `${nombre} (${poligono}-${parcela})` : `Polígono ${poligono} - Parcela ${parcela}`;
@@ -382,9 +418,9 @@
             "municipio": parcela[2] || "",
             "nº polígono": parcela[3] || "",
             "nº parcela": parcela[4] || "",
-            "nombre parcela": parcela[6] || "",
-            "tipo de cultivo": parcela[7] || "",
-            "variedad": parcela[8] || ""
+            "nombre parcela": parcela[6] || parcela[7] || "",
+            "tipo de cultivo": parcela[7] || parcela[8] || "",
+            "variedad": parcela[8] || parcela[9] || ""
         };
 
         headers.forEach((th, idx) => {
@@ -437,6 +473,8 @@
                 const isCultivo = h === "tipo de cultivo";
                 const isTrabajoPor = h === "trabajo realizado por";
                 const isNombreParcela = h === "nombre parcela";
+                const isNumParcela = h === "nº parcela" || h === "numero de parcela";
+                const isLink = h === "link" || h === "enlace" || h === "url";
                 const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtn) {
@@ -479,6 +517,35 @@
                         <select onchange="onParcelaSelected(this); autoSave(this);">
                             ${getParcelasOptions(currentKey)}
                         </select>
+                    </td>`;
+                } else if (isNumParcela) {
+                    // Buscamos el link en la misma fila (columna Link)
+                    let linkVal = "";
+                    const linkIdx = headers.findIndex(th => {
+                        const t = th.textContent.trim().toLowerCase();
+                        return t === "link" || t === "enlace" || t === "url";
+                    });
+                    if (linkIdx > 0 && rowData[linkIdx - 1] !== undefined) {
+                        linkVal = String(rowData[linkIdx - 1] || "");
+                    }
+
+                    const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www"));
+                    const displayNum = val || "";
+
+                    html += `<td data-row="${excelRow}" data-col="${col}">
+                        <div class="parcela-link-container">
+                            <div class="parcela-number-row">
+                                ${hasLink 
+                                    ? `<a href="${linkVal.startsWith('http') ? linkVal : 'https://' + linkVal}" target="_blank" title="Abrir enlace">${displayNum || '🔗'}</a>` 
+                                    : `<span>${displayNum}</span>`}
+                                <input type="text" value="${displayNum}" disabled onblur="autoSave(this)" style="max-width:90px;" placeholder="Nº">
+                            </div>
+                        </div>
+                    </td>`;
+                } else if (isLink) {
+                    html += `<td data-row="${excelRow}" data-col="${col}">
+                        <input type="text" class="link-input" value="${val}" disabled 
+                               placeholder="https://..." onblur="autoSave(this)" title="Pega aquí el enlace">
                     </td>`;
                 } else {
                     let v = String(val);
@@ -554,6 +621,8 @@
             const isCultivo = h === "tipo de cultivo";
             const isTrabajoPor = h === "trabajo realizado por";
             const isNombreParcela = h === "nombre parcela";
+            const isNumParcela = h === "nº parcela" || h === "numero de parcela";
+            const isLink = h === "link" || h === "enlace" || h === "url";
             const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
 
             if (isBtn) {
@@ -575,6 +644,14 @@
                 </div></td>`;
             } else if (isNombreParcela && !isParcelas) {
                 html += `<td><select onchange="onParcelaSelected(this)">${getParcelasOptions()}</select></td>`;
+            } else if (isNumParcela) {
+                html += `<td>
+                    <div class="parcela-link-container">
+                        <input type="text" value="" placeholder="Nº Parcela">
+                    </div>
+                </td>`;
+            } else if (isLink) {
+                html += `<td><input type="text" class="link-input" value="" placeholder="https://..."></td>`;
             } else {
                 html += `<td><input type="text" value=""></td>`;
             }
@@ -738,18 +815,6 @@
         location.reload();
     }
 
-    async function silentReload() {
-        try {
-            const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
-            const data = await response.json();
-            processData(data);
-            const saved = sessionStorage.getItem('activeView');
-            switchView(saved || 'home');
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
     async function sendUpdate(sheet, row, col, value) {
         await sendToSheet({ action: "update", sheet: sheet, row: parseInt(row), col: parseInt(col), value: value });
     }
@@ -802,9 +867,11 @@
                     const input = td.querySelector('input');
                     const select = td.querySelector('select');
                     const dates = td.querySelectorAll('.date-text');
+                    const link = td.querySelector('a');
                     if (input && input.style.display !== 'none') row.push(input.value);
                     else if (select) row.push(select.value === "__custom__" ? (td.querySelector('input')?.value || '') : select.value);
                     else if (dates.length) row.push(Array.from(dates).map(d => d.innerText).join(', '));
+                    else if (link) row.push(link.innerText);
                     else row.push(td.innerText.replace('📅 Añadir Fecha', '').trim());
                 });
                 if (row.length) rows.push(row);
