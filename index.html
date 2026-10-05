@@ -121,14 +121,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .trabajo-container { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
-        
-        /* Estilos para Nº Parcela + Link */
-        .parcela-link-container {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 180px;
-        }
         .parcela-number-row {
             display: flex;
             align-items: center;
@@ -139,14 +131,11 @@
             font-weight: 700;
             text-decoration: underline;
             cursor: pointer;
-            min-width: 40px;
         }
-        .parcela-number-row a:hover {
-            color: #7dd3fc;
-        }
+        .parcela-number-row a:hover { color: #7dd3fc; }
         .link-input {
             font-size: 0.8rem !important;
-            min-width: 160px;
+            min-width: 180px;
             border-color: #64748b !important;
         }
     </style>
@@ -391,7 +380,7 @@
             const key = getParcelaKey(row);
             if (!key || key === "|") return;
 
-            const nombre = (row[6] || row[7] || "").toString().trim();
+            const nombre = (row[7] || row[6] || "").toString().trim();
             const poligono = row[3] || "";
             const parcela = row[4] || "";
             const texto = nombre ? `${nombre} (${poligono}-${parcela})` : `Polígono ${poligono} - Parcela ${parcela}`;
@@ -418,9 +407,9 @@
             "municipio": parcela[2] || "",
             "nº polígono": parcela[3] || "",
             "nº parcela": parcela[4] || "",
-            "nombre parcela": parcela[6] || parcela[7] || "",
-            "tipo de cultivo": parcela[7] || parcela[8] || "",
-            "variedad": parcela[8] || parcela[9] || ""
+            "nombre parcela": parcela[7] || parcela[6] || "",
+            "tipo de cultivo": parcela[8] || parcela[7] || "",
+            "variedad": parcela[9] || parcela[8] || ""
         };
 
         headers.forEach((th, idx) => {
@@ -519,33 +508,34 @@
                         </select>
                     </td>`;
                 } else if (isNumParcela) {
-                    // Buscamos el link en la misma fila (columna Link)
+                    // Buscar el link en la misma fila
                     let linkVal = "";
                     const linkIdx = headers.findIndex(th => {
                         const t = th.textContent.trim().toLowerCase();
                         return t === "link" || t === "enlace" || t === "url";
                     });
                     if (linkIdx > 0 && rowData[linkIdx - 1] !== undefined) {
-                        linkVal = String(rowData[linkIdx - 1] || "");
+                        linkVal = String(rowData[linkIdx - 1] || "").trim();
                     }
 
-                    const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www"));
+                    const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www."));
                     const displayNum = val || "";
 
                     html += `<td data-row="${excelRow}" data-col="${col}">
-                        <div class="parcela-link-container">
-                            <div class="parcela-number-row">
-                                ${hasLink 
-                                    ? `<a href="${linkVal.startsWith('http') ? linkVal : 'https://' + linkVal}" target="_blank" title="Abrir enlace">${displayNum || '🔗'}</a>` 
-                                    : `<span>${displayNum}</span>`}
-                                <input type="text" value="${displayNum}" disabled onblur="autoSave(this)" style="max-width:90px;" placeholder="Nº">
-                            </div>
+                        <div class="parcela-number-row">
+                            ${hasLink 
+                                ? `<a href="${linkVal.startsWith('http') ? linkVal : 'https://' + linkVal}" target="_blank" title="Abrir enlace">${displayNum}</a>` 
+                                : `<span>${displayNum}</span>`}
+                            <input type="text" value="${displayNum}" disabled 
+                                   class="num-parcela-input" style="display:none; max-width:90px;" 
+                                   placeholder="Nº" onblur="autoSave(this)">
                         </div>
                     </td>`;
                 } else if (isLink) {
+                    // Solo visible al editar
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <input type="text" class="link-input" value="${val}" disabled 
-                               placeholder="https://..." onblur="autoSave(this)" title="Pega aquí el enlace">
+                               style="display:none;" placeholder="https://..." onblur="autoSave(this)">
                     </td>`;
                 } else {
                     let v = String(val);
@@ -596,7 +586,18 @@
 
     function toggleEditRow(btn) {
         const tr = btn.closest('tr');
-        tr.querySelectorAll('input[type="text"]').forEach(i => i.disabled = false);
+
+        // Mostrar y activar todos los inputs
+        tr.querySelectorAll('input[type="text"]').forEach(i => {
+            i.disabled = false;
+            i.style.display = 'block';
+        });
+
+        // Ocultar el número clickable mientras se edita
+        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
+            el.style.display = 'none';
+        });
+
         tr.querySelector('.edit').style.display = 'none';
         tr.querySelector('.save').style.display = 'inline-flex';
     }
@@ -645,11 +646,7 @@
             } else if (isNombreParcela && !isParcelas) {
                 html += `<td><select onchange="onParcelaSelected(this)">${getParcelasOptions()}</select></td>`;
             } else if (isNumParcela) {
-                html += `<td>
-                    <div class="parcela-link-container">
-                        <input type="text" value="" placeholder="Nº Parcela">
-                    </div>
-                </td>`;
+                html += `<td><input type="text" value="" placeholder="Nº Parcela"></td>`;
             } else if (isLink) {
                 html += `<td><input type="text" class="link-input" value="" placeholder="https://..."></td>`;
             } else {
@@ -705,16 +702,28 @@
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         
-        tr.querySelectorAll('input[type="text"]').forEach(i => i.disabled = true);
-        tr.querySelector('.save').style.display = 'none';
-        tr.querySelector('.edit').style.display = 'inline-flex';
-
+        // Guardar valores
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
             if (td.dataset.row) {
                 await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
             }
         }
+
+        // Volver al modo visualización
+        tr.querySelectorAll('input[type="text"]').forEach(i => {
+            i.disabled = true;
+            if (i.classList.contains('link-input') || i.classList.contains('num-parcela-input')) {
+                i.style.display = 'none';
+            }
+        });
+
+        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
+            el.style.display = 'inline';
+        });
+
+        tr.querySelector('.save').style.display = 'none';
+        tr.querySelector('.edit').style.display = 'inline-flex';
         showSaving();
 
         if (table.id === 'parcelas-table') {
