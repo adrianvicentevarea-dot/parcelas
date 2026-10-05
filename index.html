@@ -121,23 +121,10 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .trabajo-container { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
-        .parcela-number-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .parcela-number-row a {
-            color: #38bdf8;
-            font-weight: 700;
-            text-decoration: underline;
-            cursor: pointer;
-        }
+        .parcela-number-row { display: flex; align-items: center; gap: 8px; }
+        .parcela-number-row a { color: #38bdf8; font-weight: 700; text-decoration: underline; cursor: pointer; }
         .parcela-number-row a:hover { color: #7dd3fc; }
-        .link-input {
-            font-size: 0.8rem !important;
-            min-width: 180px;
-            border-color: #64748b !important;
-        }
+        .link-input { font-size: 0.8rem !important; min-width: 180px; border-color: #64748b !important; }
     </style>
 </head>
 <body>
@@ -193,17 +180,9 @@
                 <table id="parcelas-table" data-sheet="Identificación de Parcelas">
                     <thead>
                         <tr>
-                            <th>Acciones</th>
-                            <th>Comunidad</th>
-                            <th>Provincia</th>
-                            <th>Municipio</th>
-                            <th>Nº Polígono</th>
-                            <th>Nº Parcela</th>
-                            <th>Link</th>
-                            <th>Recinto</th>
-                            <th>Nombre</th>
-                            <th>Tipo de cultivo</th>
-                            <th>Variedad</th>
+                            <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th>
+                            <th>Nº Polígono</th><th>Nº Parcela</th><th>Link</th><th>Recinto</th>
+                            <th>Nombre</th><th>Tipo de cultivo</th><th>Variedad</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -508,7 +487,6 @@
                         </select>
                     </td>`;
                 } else if (isNumParcela) {
-                    // Buscar el link en la misma fila
                     let linkVal = "";
                     const linkIdx = headers.findIndex(th => {
                         const t = th.textContent.trim().toLowerCase();
@@ -532,7 +510,6 @@
                         </div>
                     </td>`;
                 } else if (isLink) {
-                    // Solo visible al editar
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <input type="text" class="link-input" value="${val}" disabled 
                                style="display:none;" placeholder="https://..." onblur="autoSave(this)">
@@ -586,18 +563,13 @@
 
     function toggleEditRow(btn) {
         const tr = btn.closest('tr');
-
-        // Mostrar y activar todos los inputs
         tr.querySelectorAll('input[type="text"]').forEach(i => {
             i.disabled = false;
             i.style.display = 'block';
         });
-
-        // Ocultar el número clickable mientras se edita
         tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
             el.style.display = 'none';
         });
-
         tr.querySelector('.edit').style.display = 'none';
         tr.querySelector('.save').style.display = 'inline-flex';
     }
@@ -688,8 +660,6 @@
         
         try {
             await sendToSheet({ action: "append", sheet: sheet, values: values });
-            const isParcelas = table.id === 'parcelas-table';
-            await new Promise(r => setTimeout(r, isParcelas ? 2200 : 1200));
             location.reload();
         } catch (e) {
             console.error(e);
@@ -702,7 +672,6 @@
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         
-        // Guardar valores
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
             if (td.dataset.row) {
@@ -710,28 +679,11 @@
             }
         }
 
-        // Volver al modo visualización
-        tr.querySelectorAll('input[type="text"]').forEach(i => {
-            i.disabled = true;
-            if (i.classList.contains('link-input') || i.classList.contains('num-parcela-input')) {
-                i.style.display = 'none';
-            }
-        });
+        const active = document.querySelector('.view-section.active');
+        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
 
-        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
-            el.style.display = 'inline';
-        });
-
-        tr.querySelector('.save').style.display = 'none';
-        tr.querySelector('.edit').style.display = 'inline-flex';
         showSaving();
-
-        if (table.id === 'parcelas-table') {
-            const active = document.querySelector('.view-section.active');
-            if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-            await new Promise(r => setTimeout(r, 1800));
-            location.reload();
-        }
+        location.reload();
     }
 
     async function autoSave(el) {
@@ -802,9 +754,6 @@
                 sheet: sheet,
                 row: parseInt(td.dataset.row)
             });
-
-            const isParcelas = table.id === 'parcelas-table';
-            await new Promise(r => setTimeout(r, isParcelas ? 2200 : 1200));
             location.reload();
         } catch (e) {
             console.error(e);
@@ -820,7 +769,6 @@
 
         showSaving();
         await sendToSheet({ action: "clear" });
-        await new Promise(r => setTimeout(r, 1000));
         location.reload();
     }
 
