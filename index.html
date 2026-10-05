@@ -337,7 +337,6 @@
         };
 
         window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
-        console.log("Parcelas cargadas:", window.parcelasData.length);
 
         populateTable('parcelas-table', window.parcelasData);
         populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
@@ -346,14 +345,12 @@
         populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
     }
 
-    // Clave única = Polígono|Parcela
     function getParcelaKey(row) {
         return `${row[3] || ""}|${row[4] || ""}`;
     }
 
     function getParcelasOptions(selectedKey = "") {
         let options = `<option value="">-- Selecciona parcela --</option>`;
-        
         window.parcelasData.forEach(row => {
             const key = getParcelaKey(row);
             if (!key || key === "|") return;
@@ -401,7 +398,7 @@
                 if (input) {
                     input.value = mapping[h];
                     if (td.dataset.row) autoSave(input);
-                } else if (selectEl && (h === "tipo de cultivo")) {
+                } else if (selectEl && h === "tipo de cultivo") {
                     selectEl.value = mapping[h];
                     if (td.dataset.row) autoSave(selectEl);
                 }
@@ -477,11 +474,7 @@
                         </div>
                     </td>`;
                 } else if (isNombreParcela && !isParcelas) {
-                    // Buscamos la clave de esta fila (Polígono|Parcela)
-                    const pol = rowData[headers.findIndex(h => h.textContent.toLowerCase().includes("polígono")) ] || "";
-                    const par = rowData[headers.findIndex(h => h.textContent.toLowerCase().includes("parcela") && !h.textContent.toLowerCase().includes("nombre")) ] || "";
-                    const currentKey = `${pol}|${par}`;
-
+                    const currentKey = getParcelaKey(rowData);
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <select onchange="onParcelaSelected(this); autoSave(this);">
                             ${getParcelasOptions(currentKey)}
@@ -619,9 +612,9 @@
 
         showSaving();
         await sendToSheet({ action: "append", sheet: sheet, values: values });
-        
-        // Esperamos un poco más y forzamos la recarga completa
-        await new Promise(r => setTimeout(r, 1200));
+
+        const isParcelas = table.id === 'parcelas-table';
+        await new Promise(r => setTimeout(r, isParcelas ? 1800 : 900));
         await silentReload();
     }
 
@@ -629,19 +622,21 @@
         const tr = btn.closest('tr');
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+        
         tr.querySelectorAll('input[type="text"]').forEach(i => i.disabled = true);
         tr.querySelector('.save').style.display = 'none';
         tr.querySelector('.edit').style.display = 'inline-flex';
 
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
-            if (td.dataset.row) await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
+            if (td.dataset.row) {
+                await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
+            }
         }
         showSaving();
-        
-        // Si estamos en Parcelas, actualizamos la lista
+
         if (table.id === 'parcelas-table') {
-            await new Promise(r => setTimeout(r, 600));
+            await new Promise(r => setTimeout(r, 1500));
             await silentReload();
         }
     }
@@ -707,8 +702,14 @@
         }
 
         showSaving();
-        await sendToSheet({ action: "delete", sheet: sheet, row: parseInt(td.dataset.row) });
-        await new Promise(r => setTimeout(r, 700));
+        await sendToSheet({
+            action: "delete",
+            sheet: sheet,
+            row: parseInt(td.dataset.row)
+        });
+
+        const isParcelas = table.id === 'parcelas-table';
+        await new Promise(r => setTimeout(r, isParcelas ? 1800 : 800));
         await silentReload();
     }
 
