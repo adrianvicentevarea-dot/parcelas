@@ -611,11 +611,16 @@
         if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
 
         showSaving();
-        await sendToSheet({ action: "append", sheet: sheet, values: values });
-
-        const isParcelas = table.id === 'parcelas-table';
-        await new Promise(r => setTimeout(r, isParcelas ? 1800 : 900));
-        await silentReload();
+        
+        try {
+            await sendToSheet({ action: "append", sheet: sheet, values: values });
+            const isParcelas = table.id === 'parcelas-table';
+            await new Promise(r => setTimeout(r, isParcelas ? 2200 : 1200));
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("Error al guardar");
+        }
     }
 
     async function saveRow(btn) {
@@ -636,8 +641,10 @@
         showSaving();
 
         if (table.id === 'parcelas-table') {
-            await new Promise(r => setTimeout(r, 1500));
-            await silentReload();
+            const active = document.querySelector('.view-section.active');
+            if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
+            await new Promise(r => setTimeout(r, 1800));
+            location.reload();
         }
     }
 
@@ -702,15 +709,21 @@
         }
 
         showSaving();
-        await sendToSheet({
-            action: "delete",
-            sheet: sheet,
-            row: parseInt(td.dataset.row)
-        });
 
-        const isParcelas = table.id === 'parcelas-table';
-        await new Promise(r => setTimeout(r, isParcelas ? 1800 : 800));
-        await silentReload();
+        try {
+            await sendToSheet({
+                action: "delete",
+                sheet: sheet,
+                row: parseInt(td.dataset.row)
+            });
+
+            const isParcelas = table.id === 'parcelas-table';
+            await new Promise(r => setTimeout(r, isParcelas ? 2200 : 1200));
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("Error al eliminar");
+        }
     }
 
     async function confirmReset() {
@@ -721,8 +734,8 @@
 
         showSaving();
         await sendToSheet({ action: "clear" });
-        await new Promise(r => setTimeout(r, 800));
-        await silentReload();
+        await new Promise(r => setTimeout(r, 1000));
+        location.reload();
     }
 
     async function silentReload() {
@@ -730,7 +743,6 @@
             const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
             const data = await response.json();
             processData(data);
-
             const saved = sessionStorage.getItem('activeView');
             switchView(saved || 'home');
         } catch (e) {
