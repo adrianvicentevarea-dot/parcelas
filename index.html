@@ -100,7 +100,7 @@
             cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
         }
         .btn-icon.edit { background-color: #f59e0b; }
-        .btn-icon.save { background-color: var(--primary); display: none; }
+        .btn-icon.save { background-color: var(--primary); }
         .btn-icon.delete { background-color: var(--accent-red); }
         .dates-container { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
         .dates-row { display: flex; gap: 6px; width: 100%; }
@@ -123,7 +123,6 @@
         .trabajo-container { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
         .parcela-number-row { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
         .parcela-number-row a { color: #38bdf8; font-weight: 700; text-decoration: underline; cursor: pointer; }
-        .parcela-number-row a:hover { color: #7dd3fc; }
         .link-input { font-size: 0.8rem !important; min-width: 180px; border-color: #64748b !important; }
         .link-col { display: none !important; }
         tr.editing .link-col { display: table-cell !important; }
@@ -294,7 +293,6 @@
 
 <script>
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
-
     window.realSheetNames = {};
     window.parcelasData = [];
 
@@ -302,6 +300,75 @@
         const msg = document.getElementById('saving-msg');
         msg.style.display = 'block';
         setTimeout(() => msg.style.display = 'none', 1200);
+    }
+
+    // Sale del modo edición de forma inmediata y forzada
+    function exitEditMode(tr) {
+        if (!tr) return;
+        tr.classList.remove('editing');
+
+        // Botones
+        const editBtn = tr.querySelector('.btn-icon.edit');
+        const saveBtn = tr.querySelector('.btn-icon.save');
+        if (editBtn) {
+            editBtn.style.cssText = 'display:inline-flex; background-color:#f59e0b;';
+            editBtn.onclick = function() { toggleEditRow(this); };
+        }
+        if (saveBtn) {
+            saveBtn.style.cssText = 'display:none;';
+        }
+
+        // Ocultar columna Link a la fuerza
+        tr.querySelectorAll('.link-col').forEach(td => {
+            td.style.setProperty('display', 'none', 'important');
+        });
+
+        // Deshabilitar todos los inputs
+        tr.querySelectorAll('input[type="text"]').forEach(inp => {
+            inp.disabled = true;
+            if (inp.classList.contains('link-input') || inp.classList.contains('num-parcela-input')) {
+                inp.style.display = 'none';
+            }
+        });
+
+        // Nº Parcela: mostrar texto, ocultar input
+        tr.querySelectorAll('.parcela-number-row').forEach(row => {
+            const numInput = row.querySelector('.num-parcela-input');
+            let display = row.querySelector('a, span');
+            if (numInput) {
+                if (!display) {
+                    display = document.createElement('span');
+                    row.insertBefore(display, numInput);
+                }
+                display.textContent = numInput.value || '';
+                display.style.display = 'inline';
+                numInput.style.display = 'none';
+            }
+        });
+    }
+
+    function toggleEditRow(btn) {
+        const tr = btn.closest('tr');
+        tr.classList.add('editing');
+
+        tr.querySelectorAll('input[type="text"]').forEach(i => {
+            i.disabled = false;
+            i.style.display = 'block';
+        });
+        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
+            el.style.display = 'none';
+        });
+        tr.querySelectorAll('.link-col').forEach(td => {
+            td.style.setProperty('display', 'table-cell', 'important');
+        });
+
+        const editBtn = tr.querySelector('.btn-icon.edit');
+        const saveBtn = tr.querySelector('.btn-icon.save');
+        if (editBtn) editBtn.style.display = 'none';
+        if (saveBtn) {
+            saveBtn.style.cssText = 'display:inline-flex; background-color:#10b981;';
+            saveBtn.onclick = function() { saveRow(this); };
+        }
     }
 
     async function loadDataFromExcel() {
@@ -364,7 +431,7 @@
             const excelRow = rowIndex + 2;
             let html = `<td><div class="action-cell">
                 <button class="btn-icon edit" onclick="toggleEditRow(this)">✏️</button>
-                <button class="btn-icon save" onclick="saveRow(this)">💾</button>
+                <button class="btn-icon save" style="display:none;" onclick="saveRow(this)">💾</button>
                 <button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>
             </div></td>`;
 
@@ -473,68 +540,6 @@
         return html;
     }
 
-    function toggleEditRow(btn) {
-        const tr = btn.closest('tr');
-        tr.classList.add('editing');
-        tr.querySelectorAll('input[type="text"]').forEach(i => {
-            i.disabled = false;
-            i.style.display = 'block';
-        });
-        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
-            el.style.display = 'none';
-        });
-        const editBtn = tr.querySelector('.edit');
-        const saveBtn = tr.querySelector('.save');
-        if (editBtn) editBtn.style.display = 'none';
-        if (saveBtn) saveBtn.style.display = 'inline-flex';
-    }
-
-    // Sale del modo edición al instante
-    function finishEditMode(tr) {
-        tr.classList.remove('editing');
-
-        // Botones
-        const editBtn = tr.querySelector('.edit');
-        const saveBtn = tr.querySelector('.save');
-        if (editBtn) {
-            editBtn.style.display = 'inline-flex';
-            editBtn.setAttribute('onclick', 'toggleEditRow(this)');
-        }
-        if (saveBtn) {
-            saveBtn.style.display = 'none';
-            saveBtn.setAttribute('onclick', 'saveRow(this)');
-        }
-
-        // Inputs normales → deshabilitados
-        tr.querySelectorAll('input[type="text"]').forEach(i => {
-            i.disabled = true;
-            if (i.classList.contains('num-parcela-input') || i.classList.contains('link-input')) {
-                i.style.display = 'none';
-            } else {
-                i.style.display = 'block';
-            }
-        });
-
-        // Nº Parcela: mostrar texto / enlace, ocultar input
-        tr.querySelectorAll('.parcela-number-row').forEach(row => {
-            const numInput = row.querySelector('.num-parcela-input');
-            const display = row.querySelector('a, span');
-            if (numInput && display) {
-                display.textContent = numInput.value || '';
-                display.style.display = 'inline';
-            }
-            if (numInput) numInput.style.display = 'none';
-        });
-
-        // Si la celda de Nº Parcela es solo un input (fila nueva), convertirla a vista normal
-        tr.querySelectorAll('td').forEach(td => {
-            const plainInput = td.querySelector('input[type="text"]:not(.link-input):not(.num-parcela-input)');
-            if (plainInput && !td.querySelector('.parcela-number-row') && !td.classList.contains('link-col')) {
-                plainInput.disabled = true;
-            }
-        });
-    }
-
     function addRow(tableId) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector('tbody');
@@ -547,7 +552,7 @@
 
         let html = `<td><div class="action-cell">
             <button class="btn-icon edit" style="display:none;" onclick="toggleEditRow(this)">✏️</button>
-            <button class="btn-icon save" style="display:inline-flex;" onclick="saveNewRow(this)">💾</button>
+            <button class="btn-icon save" style="display:inline-flex;background-color:#10b981;" onclick="saveNewRow(this)">💾</button>
             <button class="btn-icon delete" onclick="this.closest('tr').remove()">🗑️</button>
         </div></td>`;
 
@@ -610,26 +615,25 @@
             values.push(value);
         }
 
-        // Salir del modo edición AL INSTANTE (antes de esperar al servidor)
-        finishEditMode(tr);
+        // 1) Salir del modo edición YA
+        exitEditMode(tr);
         showSaving();
 
+        // 2) Guardar en segundo plano
         try {
             const result = await sendToSheet({ action: "append", sheet: sheet, values: values });
             const newRow = result && result.newRow ? result.newRow : null;
-
             if (newRow) {
                 tds.slice(1).forEach((td, idx) => {
                     td.dataset.row = newRow;
                     td.dataset.col = idx + 1;
                 });
             }
-
             const delBtn = tr.querySelector('.btn-icon.delete');
-            if (delBtn) delBtn.setAttribute('onclick', 'deleteRow(this)');
+            if (delBtn) delBtn.onclick = function() { deleteRow(this); };
         } catch (e) {
             console.error(e);
-            alert("Error al guardar");
+            alert("Error al guardar en el Excel");
         }
     }
 
@@ -638,13 +642,14 @@
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
 
-        // Salir del modo edición AL INSTANTE
-        finishEditMode(tr);
+        // 1) Salir del modo edición YA
+        exitEditMode(tr);
         showSaving();
 
+        // 2) Guardar en segundo plano
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
-            if (td.dataset.row) {
+            if (td && td.dataset.row) {
                 await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
             }
         }
@@ -652,7 +657,7 @@
 
     async function autoSave(el) {
         const td = el.closest('td');
-        if (!td.dataset.row) return;
+        if (!td || !td.dataset.row) return;
         const table = el.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         await sendUpdate(sheet, td.dataset.row, td.dataset.col, el.value);
