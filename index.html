@@ -125,9 +125,7 @@
         .parcela-number-row a { color: #38bdf8; font-weight: 700; text-decoration: underline; cursor: pointer; }
         .parcela-number-row a:hover { color: #7dd3fc; }
         .link-input { font-size: 0.8rem !important; min-width: 180px; border-color: #64748b !important; }
-        /* Columna Link oculta por defecto */
         .link-col { display: none !important; }
-        /* Al editar se muestra solo en esa fila */
         tr.editing .link-col { display: table-cell !important; }
         tr.editing th.link-col { display: none !important; }
     </style>
@@ -304,7 +302,7 @@
     function showSaving() {
         const msg = document.getElementById('saving-msg');
         msg.style.display = 'block';
-        setTimeout(() => msg.style.display = 'none', 1500);
+        setTimeout(() => msg.style.display = 'none', 1200);
     }
 
     async function loadDataFromExcel() {
@@ -504,9 +502,36 @@
         tr.querySelector('.save').style.display = 'inline-flex';
     }
 
+    function finishEditMode(tr) {
+        tr.classList.remove('editing');
+        tr.querySelectorAll('input[type="text"]').forEach(i => {
+            i.disabled = true;
+            if (i.classList.contains('num-parcela-input') || i.classList.contains('link-input')) {
+                i.style.display = 'none';
+            }
+        });
+        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
+            el.style.display = 'inline';
+        });
+        // Actualizar el texto visible del número de parcela
+        const numInput = tr.querySelector('.num-parcela-input');
+        if (numInput) {
+            const display = tr.querySelector('.parcela-number-row a, .parcela-number-row span');
+            if (display) display.textContent = numInput.value;
+        }
+        const editBtn = tr.querySelector('.edit');
+        const saveBtn = tr.querySelector('.save');
+        if (editBtn) editBtn.style.display = 'inline-flex';
+        if (saveBtn) saveBtn.style.display = 'none';
+    }
+
     function addRow(tableId) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector('tbody');
+        // Quitar mensaje de "Sin datos" si existe
+        const empty = tbody.querySelector('[colspan]');
+        if (empty) empty.closest('tr').remove();
+
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
         const dataHeaders = headers.slice(1);
@@ -562,7 +587,7 @@
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         const values = [];
-        const tds = tr.querySelectorAll('td');
+        const tds = Array.from(tr.querySelectorAll('td'));
 
         for (let i = 1; i < tds.length; i++) {
             const td = tds[i];
@@ -574,18 +599,30 @@
             if (input && input.style.display !== 'none') value = input.value;
             else if (select) value = select.value === "__custom__" ? (td.querySelector('input')?.value || "") : select.value;
             else if (dates.length) value = Array.from(dates).map(d => d.innerText).join(', ');
+            else if (input) value = input.value;
 
             values.push(value);
         }
 
-        const active = document.querySelector('.view-section.active');
-        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-
         showSaving();
-        
+
         try {
-            await sendToSheet({ action: "append", sheet: sheet, values: values });
-            location.reload();
+            const result = await sendToSheet({ action: "append", sheet: sheet, values: values });
+            const newRow = result && result.newRow ? result.newRow : null;
+
+            // Asignar data-row / data-col a las celdas para futuros autoSave
+            if (newRow) {
+                tds.slice(1).forEach((td, idx) => {
+                    td.dataset.row = newRow;
+                    td.dataset.col = idx + 1;
+                });
+            }
+
+            // Cambiar botones: ya no es fila nueva
+            const delBtn = tr.querySelector('.btn-icon.delete');
+            if (delBtn) delBtn.setAttribute('onclick', 'deleteRow(this)');
+
+            finishEditMode(tr);
         } catch (e) {
             console.error(e);
             alert("Error al guardar");
@@ -604,13 +641,8 @@
             }
         }
 
-        tr.classList.remove('editing');
-
-        const active = document.querySelector('.view-section.active');
-        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-
         showSaving();
-        location.reload();
+        finishEditMode(tr);
     }
 
     async function autoSave(el) {
@@ -665,9 +697,6 @@
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
         const td = tr.querySelector('[data-row]');
 
-        const active = document.querySelector('.view-section.active');
-        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-
         if (!td || !td.dataset.row) {
             tr.remove();
             return;
@@ -681,7 +710,7 @@
                 sheet: sheet,
                 row: parseInt(td.dataset.row)
             });
-            location.reload();
+            tr.remove();
         } catch (e) {
             console.error(e);
             alert("Error al eliminar");
@@ -691,12 +720,18 @@
     async function confirmReset() {
         if (!confirm("¿Vaciar las columnas de trabajo?\n\nLos datos de las parcelas se mantendrán.")) return;
 
-        const active = document.querySelector('.view-section.active');
-        if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
-
         showSaving();
         await sendToSheet({ action: "clear" });
-        location.reload();
+        // Solo en este caso recargamos datos sin recargar la página entera
+        try {
+            const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
+            const data = await response.json();
+            processData(data);
+            const saved = sessionStorage.getItem('activeView');
+            switchView(saved || 'home');
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async function sendUpdate(sheet, row, col, value) {
@@ -705,14 +740,21 @@
 
     async function sendToSheet(payload) {
         try {
-            await fetch(WEB_APP_URL, {
+            const res = await fetch(WEB_APP_URL, {
                 method: 'POST',
                 redirect: 'follow',
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             });
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                return { status: "success" };
+            }
         } catch (e) {
             console.error("Error al guardar:", e);
+            return { status: "error" };
         }
     }
 
