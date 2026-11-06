@@ -349,31 +349,65 @@
         populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
     }
 
-    function getParcelaKey(row) {
+    // Clave desde la hoja maestra de Parcelas (índices fijos de esa hoja)
+    function getMasterParcelaKey(row) {
         return `${row[3] || ""}|${row[4] || ""}`;
     }
 
-    function getParcelasOptions(selectedKey = "") {
+    // Clave desde cualquier fila de otra hoja (detecta columnas por nombre)
+    function getRowParcelaKey(rowData, headerEls) {
+        let idxPol = -1, idxPar = -1;
+        headerEls.forEach((th, i) => {
+            const h = th.textContent.trim().toLowerCase();
+            if (h.includes('polígono') || h.includes('poligono')) idxPol = i;
+            if (h === 'nº parcela' || (h.includes('parcela') && !h.includes('nombre'))) idxPar = i;
+        });
+        const pol = idxPol >= 0 ? String(rowData[idxPol] || "").trim() : "";
+        const par = idxPar >= 0 ? String(rowData[idxPar] || "").trim() : "";
+        return `${pol}|${par}`;
+    }
+
+    function getParcelasOptions(selectedValue = "") {
         let options = `<option value="">-- Selecciona parcela --</option>`;
         window.parcelasData.forEach(row => {
-            const key = getParcelaKey(row);
+            const key = getMasterParcelaKey(row);
             if (!key || key === "|") return;
 
-            const nombre = (row[7] || row[6] || "").toString().trim();
-            const poligono = row[3] || "";
-            const parcela = row[4] || "";
-            const texto = nombre ? `${nombre} (${poligono}-${parcela})` : `Polígono ${poligono} - Parcela ${parcela}`;
+            const nombre = String(row[7] || row[6] || "").trim();
+            const pol = row[3] || "";
+            const par = row[4] || "";
+            const texto = nombre ? `${nombre} (${pol}-${par})` : `Polígono ${pol} - Parcela ${par}`;
+            const optionValue = nombre || key;
 
-            options += `<option value="${key}" ${key === selectedKey ? "selected" : ""}>${texto}</option>`;
+            const selected = (
+                optionValue === selectedValue ||
+                key === selectedValue ||
+                nombre === selectedValue ||
+                texto === selectedValue
+            ) ? "selected" : "";
+
+            options += `<option value="${optionValue.replace(/"/g, '&quot;')}" data-key="${key}" ${selected}>${texto}</option>`;
         });
         return options;
     }
 
     function onParcelaSelected(select) {
-        const key = select.value;
-        if (!key) return;
+        const selectedValue = select.value;
+        if (!selectedValue) return;
 
-        const parcela = window.parcelasData.find(row => getParcelaKey(row) === key);
+        const option = select.options[select.selectedIndex];
+        const key = option ? option.getAttribute('data-key') : "";
+
+        let parcela = null;
+        if (key) {
+            parcela = window.parcelasData.find(row => getMasterParcelaKey(row) === key);
+        }
+        if (!parcela) {
+            parcela = window.parcelasData.find(row => {
+                const nombre = String(row[7] || row[6] || "").trim();
+                return nombre === selectedValue;
+            });
+        }
         if (!parcela) return;
 
         const tr = select.closest('tr');
@@ -386,7 +420,7 @@
             "municipio": parcela[2] || "",
             "nº polígono": parcela[3] || "",
             "nº parcela": parcela[4] || "",
-            "nombre parcela": parcela[7] || parcela[6] || "",
+            "nombre parcela": String(parcela[7] || parcela[6] || "").trim(),
             "tipo de cultivo": parcela[8] || parcela[7] || "",
             "variedad": parcela[9] || parcela[8] || ""
         };
@@ -394,18 +428,17 @@
         headers.forEach((th, idx) => {
             const h = th.textContent.trim().toLowerCase();
             const td = tr.children[idx + 1];
+            if (!td || mapping[h] === undefined) return;
 
-            if (mapping[h] !== undefined) {
-                const input = td.querySelector('input');
-                const selectEl = td.querySelector('select');
+            const input = td.querySelector('input');
+            const selectEl = td.querySelector('select');
 
-                if (input) {
-                    input.value = mapping[h];
-                    if (td.dataset.row) autoSave(input);
-                } else if (selectEl && h === "tipo de cultivo") {
-                    selectEl.value = mapping[h];
-                    if (td.dataset.row) autoSave(selectEl);
-                }
+            if (input) {
+                input.value = mapping[h];
+                if (td.dataset.row) autoSave(input);
+            } else if (selectEl && h === "tipo de cultivo") {
+                selectEl.value = mapping[h];
+                if (td.dataset.row) autoSave(selectEl);
             }
         });
     }
@@ -418,6 +451,7 @@
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
         const isParcelas = tableId === 'parcelas-table';
+        const dataHeaders = headers.slice(1);
 
         if (!rowsData || rowsData.length === 0) {
             tbody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:var(--text-muted);padding:20px;">Sin datos</td></tr>`;
@@ -432,7 +466,7 @@
                 <button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>
             </div></td>`;
 
-            headers.slice(1).forEach((th, idx) => {
+            dataHeaders.forEach((th, idx) => {
                 const val = rowData[idx] !== undefined && rowData[idx] !== null ? String(rowData[idx]) : '';
                 const col = idx + 1;
                 const h = th.textContent.trim().toLowerCase();
@@ -443,7 +477,7 @@
                 const isNombreParcela = h === "nombre parcela";
                 const isNumParcela = h === "nº parcela" || h === "numero de parcela";
                 const isLink = h === "link" || h === "enlace" || h === "url";
-                const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
+                const isBtn = dataHeaders[idx + 1] && dataHeaders[idx + 1].textContent.toLowerCase().includes('fecha de registro');
 
                 if (isBtn) {
                     html += `<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
@@ -480,20 +514,19 @@
                         </div>
                     </td>`;
                 } else if (isNombreParcela && !isParcelas) {
-                    const currentKey = getParcelaKey(rowData);
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <select onchange="onParcelaSelected(this); autoSave(this);">
-                            ${getParcelasOptions(currentKey)}
+                            ${getParcelasOptions(val)}
                         </select>
                     </td>`;
                 } else if (isNumParcela) {
                     let linkVal = "";
-                    const linkIdx = headers.findIndex(th => {
-                        const t = th.textContent.trim().toLowerCase();
+                    const linkIdx = dataHeaders.findIndex(th2 => {
+                        const t = th2.textContent.trim().toLowerCase();
                         return t === "link" || t === "enlace" || t === "url";
                     });
-                    if (linkIdx > 0 && rowData[linkIdx - 1] !== undefined) {
-                        linkVal = String(rowData[linkIdx - 1] || "").trim();
+                    if (linkIdx >= 0 && rowData[linkIdx] !== undefined) {
+                        linkVal = String(rowData[linkIdx] || "").trim();
                     }
 
                     const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www."));
@@ -580,6 +613,7 @@
         const headers = Array.from(table.querySelectorAll('th'));
         const sheetName = table.getAttribute('data-sheet');
         const isParcelas = tableId === 'parcelas-table';
+        const dataHeaders = headers.slice(1);
 
         let html = `<td><div class="action-cell">
             <button class="btn-icon edit" style="display:none;">✏️</button>
@@ -587,7 +621,7 @@
             <button class="btn-icon delete" onclick="this.closest('tr').remove()">🗑️</button>
         </div></td>`;
 
-        headers.slice(1).forEach((th, idx) => {
+        dataHeaders.forEach((th, idx) => {
             const h = th.textContent.trim().toLowerCase();
             const isFecha = h.includes('fecha de registro');
             const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
@@ -596,7 +630,7 @@
             const isNombreParcela = h === "nombre parcela";
             const isNumParcela = h === "nº parcela" || h === "numero de parcela";
             const isLink = h === "link" || h === "enlace" || h === "url";
-            const isBtn = headers[idx + 2] && headers[idx + 2].textContent.toLowerCase().includes('fecha de registro');
+            const isBtn = dataHeaders[idx + 1] && dataHeaders[idx + 1].textContent.toLowerCase().includes('fecha de registro');
 
             if (isBtn) {
                 html += `<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
