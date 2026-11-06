@@ -121,10 +121,15 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .trabajo-container { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
-        .parcela-number-row { display: flex; align-items: center; gap: 8px; }
+        .parcela-number-row { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
         .parcela-number-row a { color: #38bdf8; font-weight: 700; text-decoration: underline; cursor: pointer; }
         .parcela-number-row a:hover { color: #7dd3fc; }
         .link-input { font-size: 0.8rem !important; min-width: 180px; border-color: #64748b !important; }
+        /* Columna Link oculta por defecto */
+        .link-col { display: none !important; }
+        /* Al editar se muestra solo en esa fila */
+        tr.editing .link-col { display: table-cell !important; }
+        tr.editing th.link-col { display: none !important; }
     </style>
 </head>
 <body>
@@ -181,8 +186,9 @@
                     <thead>
                         <tr>
                             <th>Acciones</th><th>Comunidad</th><th>Provincia</th><th>Municipio</th>
-                            <th>Nº Polígono</th><th>Nº Parcela</th><th>Link</th><th>Recinto</th>
-                            <th>Nombre</th><th>Tipo de cultivo</th><th>Variedad</th>
+                            <th>Nº Polígono</th><th>Nº Parcela</th>
+                            <th class="link-col">Link</th>
+                            <th>Recinto</th><th>Nombre</th><th>Tipo de cultivo</th><th>Variedad</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -432,12 +438,11 @@
                         </div>
                     </td>`;
                 } else if (isLink) {
-                    html += `<td data-row="${excelRow}" data-col="${col}">
+                    html += `<td class="link-col" data-row="${excelRow}" data-col="${col}">
                         <input type="text" class="link-input" value="${val}" disabled 
-                               style="display:none;" placeholder="https://..." onblur="autoSave(this)">
+                               placeholder="https://..." onblur="autoSave(this)">
                     </td>`;
                 } else {
-                    // Nombre Parcela, Tipo de cultivo y resto → texto
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
                     html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
@@ -486,6 +491,8 @@
 
     function toggleEditRow(btn) {
         const tr = btn.closest('tr');
+        tr.classList.add('editing');
+
         tr.querySelectorAll('input[type="text"]').forEach(i => {
             i.disabled = false;
             i.style.display = 'block';
@@ -537,13 +544,14 @@
             } else if (isNumParcela) {
                 html += `<td><input type="text" value="" placeholder="Nº Parcela"></td>`;
             } else if (isLink) {
-                html += `<td><input type="text" class="link-input" value="" placeholder="https://..."></td>`;
+                html += `<td class="link-col"><input type="text" class="link-input" value="" placeholder="https://..."></td>`;
             } else {
                 html += `<td><input type="text" value=""></td>`;
             }
         });
 
         const tr = document.createElement('tr');
+        tr.classList.add('editing');
         tr.innerHTML = html;
         tbody.appendChild(tr);
         tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -595,6 +603,8 @@
                 await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
             }
         }
+
+        tr.classList.remove('editing');
 
         const active = document.querySelector('.view-section.active');
         if (active) sessionStorage.setItem('activeView', active.id.replace('view-', ''));
@@ -731,13 +741,15 @@
             doc.text(`Hoja: ${name}`, 14, y);
             y += 6;
 
-            const headers = Array.from(table.querySelectorAll('thead th')).slice(1).map(th => th.innerText);
+            const headers = Array.from(table.querySelectorAll('thead th')).slice(1)
+                .filter(th => !th.classList.contains('link-col'))
+                .map(th => th.innerText);
             const rows = [];
             table.querySelectorAll('tbody tr').forEach(tr => {
                 if (tr.querySelector('[colspan]')) return;
                 const row = [];
                 tr.querySelectorAll('td').forEach((td, i) => {
-                    if (i === 0) return;
+                    if (i === 0 || td.classList.contains('link-col')) return;
                     const input = td.querySelector('input');
                     const select = td.querySelector('select');
                     const dates = td.querySelectorAll('.date-text');
