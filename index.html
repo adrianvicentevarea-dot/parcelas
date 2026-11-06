@@ -127,7 +127,6 @@
         .link-input { font-size: 0.8rem !important; min-width: 180px; border-color: #64748b !important; }
         .link-col { display: none !important; }
         tr.editing .link-col { display: table-cell !important; }
-        tr.editing th.link-col { display: none !important; }
     </style>
 </head>
 <body>
@@ -309,16 +308,12 @@
         try {
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').textContent = "Cargando datos...";
-
             const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
             if (!response.ok) throw new Error("Error de red");
-
             const data = await response.json();
             processData(data);
-
             document.getElementById('loading-overlay').style.display = 'none';
-            const savedView = sessionStorage.getItem('activeView');
-            switchView(savedView || 'home');
+            switchView(sessionStorage.getItem('activeView') || 'home');
         } catch (err) {
             console.error(err);
             document.getElementById('loading-overlay').style.display = 'none';
@@ -329,7 +324,6 @@
 
     function processData(data) {
         const keys = Object.keys(data);
-
         const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
         const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
         const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
@@ -343,7 +337,6 @@
             'tratamientos-table': tratamientoKey,
             'recoleccion-table': recoleccionKey
         };
-
         window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
 
         populateTable('parcelas-table', window.parcelasData);
@@ -418,27 +411,20 @@
                         const t = th2.textContent.trim().toLowerCase();
                         return t === "link" || t === "enlace" || t === "url";
                     });
-                    if (linkIdx >= 0 && rowData[linkIdx] !== undefined) {
-                        linkVal = String(rowData[linkIdx] || "").trim();
-                    }
-
+                    if (linkIdx >= 0 && rowData[linkIdx] !== undefined) linkVal = String(rowData[linkIdx] || "").trim();
                     const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www."));
                     const displayNum = val || "";
-
                     html += `<td data-row="${excelRow}" data-col="${col}">
                         <div class="parcela-number-row">
                             ${hasLink 
-                                ? `<a href="${linkVal.startsWith('http') ? linkVal : 'https://' + linkVal}" target="_blank" title="Abrir enlace">${displayNum}</a>` 
+                                ? `<a href="${linkVal.startsWith('http') ? linkVal : 'https://' + linkVal}" target="_blank">${displayNum}</a>` 
                                 : `<span>${displayNum}</span>`}
-                            <input type="text" value="${displayNum}" disabled 
-                                   class="num-parcela-input" style="display:none; max-width:90px;" 
-                                   placeholder="Nº" onblur="autoSave(this)">
+                            <input type="text" value="${displayNum}" disabled class="num-parcela-input" style="display:none; max-width:90px;" placeholder="Nº" onblur="autoSave(this)">
                         </div>
                     </td>`;
                 } else if (isLink) {
                     html += `<td class="link-col" data-row="${excelRow}" data-col="${col}">
-                        <input type="text" class="link-input" value="${val}" disabled 
-                               placeholder="https://..." onblur="autoSave(this)">
+                        <input type="text" class="link-input" value="${val}" disabled placeholder="https://..." onblur="autoSave(this)">
                     </td>`;
                 } else {
                     let v = String(val);
@@ -490,7 +476,6 @@
     function toggleEditRow(btn) {
         const tr = btn.closest('tr');
         tr.classList.add('editing');
-
         tr.querySelectorAll('input[type="text"]').forEach(i => {
             i.disabled = false;
             i.style.display = 'block';
@@ -498,37 +483,61 @@
         tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
             el.style.display = 'none';
         });
-        tr.querySelector('.edit').style.display = 'none';
-        tr.querySelector('.save').style.display = 'inline-flex';
+        const editBtn = tr.querySelector('.edit');
+        const saveBtn = tr.querySelector('.save');
+        if (editBtn) editBtn.style.display = 'none';
+        if (saveBtn) saveBtn.style.display = 'inline-flex';
     }
 
+    // Sale del modo edición al instante
     function finishEditMode(tr) {
         tr.classList.remove('editing');
+
+        // Botones
+        const editBtn = tr.querySelector('.edit');
+        const saveBtn = tr.querySelector('.save');
+        if (editBtn) {
+            editBtn.style.display = 'inline-flex';
+            editBtn.setAttribute('onclick', 'toggleEditRow(this)');
+        }
+        if (saveBtn) {
+            saveBtn.style.display = 'none';
+            saveBtn.setAttribute('onclick', 'saveRow(this)');
+        }
+
+        // Inputs normales → deshabilitados
         tr.querySelectorAll('input[type="text"]').forEach(i => {
             i.disabled = true;
             if (i.classList.contains('num-parcela-input') || i.classList.contains('link-input')) {
                 i.style.display = 'none';
+            } else {
+                i.style.display = 'block';
             }
         });
-        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
-            el.style.display = 'inline';
+
+        // Nº Parcela: mostrar texto / enlace, ocultar input
+        tr.querySelectorAll('.parcela-number-row').forEach(row => {
+            const numInput = row.querySelector('.num-parcela-input');
+            const display = row.querySelector('a, span');
+            if (numInput && display) {
+                display.textContent = numInput.value || '';
+                display.style.display = 'inline';
+            }
+            if (numInput) numInput.style.display = 'none';
         });
-        // Actualizar el texto visible del número de parcela
-        const numInput = tr.querySelector('.num-parcela-input');
-        if (numInput) {
-            const display = tr.querySelector('.parcela-number-row a, .parcela-number-row span');
-            if (display) display.textContent = numInput.value;
-        }
-        const editBtn = tr.querySelector('.edit');
-        const saveBtn = tr.querySelector('.save');
-        if (editBtn) editBtn.style.display = 'inline-flex';
-        if (saveBtn) saveBtn.style.display = 'none';
+
+        // Si la celda de Nº Parcela es solo un input (fila nueva), convertirla a vista normal
+        tr.querySelectorAll('td').forEach(td => {
+            const plainInput = td.querySelector('input[type="text"]:not(.link-input):not(.num-parcela-input)');
+            if (plainInput && !td.querySelector('.parcela-number-row') && !td.classList.contains('link-col')) {
+                plainInput.disabled = true;
+            }
+        });
     }
 
     function addRow(tableId) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector('tbody');
-        // Quitar mensaje de "Sin datos" si existe
         const empty = tbody.querySelector('[colspan]');
         if (empty) empty.closest('tr').remove();
 
@@ -537,7 +546,7 @@
         const dataHeaders = headers.slice(1);
 
         let html = `<td><div class="action-cell">
-            <button class="btn-icon edit" style="display:none;">✏️</button>
+            <button class="btn-icon edit" style="display:none;" onclick="toggleEditRow(this)">✏️</button>
             <button class="btn-icon save" style="display:inline-flex;" onclick="saveNewRow(this)">💾</button>
             <button class="btn-icon delete" onclick="this.closest('tr').remove()">🗑️</button>
         </div></td>`;
@@ -595,22 +604,20 @@
             const input = td.querySelector('input[type="text"]');
             const select = td.querySelector('select');
             const dates = td.querySelectorAll('.date-text');
-
-            if (input && input.style.display !== 'none') value = input.value;
+            if (input) value = input.value;
             else if (select) value = select.value === "__custom__" ? (td.querySelector('input')?.value || "") : select.value;
             else if (dates.length) value = Array.from(dates).map(d => d.innerText).join(', ');
-            else if (input) value = input.value;
-
             values.push(value);
         }
 
+        // Salir del modo edición AL INSTANTE (antes de esperar al servidor)
+        finishEditMode(tr);
         showSaving();
 
         try {
             const result = await sendToSheet({ action: "append", sheet: sheet, values: values });
             const newRow = result && result.newRow ? result.newRow : null;
 
-            // Asignar data-row / data-col a las celdas para futuros autoSave
             if (newRow) {
                 tds.slice(1).forEach((td, idx) => {
                     td.dataset.row = newRow;
@@ -618,11 +625,8 @@
                 });
             }
 
-            // Cambiar botones: ya no es fila nueva
             const delBtn = tr.querySelector('.btn-icon.delete');
             if (delBtn) delBtn.setAttribute('onclick', 'deleteRow(this)');
-
-            finishEditMode(tr);
         } catch (e) {
             console.error(e);
             alert("Error al guardar");
@@ -633,16 +637,17 @@
         const tr = btn.closest('tr');
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        
+
+        // Salir del modo edición AL INSTANTE
+        finishEditMode(tr);
+        showSaving();
+
         for (const input of tr.querySelectorAll('input[type="text"]')) {
             const td = input.closest('td');
             if (td.dataset.row) {
                 await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
             }
         }
-
-        showSaving();
-        finishEditMode(tr);
     }
 
     async function autoSave(el) {
@@ -665,7 +670,6 @@
         td.querySelectorAll('.date-text').forEach(s => dates.push(s.textContent.trim()));
         dates.push(dateStr);
         container.innerHTML = renderDatesHTML(dates.join(', '));
-
         if (td.dataset.row) {
             const table = tr.closest('table');
             const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
@@ -680,7 +684,6 @@
         td.querySelectorAll('.date-text').forEach(s => dates.push(s.textContent.trim()));
         dates.splice(idx, 1);
         td.querySelector('.dates-container').innerHTML = renderDatesHTML(dates.join(', '));
-
         if (td.dataset.row) {
             const table = td.closest('table');
             const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
@@ -691,7 +694,6 @@
 
     async function deleteRow(btn) {
         if (!confirm("¿Eliminar este registro?")) return;
-
         const tr = btn.closest('tr');
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
@@ -703,13 +705,8 @@
         }
 
         showSaving();
-
         try {
-            await sendToSheet({
-                action: "delete",
-                sheet: sheet,
-                row: parseInt(td.dataset.row)
-            });
+            await sendToSheet({ action: "delete", sheet: sheet, row: parseInt(td.dataset.row) });
             tr.remove();
         } catch (e) {
             console.error(e);
@@ -719,16 +716,13 @@
 
     async function confirmReset() {
         if (!confirm("¿Vaciar las columnas de trabajo?\n\nLos datos de las parcelas se mantendrán.")) return;
-
         showSaving();
         await sendToSheet({ action: "clear" });
-        // Solo en este caso recargamos datos sin recargar la página entera
         try {
             const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
             const data = await response.json();
             processData(data);
-            const saved = sessionStorage.getItem('activeView');
-            switchView(saved || 'home');
+            switchView(sessionStorage.getItem('activeView') || 'home');
         } catch (e) {
             console.error(e);
         }
@@ -747,11 +741,7 @@
                 body: JSON.stringify(payload)
             });
             const text = await res.text();
-            try {
-                return JSON.parse(text);
-            } catch {
-                return { status: "success" };
-            }
+            try { return JSON.parse(text); } catch { return { status: "success" }; }
         } catch (e) {
             console.error("Error al guardar:", e);
             return { status: "error" };
@@ -775,17 +765,14 @@
         doc.setFontSize(16);
         doc.text("Reporte Completo - Gestión Agrícola", 14, y);
         y += 10;
-
         document.querySelectorAll('.table-responsive table').forEach((table, idx) => {
             const name = table.getAttribute('data-sheet') || `Hoja ${idx+1}`;
             if (idx > 0) { doc.addPage(); y = 15; }
             doc.setFontSize(12);
             doc.text(`Hoja: ${name}`, 14, y);
             y += 6;
-
             const headers = Array.from(table.querySelectorAll('thead th')).slice(1)
-                .filter(th => !th.classList.contains('link-col'))
-                .map(th => th.innerText);
+                .filter(th => !th.classList.contains('link-col')).map(th => th.innerText);
             const rows = [];
             table.querySelectorAll('tbody tr').forEach(tr => {
                 if (tr.querySelector('[colspan]')) return;
@@ -804,7 +791,6 @@
                 });
                 if (row.length) rows.push(row);
             });
-
             doc.autoTable({
                 startY: y, head: [headers], body: rows, theme: 'grid',
                 headStyles: { fillColor: [16, 185, 129] },
