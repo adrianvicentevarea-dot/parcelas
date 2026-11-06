@@ -446,7 +446,7 @@
                                style="display:none;" placeholder="https://..." onblur="autoSave(this)">
                     </td>`;
                 } else {
-                    // Nombre Parcela y resto → campo de texto normal
+                    // Nombre Parcela y cualquier otra columna → SOLO texto
                     let v = String(val);
                     if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
                     html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
@@ -551,7 +551,6 @@
             } else if (isLink) {
                 html += `<td><input type="text" class="link-input" value="" placeholder="https://..."></td>`;
             } else {
-                // Nombre Parcela y resto → texto
                 html += `<td><input type="text" value=""></td>`;
             }
         });
