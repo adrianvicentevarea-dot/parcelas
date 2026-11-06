@@ -8,17 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --accent-blue: #3b82f6;
-            --accent-red: #ef4444;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --input-bg: #0f172a;
-            --input-disabled-bg: #1e293b;
+            --bg-dark: #0f172a; --card-bg: #1e293b; --primary: #10b981; --primary-hover: #059669;
+            --accent-blue: #3b82f6; --accent-red: #ef4444; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border-color: #334155; --input-bg: #0f172a; --input-disabled-bg: #1e293b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 15px; }
@@ -37,14 +29,13 @@
             background-color: var(--primary); color: white; padding: 12px 20px; border-radius: 8px;
             display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
         }
-        .top-nav h1 { font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .top-nav h1 { font-size: 1.1rem; }
         .btn {
             padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem;
             display: inline-flex; align-items: center; gap: 6px;
         }
         .btn-home { background-color: white; color: var(--primary); }
         .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
         .btn-danger { background-color: var(--accent-red); color: white; }
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .view-section { display: none; }
@@ -59,7 +50,6 @@
             display: flex; align-items: center; justify-content: space-between; cursor: pointer;
             box-shadow: 0 3px 6px rgba(0,0,0,0.15); min-height: 110px;
         }
-        .menu-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.25); }
         .menu-card-laboreos {
             background: linear-gradient(rgba(15,23,42,0.45), rgba(15,23,42,0.45)), url('WhatsApp Image 2026-09-09 at 12.36.51.jpeg');
             background-size: cover; background-position: center;
@@ -80,7 +70,7 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); margin-bottom: 30px;
         }
         .view-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 16px; }
-        .table-actions { margin-bottom: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .table-actions { margin-bottom: 16px; }
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th {
@@ -92,7 +82,11 @@
             background-color: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main);
             padding: 6px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%; min-width: 140px; outline: none;
         }
-        input[type="text"]:disabled { background-color: var(--input-disabled-bg); border: 1px solid transparent; }
+        input[type="text"]:disabled {
+            background-color: var(--input-disabled-bg) !important;
+            border: 1px solid transparent !important;
+            color: var(--text-main);
+        }
         select { cursor: pointer; }
         .action-cell { display: flex; gap: 6px; align-items: center; }
         .btn-icon {
@@ -109,7 +103,6 @@
             font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between;
             border: 1px solid #475569; flex: 1; min-width: 110px; gap: 6px;
         }
-        .date-chip span { white-space: nowrap; }
         .date-chip button { background: transparent; border: none; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 1rem; }
         .btn-action-date {
             background-color: var(--accent-blue); color: white; border: none; padding: 6px 12px;
@@ -170,7 +163,7 @@
     <div id="view-parcelas" class="view-section">
         <div class="top-nav">
             <h1>📍 Parcelas</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Registros de Parcelas</div>
@@ -196,7 +189,7 @@
     <div id="view-laboreos" class="view-section">
         <div class="top-nav">
             <h1>🚜 Laboreos</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Gestión de Trabajos de Laboreo</div>
@@ -221,7 +214,7 @@
     <div id="view-poda" class="view-section">
         <div class="top-nav">
             <h1>✂️ Poda</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Registros y Control de Poda</div>
@@ -245,7 +238,7 @@
     <div id="view-tratamientos" class="view-section">
         <div class="top-nav">
             <h1>🧪 Tratamientos</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Control de Tratamientos Aplicados</div>
@@ -269,7 +262,7 @@
     <div id="view-recoleccion" class="view-section">
         <div class="top-nav">
             <h1>📦 Tareas / Recolección</h1>
-            <div class="nav-buttons"><button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button></div>
+            <button class="btn btn-home" onclick="switchView('home')">🏠 Inicio</button>
         </div>
         <div class="table-container-wrapper">
             <div class="view-title">Control de Tareas y Kilos Cosechados</div>
@@ -292,271 +285,171 @@
 </div>
 
 <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
-    window.realSheetNames = {};
-    window.parcelasData = [];
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycuDsb51R_YByTMRH0m_wzjiAP_3c1Iz_8k4BH28EPcx6TiFl68OgR2-GxE4o6N6RY/exec';
+window.realSheetNames = {};
+window.parcelasData = [];
 
-    function showSaving() {
-        const msg = document.getElementById('saving-msg');
-        msg.style.display = 'block';
-        setTimeout(() => msg.style.display = 'none', 1200);
+function showSaving() {
+    const msg = document.getElementById('saving-msg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 1200);
+}
+
+/* ========== SALIR DE EDICIÓN AL INSTANTE ========== */
+function exitEditMode(tr) {
+    if (!tr) return;
+
+    // Quitar clase editing
+    tr.classList.remove('editing');
+
+    // Reconstruir botones de acción (más fiable que solo ocultar)
+    const actionCell = tr.querySelector('.action-cell');
+    if (actionCell) {
+        actionCell.innerHTML =
+            '<button class="btn-icon edit" style="display:inline-flex;background-color:#f59e0b;" onclick="toggleEditRow(this)">✏️</button>' +
+            '<button class="btn-icon save" style="display:none;background-color:#10b981;" onclick="saveRow(this)">💾</button>' +
+            '<button class="btn-icon delete" style="display:inline-flex;background-color:#ef4444;" onclick="deleteRow(this)">🗑️</button>';
     }
 
-    // Sale del modo edición de forma inmediata y forzada
-    function exitEditMode(tr) {
-        if (!tr) return;
-        tr.classList.remove('editing');
+    // Ocultar Link a la fuerza
+    tr.querySelectorAll('.link-col').forEach(function(td) {
+        td.style.setProperty('display', 'none', 'important');
+        const inp = td.querySelector('input');
+        if (inp) { inp.disabled = true; inp.style.display = 'none'; }
+    });
 
-        // Botones
-        const editBtn = tr.querySelector('.btn-icon.edit');
-        const saveBtn = tr.querySelector('.btn-icon.save');
-        if (editBtn) {
-            editBtn.style.cssText = 'display:inline-flex; background-color:#f59e0b;';
-            editBtn.onclick = function() { toggleEditRow(this); };
+    // Deshabilitar TODOS los inputs de la fila
+    tr.querySelectorAll('input[type="text"]').forEach(function(inp) {
+        inp.disabled = true;
+        inp.blur();
+        if (inp.classList.contains('num-parcela-input') || inp.classList.contains('link-input')) {
+            inp.style.display = 'none';
         }
-        if (saveBtn) {
-            saveBtn.style.cssText = 'display:none;';
-        }
+    });
 
-        // Ocultar columna Link a la fuerza
-        tr.querySelectorAll('.link-col').forEach(td => {
-            td.style.setProperty('display', 'none', 'important');
-        });
-
-        // Deshabilitar todos los inputs
-        tr.querySelectorAll('input[type="text"]').forEach(inp => {
-            inp.disabled = true;
-            if (inp.classList.contains('link-input') || inp.classList.contains('num-parcela-input')) {
-                inp.style.display = 'none';
+    // Nº Parcela: mostrar texto, ocultar input
+    tr.querySelectorAll('.parcela-number-row').forEach(function(row) {
+        const numInput = row.querySelector('.num-parcela-input');
+        let display = row.querySelector('a, span');
+        if (numInput) {
+            if (!display) {
+                display = document.createElement('span');
+                row.insertBefore(display, numInput);
             }
-        });
+            display.textContent = numInput.value || '';
+            display.style.display = 'inline';
+            numInput.style.display = 'none';
+            numInput.disabled = true;
+        }
+    });
+}
 
-        // Nº Parcela: mostrar texto, ocultar input
-        tr.querySelectorAll('.parcela-number-row').forEach(row => {
-            const numInput = row.querySelector('.num-parcela-input');
-            let display = row.querySelector('a, span');
-            if (numInput) {
-                if (!display) {
-                    display = document.createElement('span');
-                    row.insertBefore(display, numInput);
-                }
-                display.textContent = numInput.value || '';
-                display.style.display = 'inline';
-                numInput.style.display = 'none';
+function toggleEditRow(btn) {
+    const tr = btn.closest('tr');
+    tr.classList.add('editing');
+
+    // Botones
+    const actionCell = tr.querySelector('.action-cell');
+    if (actionCell) {
+        actionCell.innerHTML =
+            '<button class="btn-icon edit" style="display:none;" onclick="toggleEditRow(this)">✏️</button>' +
+            '<button class="btn-icon save" style="display:inline-flex;background-color:#10b981;" onclick="saveRow(this)">💾</button>' +
+            '<button class="btn-icon delete" style="display:inline-flex;background-color:#ef4444;" onclick="deleteRow(this)">🗑️</button>';
+    }
+
+    // Mostrar Link
+    tr.querySelectorAll('.link-col').forEach(function(td) {
+        td.style.setProperty('display', 'table-cell', 'important');
+        const inp = td.querySelector('input');
+        if (inp) { inp.disabled = false; inp.style.display = 'block'; }
+    });
+
+    // Habilitar inputs
+    tr.querySelectorAll('input[type="text"]').forEach(function(inp) {
+        inp.disabled = false;
+        if (!inp.classList.contains('link-input') || tr.classList.contains('editing')) {
+            if (inp.classList.contains('num-parcela-input') || inp.classList.contains('link-input')) {
+                inp.style.display = 'block';
             }
-        });
-    }
-
-    function toggleEditRow(btn) {
-        const tr = btn.closest('tr');
-        tr.classList.add('editing');
-
-        tr.querySelectorAll('input[type="text"]').forEach(i => {
-            i.disabled = false;
-            i.style.display = 'block';
-        });
-        tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(el => {
-            el.style.display = 'none';
-        });
-        tr.querySelectorAll('.link-col').forEach(td => {
-            td.style.setProperty('display', 'table-cell', 'important');
-        });
-
-        const editBtn = tr.querySelector('.btn-icon.edit');
-        const saveBtn = tr.querySelector('.btn-icon.save');
-        if (editBtn) editBtn.style.display = 'none';
-        if (saveBtn) {
-            saveBtn.style.cssText = 'display:inline-flex; background-color:#10b981;';
-            saveBtn.onclick = function() { saveRow(this); };
         }
+    });
+
+    // Ocultar texto de Nº Parcela, mostrar input
+    tr.querySelectorAll('.parcela-number-row a, .parcela-number-row span').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    tr.querySelectorAll('.num-parcela-input').forEach(function(inp) {
+        inp.style.display = 'block';
+        inp.disabled = false;
+    });
+}
+
+async function loadDataFromExcel() {
+    try {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
+        if (!response.ok) throw new Error("Error de red");
+        const data = await response.json();
+        processData(data);
+        document.getElementById('loading-overlay').style.display = 'none';
+        switchView(sessionStorage.getItem('activeView') || 'home');
+    } catch (err) {
+        console.error(err);
+        document.getElementById('loading-overlay').style.display = 'none';
+        alert("Error al cargar datos.");
+        switchView('home');
+    }
+}
+
+function processData(data) {
+    const keys = Object.keys(data);
+    const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
+    const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
+    const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
+    const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
+    const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
+
+    window.realSheetNames = {
+        'parcelas-table': parcelaKey,
+        'laboreos-table': laboreoKey,
+        'poda-table': podaKey,
+        'tratamientos-table': tratamientoKey,
+        'recoleccion-table': recoleccionKey
+    };
+    window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
+
+    populateTable('parcelas-table', window.parcelasData);
+    populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
+    populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
+    populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
+    populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
+}
+
+function populateTable(tableId, rowsData) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+    const headers = Array.from(table.querySelectorAll('th'));
+    const sheetName = table.getAttribute('data-sheet');
+    const dataHeaders = headers.slice(1);
+
+    if (!rowsData || rowsData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + headers.length + '" style="text-align:center;color:var(--text-muted);padding:20px;">Sin datos</td></tr>';
+        return;
     }
 
-    async function loadDataFromExcel() {
-        try {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').textContent = "Cargando datos...";
-            const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
-            if (!response.ok) throw new Error("Error de red");
-            const data = await response.json();
-            processData(data);
-            document.getElementById('loading-overlay').style.display = 'none';
-            switchView(sessionStorage.getItem('activeView') || 'home');
-        } catch (err) {
-            console.error(err);
-            document.getElementById('loading-overlay').style.display = 'none';
-            alert("Error al cargar datos. Revisa la URL del Apps Script.");
-            switchView('home');
-        }
-    }
+    rowsData.forEach(function(rowData, rowIndex) {
+        const excelRow = rowIndex + 2;
+        let html = '<td><div class="action-cell">' +
+            '<button class="btn-icon edit" onclick="toggleEditRow(this)">✏️</button>' +
+            '<button class="btn-icon save" style="display:none;" onclick="saveRow(this)">💾</button>' +
+            '<button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>' +
+            '</div></td>';
 
-    function processData(data) {
-        const keys = Object.keys(data);
-        const parcelaKey = keys.find(k => k.toLowerCase().includes("parcelas") || k.toLowerCase().includes("identificación")) || keys[0];
-        const laboreoKey = keys.find(k => k.toLowerCase().includes("laboreos"));
-        const podaKey = keys.find(k => k.toLowerCase().includes("poda"));
-        const tratamientoKey = keys.find(k => k.toLowerCase().includes("tratamientos"));
-        const recoleccionKey = keys.find(k => k.toLowerCase().includes("recolección") || k.toLowerCase().includes("recoleccion"));
-
-        window.realSheetNames = {
-            'parcelas-table': parcelaKey,
-            'laboreos-table': laboreoKey,
-            'poda-table': podaKey,
-            'tratamientos-table': tratamientoKey,
-            'recoleccion-table': recoleccionKey
-        };
-        window.parcelasData = parcelaKey ? data[parcelaKey].slice(1) : [];
-
-        populateTable('parcelas-table', window.parcelasData);
-        populateTable('laboreos-table', laboreoKey ? data[laboreoKey].slice(1) : []);
-        populateTable('poda-table', podaKey ? data[podaKey].slice(1) : []);
-        populateTable('tratamientos-table', tratamientoKey ? data[tratamientoKey].slice(1) : []);
-        populateTable('recoleccion-table', recoleccionKey ? data[recoleccionKey].slice(1) : []);
-    }
-
-    function populateTable(tableId, rowsData) {
-        const table = document.getElementById(tableId);
-        if (!table) return;
-        const tbody = table.querySelector('tbody');
-        tbody.innerHTML = '';
-        const headers = Array.from(table.querySelectorAll('th'));
-        const sheetName = table.getAttribute('data-sheet');
-        const dataHeaders = headers.slice(1);
-
-        if (!rowsData || rowsData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center;color:var(--text-muted);padding:20px;">Sin datos</td></tr>`;
-            return;
-        }
-
-        rowsData.forEach((rowData, rowIndex) => {
-            const excelRow = rowIndex + 2;
-            let html = `<td><div class="action-cell">
-                <button class="btn-icon edit" onclick="toggleEditRow(this)">✏️</button>
-                <button class="btn-icon save" style="display:none;" onclick="saveRow(this)">💾</button>
-                <button class="btn-icon delete" onclick="deleteRow(this)">🗑️</button>
-            </div></td>`;
-
-            dataHeaders.forEach((th, idx) => {
-                const val = rowData[idx] !== undefined && rowData[idx] !== null ? String(rowData[idx]) : '';
-                const col = idx + 1;
-                const h = th.textContent.trim().toLowerCase();
-                const isFecha = h.includes('fecha de registro');
-                const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
-                const isTrabajoPor = h === "trabajo realizado por";
-                const isNumParcela = h === "nº parcela" || h === "numero de parcela";
-                const isLink = h === "link" || h === "enlace" || h === "url";
-                const isBtn = dataHeaders[idx + 1] && dataHeaders[idx + 1].textContent.toLowerCase().includes('fecha de registro');
-
-                if (isBtn) {
-                    html += `<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
-                } else if (isFecha) {
-                    html += `<td data-row="${excelRow}" data-col="${col}" data-is-date-col="true"><div class="dates-container">${renderDatesHTML(val)}</div></td>`;
-                } else if (isTrat) {
-                    html += `<td data-row="${excelRow}" data-col="${col}">
-                        <select onchange="autoSave(this)">
-                            <option value="">-- Selecciona --</option>
-                            <option value="Abonado" ${val==="Abonado"?"selected":""}>Abonado</option>
-                            <option value="Insecticida" ${val==="Insecticida"?"selected":""}>Insecticida</option>
-                            <option value="Fungicida" ${val==="Fungicida"?"selected":""}>Fungicida</option>
-                        </select></td>`;
-                } else if (isTrabajoPor) {
-                    const isSubempresa = val === "Subempresa";
-                    const isCustom = val && val !== "Subempresa";
-                    html += `<td data-row="${excelRow}" data-col="${col}">
-                        <div class="trabajo-container">
-                            <select onchange="handleTrabajoChange(this)">
-                                <option value="">-- Selecciona --</option>
-                                <option value="Subempresa" ${isSubempresa ? "selected" : ""}>Subempresa</option>
-                                <option value="__custom__" ${isCustom ? "selected" : ""}>Escribir texto...</option>
-                            </select>
-                            <input type="text" value="${isCustom ? val : ''}" placeholder="Escribe aquí..." 
-                                   style="display: ${isCustom ? 'block' : 'none'};" onblur="autoSave(this)">
-                        </div>
-                    </td>`;
-                } else if (isNumParcela) {
-                    let linkVal = "";
-                    const linkIdx = dataHeaders.findIndex(th2 => {
-                        const t = th2.textContent.trim().toLowerCase();
-                        return t === "link" || t === "enlace" || t === "url";
-                    });
-                    if (linkIdx >= 0 && rowData[linkIdx] !== undefined) linkVal = String(rowData[linkIdx] || "").trim();
-                    const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www."));
-                    const displayNum = val || "";
-                    html += `<td data-row="${excelRow}" data-col="${col}">
-                        <div class="parcela-number-row">
-                            ${hasLink 
-                                ? `<a href="${linkVal.startsWith('http') ? linkVal : 'https://' + linkVal}" target="_blank">${displayNum}</a>` 
-                                : `<span>${displayNum}</span>`}
-                            <input type="text" value="${displayNum}" disabled class="num-parcela-input" style="display:none; max-width:90px;" placeholder="Nº" onblur="autoSave(this)">
-                        </div>
-                    </td>`;
-                } else if (isLink) {
-                    html += `<td class="link-col" data-row="${excelRow}" data-col="${col}">
-                        <input type="text" class="link-input" value="${val}" disabled placeholder="https://..." onblur="autoSave(this)">
-                    </td>`;
-                } else {
-                    let v = String(val);
-                    if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
-                    html += `<td data-row="${excelRow}" data-col="${col}"><input type="text" value="${v}" disabled onblur="autoSave(this)"></td>`;
-                }
-            });
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = html;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function handleTrabajoChange(select) {
-        const container = select.closest('.trabajo-container');
-        const input = container.querySelector('input[type="text"]');
-        if (select.value === "__custom__") {
-            input.style.display = 'block';
-            input.focus();
-        } else {
-            input.style.display = 'none';
-            input.value = '';
-            autoSaveFromSelect(select);
-        }
-    }
-
-    async function autoSaveFromSelect(select) {
-        const td = select.closest('td');
-        if (!td.dataset.row) return;
-        const table = select.closest('table');
-        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        await sendUpdate(sheet, td.dataset.row, td.dataset.col, select.value);
-        showSaving();
-    }
-
-    function renderDatesHTML(raw) {
-        if (!raw || !String(raw).trim()) return "";
-        const dates = String(raw).split(',').map(d => d.trim()).filter(Boolean);
-        let html = "";
-        for (let i = 0; i < dates.length; i += 2) {
-            html += `<div class="dates-row"><span class="date-chip"><span class="date-text">${dates[i]}</span><button onclick="removeDate(this,${i})">&times;</button></span>`;
-            if (i + 1 < dates.length) html += `<span class="date-chip"><span class="date-text">${dates[i+1]}</span><button onclick="removeDate(this,${i+1})">&times;</button></span>`;
-            html += `</div>`;
-        }
-        return html;
-    }
-
-    function addRow(tableId) {
-        const table = document.getElementById(tableId);
-        const tbody = table.querySelector('tbody');
-        const empty = tbody.querySelector('[colspan]');
-        if (empty) empty.closest('tr').remove();
-
-        const headers = Array.from(table.querySelectorAll('th'));
-        const sheetName = table.getAttribute('data-sheet');
-        const dataHeaders = headers.slice(1);
-
-        let html = `<td><div class="action-cell">
-            <button class="btn-icon edit" style="display:none;" onclick="toggleEditRow(this)">✏️</button>
-            <button class="btn-icon save" style="display:inline-flex;background-color:#10b981;" onclick="saveNewRow(this)">💾</button>
-            <button class="btn-icon delete" onclick="this.closest('tr').remove()">🗑️</button>
-        </div></td>`;
-
-        dataHeaders.forEach((th, idx) => {
+        dataHeaders.forEach(function(th, idx) {
+            const val = rowData[idx] !== undefined && rowData[idx] !== null ? String(rowData[idx]) : '';
+            const col = idx + 1;
             const h = th.textContent.trim().toLowerCase();
             const isFecha = h.includes('fecha de registro');
             const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
@@ -566,248 +459,347 @@
             const isBtn = dataHeaders[idx + 1] && dataHeaders[idx + 1].textContent.toLowerCase().includes('fecha de registro');
 
             if (isBtn) {
-                html += `<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>`;
+                html += '<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>';
             } else if (isFecha) {
-                html += `<td data-is-date-col="true"><div class="dates-container"></div></td>`;
+                html += '<td data-row="' + excelRow + '" data-col="' + col + '" data-is-date-col="true"><div class="dates-container">' + renderDatesHTML(val) + '</div></td>';
             } else if (isTrat) {
-                html += `<td><select><option value="">-- Selecciona --</option><option value="Abonado">Abonado</option><option value="Insecticida">Insecticida</option><option value="Fungicida">Fungicida</option></select></td>`;
+                html += '<td data-row="' + excelRow + '" data-col="' + col + '"><select onchange="autoSave(this)">' +
+                    '<option value="">-- Selecciona --</option>' +
+                    '<option value="Abonado"' + (val==="Abonado"?' selected':'') + '>Abonado</option>' +
+                    '<option value="Insecticida"' + (val==="Insecticida"?' selected':'') + '>Insecticida</option>' +
+                    '<option value="Fungicida"' + (val==="Fungicida"?' selected':'') + '>Fungicida</option>' +
+                    '</select></td>';
             } else if (isTrabajoPor) {
-                html += `<td><div class="trabajo-container">
-                    <select onchange="handleTrabajoChange(this)">
-                        <option value="">-- Selecciona --</option>
-                        <option value="Subempresa">Subempresa</option>
-                        <option value="__custom__">Escribir texto...</option>
-                    </select>
-                    <input type="text" placeholder="Escribe aquí..." style="display:none;">
-                </div></td>`;
+                const isSubempresa = val === "Subempresa";
+                const isCustom = val && val !== "Subempresa";
+                html += '<td data-row="' + excelRow + '" data-col="' + col + '"><div class="trabajo-container">' +
+                    '<select onchange="handleTrabajoChange(this)">' +
+                    '<option value="">-- Selecciona --</option>' +
+                    '<option value="Subempresa"' + (isSubempresa?' selected':'') + '>Subempresa</option>' +
+                    '<option value="__custom__"' + (isCustom?' selected':'') + '>Escribir texto...</option>' +
+                    '</select>' +
+                    '<input type="text" value="' + (isCustom ? val : '') + '" placeholder="Escribe aquí..." style="display:' + (isCustom?'block':'none') + ';" onblur="autoSave(this)">' +
+                    '</div></td>';
             } else if (isNumParcela) {
-                html += `<td><input type="text" value="" placeholder="Nº Parcela"></td>`;
+                let linkVal = "";
+                const linkIdx = dataHeaders.findIndex(function(th2) {
+                    const t = th2.textContent.trim().toLowerCase();
+                    return t === "link" || t === "enlace" || t === "url";
+                });
+                if (linkIdx >= 0 && rowData[linkIdx] !== undefined) linkVal = String(rowData[linkIdx] || "").trim();
+                const hasLink = linkVal && (linkVal.startsWith("http") || linkVal.startsWith("www."));
+                const displayNum = val || "";
+                html += '<td data-row="' + excelRow + '" data-col="' + col + '"><div class="parcela-number-row">' +
+                    (hasLink
+                        ? '<a href="' + (linkVal.startsWith('http') ? linkVal : 'https://' + linkVal) + '" target="_blank">' + displayNum + '</a>'
+                        : '<span>' + displayNum + '</span>') +
+                    '<input type="text" value="' + displayNum + '" disabled class="num-parcela-input" style="display:none;max-width:90px;" placeholder="Nº" onblur="autoSave(this)">' +
+                    '</div></td>';
             } else if (isLink) {
-                html += `<td class="link-col"><input type="text" class="link-input" value="" placeholder="https://..."></td>`;
+                html += '<td class="link-col" data-row="' + excelRow + '" data-col="' + col + '">' +
+                    '<input type="text" class="link-input" value="' + val + '" disabled placeholder="https://..." onblur="autoSave(this)">' +
+                    '</td>';
             } else {
-                html += `<td><input type="text" value=""></td>`;
+                let v = String(val);
+                if (v.includes('T') && v.endsWith('Z')) v = v.split('T')[0];
+                html += '<td data-row="' + excelRow + '" data-col="' + col + '"><input type="text" value="' + v + '" disabled onblur="autoSave(this)"></td>';
             }
         });
 
         const tr = document.createElement('tr');
-        tr.classList.add('editing');
         tr.innerHTML = html;
         tbody.appendChild(tr);
-        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+}
+
+function handleTrabajoChange(select) {
+    const container = select.closest('.trabajo-container');
+    const input = container.querySelector('input[type="text"]');
+    if (select.value === "__custom__") {
+        input.style.display = 'block';
+        input.focus();
+    } else {
+        input.style.display = 'none';
+        input.value = '';
+        autoSaveFromSelect(select);
+    }
+}
+
+async function autoSaveFromSelect(select) {
+    const td = select.closest('td');
+    if (!td.dataset.row) return;
+    const table = select.closest('table');
+    const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+    await sendUpdate(sheet, td.dataset.row, td.dataset.col, select.value);
+    showSaving();
+}
+
+function renderDatesHTML(raw) {
+    if (!raw || !String(raw).trim()) return "";
+    const dates = String(raw).split(',').map(function(d) { return d.trim(); }).filter(Boolean);
+    let html = "";
+    for (let i = 0; i < dates.length; i += 2) {
+        html += '<div class="dates-row"><span class="date-chip"><span class="date-text">' + dates[i] + '</span><button onclick="removeDate(this,' + i + ')">&times;</button></span>';
+        if (i + 1 < dates.length) html += '<span class="date-chip"><span class="date-text">' + dates[i+1] + '</span><button onclick="removeDate(this,' + (i+1) + ')">&times;</button></span>';
+        html += '</div>';
+    }
+    return html;
+}
+
+function addRow(tableId) {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const empty = tbody.querySelector('[colspan]');
+    if (empty) empty.closest('tr').remove();
+
+    const headers = Array.from(table.querySelectorAll('th'));
+    const sheetName = table.getAttribute('data-sheet');
+    const dataHeaders = headers.slice(1);
+
+    let html = '<td><div class="action-cell">' +
+        '<button class="btn-icon edit" style="display:none;" onclick="toggleEditRow(this)">✏️</button>' +
+        '<button class="btn-icon save" style="display:inline-flex;background-color:#10b981;" onclick="saveNewRow(this)">💾</button>' +
+        '<button class="btn-icon delete" onclick="this.closest(\'tr\').remove()">🗑️</button>' +
+        '</div></td>';
+
+    dataHeaders.forEach(function(th, idx) {
+        const h = th.textContent.trim().toLowerCase();
+        const isFecha = h.includes('fecha de registro');
+        const isTrat = sheetName === "Tratamientos" && h === "tratamientos realizados";
+        const isTrabajoPor = h === "trabajo realizado por";
+        const isNumParcela = h === "nº parcela" || h === "numero de parcela";
+        const isLink = h === "link" || h === "enlace" || h === "url";
+        const isBtn = dataHeaders[idx + 1] && dataHeaders[idx + 1].textContent.toLowerCase().includes('fecha de registro');
+
+        if (isBtn) {
+            html += '<td><button class="btn-action-date" onclick="triggerDateAction(this)">📅 Añadir Fecha</button></td>';
+        } else if (isFecha) {
+            html += '<td data-is-date-col="true"><div class="dates-container"></div></td>';
+        } else if (isTrat) {
+            html += '<td><select><option value="">-- Selecciona --</option><option value="Abonado">Abonado</option><option value="Insecticida">Insecticida</option><option value="Fungicida">Fungicida</option></select></td>';
+        } else if (isTrabajoPor) {
+            html += '<td><div class="trabajo-container">' +
+                '<select onchange="handleTrabajoChange(this)">' +
+                '<option value="">-- Selecciona --</option><option value="Subempresa">Subempresa</option><option value="__custom__">Escribir texto...</option>' +
+                '</select><input type="text" placeholder="Escribe aquí..." style="display:none;"></div></td>';
+        } else if (isNumParcela) {
+            html += '<td><input type="text" value="" placeholder="Nº Parcela"></td>';
+        } else if (isLink) {
+            html += '<td class="link-col"><input type="text" class="link-input" value="" placeholder="https://..."></td>';
+        } else {
+            html += '<td><input type="text" value=""></td>';
+        }
+    });
+
+    const tr = document.createElement('tr');
+    tr.classList.add('editing');
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+    tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function saveNewRow(btn) {
+    const tr = btn.closest('tr');
+    const table = tr.closest('table');
+    const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+    const values = [];
+    const tds = Array.from(tr.querySelectorAll('td'));
+
+    for (let i = 1; i < tds.length; i++) {
+        const td = tds[i];
+        let value = "";
+        const input = td.querySelector('input[type="text"]');
+        const select = td.querySelector('select');
+        const dates = td.querySelectorAll('.date-text');
+        if (input) value = input.value;
+        else if (select) value = select.value === "__custom__" ? (td.querySelector('input') ? td.querySelector('input').value : "") : select.value;
+        else if (dates.length) value = Array.from(dates).map(function(d) { return d.innerText; }).join(', ');
+        values.push(value);
     }
 
-    async function saveNewRow(btn) {
-        const tr = btn.closest('tr');
+    // AL INSTANTE: salir de edición
+    exitEditMode(tr);
+    showSaving();
+
+    try {
+        const result = await sendToSheet({ action: "append", sheet: sheet, values: values });
+        const newRow = result && result.newRow ? result.newRow : null;
+        if (newRow) {
+            tds.slice(1).forEach(function(td, idx) {
+                td.dataset.row = newRow;
+                td.dataset.col = idx + 1;
+            });
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Error al guardar en el Excel");
+    }
+}
+
+async function saveRow(btn) {
+    const tr = btn.closest('tr');
+    const table = tr.closest('table');
+    const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+
+    // AL INSTANTE: salir de edición
+    exitEditMode(tr);
+    showSaving();
+
+    for (const input of tr.querySelectorAll('input[type="text"]')) {
+        const td = input.closest('td');
+        if (td && td.dataset.row) {
+            await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
+        }
+    }
+}
+
+async function autoSave(el) {
+    const td = el.closest('td');
+    if (!td || !td.dataset.row) return;
+    const table = el.closest('table');
+    const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+    await sendUpdate(sheet, td.dataset.row, td.dataset.col, el.value);
+    showSaving();
+}
+
+async function triggerDateAction(btn) {
+    const tr = btn.closest('tr');
+    const td = tr.querySelector('[data-is-date-col]');
+    if (!td) return;
+    const container = td.querySelector('.dates-container');
+    const now = new Date();
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    let dates = [];
+    td.querySelectorAll('.date-text').forEach(function(s) { dates.push(s.textContent.trim()); });
+    dates.push(dateStr);
+    container.innerHTML = renderDatesHTML(dates.join(', '));
+    if (td.dataset.row) {
         const table = tr.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        const values = [];
-        const tds = Array.from(tr.querySelectorAll('td'));
-
-        for (let i = 1; i < tds.length; i++) {
-            const td = tds[i];
-            let value = "";
-            const input = td.querySelector('input[type="text"]');
-            const select = td.querySelector('select');
-            const dates = td.querySelectorAll('.date-text');
-            if (input) value = input.value;
-            else if (select) value = select.value === "__custom__" ? (td.querySelector('input')?.value || "") : select.value;
-            else if (dates.length) value = Array.from(dates).map(d => d.innerText).join(', ');
-            values.push(value);
-        }
-
-        // 1) Salir del modo edición YA
-        exitEditMode(tr);
+        await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
         showSaving();
-
-        // 2) Guardar en segundo plano
-        try {
-            const result = await sendToSheet({ action: "append", sheet: sheet, values: values });
-            const newRow = result && result.newRow ? result.newRow : null;
-            if (newRow) {
-                tds.slice(1).forEach((td, idx) => {
-                    td.dataset.row = newRow;
-                    td.dataset.col = idx + 1;
-                });
-            }
-            const delBtn = tr.querySelector('.btn-icon.delete');
-            if (delBtn) delBtn.onclick = function() { deleteRow(this); };
-        } catch (e) {
-            console.error(e);
-            alert("Error al guardar en el Excel");
-        }
     }
+}
 
-    async function saveRow(btn) {
-        const tr = btn.closest('tr');
-        const table = tr.closest('table');
+async function removeDate(btn, idx) {
+    const td = btn.closest('td');
+    let dates = [];
+    td.querySelectorAll('.date-text').forEach(function(s) { dates.push(s.textContent.trim()); });
+    dates.splice(idx, 1);
+    td.querySelector('.dates-container').innerHTML = renderDatesHTML(dates.join(', '));
+    if (td.dataset.row) {
+        const table = td.closest('table');
         const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-
-        // 1) Salir del modo edición YA
-        exitEditMode(tr);
-        showSaving();
-
-        // 2) Guardar en segundo plano
-        for (const input of tr.querySelectorAll('input[type="text"]')) {
-            const td = input.closest('td');
-            if (td && td.dataset.row) {
-                await sendUpdate(sheet, td.dataset.row, td.dataset.col, input.value);
-            }
-        }
-    }
-
-    async function autoSave(el) {
-        const td = el.closest('td');
-        if (!td || !td.dataset.row) return;
-        const table = el.closest('table');
-        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        await sendUpdate(sheet, td.dataset.row, td.dataset.col, el.value);
+        await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
         showSaving();
     }
+}
 
-    async function triggerDateAction(btn) {
-        const tr = btn.closest('tr');
-        const td = tr.querySelector('[data-is-date-col]');
-        if (!td) return;
-        const container = td.querySelector('.dates-container');
-        const now = new Date();
-        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        let dates = [];
-        td.querySelectorAll('.date-text').forEach(s => dates.push(s.textContent.trim()));
-        dates.push(dateStr);
-        container.innerHTML = renderDatesHTML(dates.join(', '));
-        if (td.dataset.row) {
-            const table = tr.closest('table');
-            const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-            await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
-            showSaving();
-        }
+async function deleteRow(btn) {
+    if (!confirm("¿Eliminar este registro?")) return;
+    const tr = btn.closest('tr');
+    const table = tr.closest('table');
+    const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
+    const td = tr.querySelector('[data-row]');
+    if (!td || !td.dataset.row) { tr.remove(); return; }
+    showSaving();
+    try {
+        await sendToSheet({ action: "delete", sheet: sheet, row: parseInt(td.dataset.row) });
+        tr.remove();
+    } catch (e) {
+        console.error(e);
+        alert("Error al eliminar");
     }
+}
 
-    async function removeDate(btn, idx) {
-        const td = btn.closest('td');
-        let dates = [];
-        td.querySelectorAll('.date-text').forEach(s => dates.push(s.textContent.trim()));
-        dates.splice(idx, 1);
-        td.querySelector('.dates-container').innerHTML = renderDatesHTML(dates.join(', '));
-        if (td.dataset.row) {
-            const table = td.closest('table');
-            const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-            await sendUpdate(sheet, td.dataset.row, td.dataset.col, dates.join(', '));
-            showSaving();
-        }
-    }
+async function confirmReset() {
+    if (!confirm("¿Vaciar las columnas de trabajo?\n\nLos datos de las parcelas se mantendrán.")) return;
+    showSaving();
+    await sendToSheet({ action: "clear" });
+    try {
+        const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
+        const data = await response.json();
+        processData(data);
+        switchView(sessionStorage.getItem('activeView') || 'home');
+    } catch (e) { console.error(e); }
+}
 
-    async function deleteRow(btn) {
-        if (!confirm("¿Eliminar este registro?")) return;
-        const tr = btn.closest('tr');
-        const table = tr.closest('table');
-        const sheet = window.realSheetNames[table.id] || table.getAttribute('data-sheet');
-        const td = tr.querySelector('[data-row]');
+async function sendUpdate(sheet, row, col, value) {
+    await sendToSheet({ action: "update", sheet: sheet, row: parseInt(row), col: parseInt(col), value: value });
+}
 
-        if (!td || !td.dataset.row) {
-            tr.remove();
-            return;
-        }
-
-        showSaving();
-        try {
-            await sendToSheet({ action: "delete", sheet: sheet, row: parseInt(td.dataset.row) });
-            tr.remove();
-        } catch (e) {
-            console.error(e);
-            alert("Error al eliminar");
-        }
-    }
-
-    async function confirmReset() {
-        if (!confirm("¿Vaciar las columnas de trabajo?\n\nLos datos de las parcelas se mantendrán.")) return;
-        showSaving();
-        await sendToSheet({ action: "clear" });
-        try {
-            const response = await fetch(WEB_APP_URL + '?t=' + Date.now(), { method: 'GET', redirect: 'follow' });
-            const data = await response.json();
-            processData(data);
-            switchView(sessionStorage.getItem('activeView') || 'home');
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async function sendUpdate(sheet, row, col, value) {
-        await sendToSheet({ action: "update", sheet: sheet, row: parseInt(row), col: parseInt(col), value: value });
-    }
-
-    async function sendToSheet(payload) {
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                redirect: 'follow',
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(payload)
-            });
-            const text = await res.text();
-            try { return JSON.parse(text); } catch { return { status: "success" }; }
-        } catch (e) {
-            console.error("Error al guardar:", e);
-            return { status: "error" };
-        }
-    }
-
-    function switchView(name) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        const t = document.getElementById('view-' + name);
-        if (t) {
-            t.classList.add('active');
-            sessionStorage.setItem('activeView', name);
-            window.scrollTo(0, 0);
-        }
-    }
-
-    function descargarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4');
-        let y = 15;
-        doc.setFontSize(16);
-        doc.text("Reporte Completo - Gestión Agrícola", 14, y);
-        y += 10;
-        document.querySelectorAll('.table-responsive table').forEach((table, idx) => {
-            const name = table.getAttribute('data-sheet') || `Hoja ${idx+1}`;
-            if (idx > 0) { doc.addPage(); y = 15; }
-            doc.setFontSize(12);
-            doc.text(`Hoja: ${name}`, 14, y);
-            y += 6;
-            const headers = Array.from(table.querySelectorAll('thead th')).slice(1)
-                .filter(th => !th.classList.contains('link-col')).map(th => th.innerText);
-            const rows = [];
-            table.querySelectorAll('tbody tr').forEach(tr => {
-                if (tr.querySelector('[colspan]')) return;
-                const row = [];
-                tr.querySelectorAll('td').forEach((td, i) => {
-                    if (i === 0 || td.classList.contains('link-col')) return;
-                    const input = td.querySelector('input');
-                    const select = td.querySelector('select');
-                    const dates = td.querySelectorAll('.date-text');
-                    const link = td.querySelector('a');
-                    if (input && input.style.display !== 'none') row.push(input.value);
-                    else if (select) row.push(select.value === "__custom__" ? (td.querySelector('input')?.value || '') : select.value);
-                    else if (dates.length) row.push(Array.from(dates).map(d => d.innerText).join(', '));
-                    else if (link) row.push(link.innerText);
-                    else row.push(td.innerText.replace('📅 Añadir Fecha', '').trim());
-                });
-                if (row.length) rows.push(row);
-            });
-            doc.autoTable({
-                startY: y, head: [headers], body: rows, theme: 'grid',
-                headStyles: { fillColor: [16, 185, 129] },
-                styles: { fontSize: 8, cellPadding: 3 },
-                margin: { left: 14, right: 14 }
-            });
-            y = doc.lastAutoTable.finalY + 12;
+async function sendToSheet(payload) {
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
         });
-        doc.save("Gestion_Agricola.pdf");
+        const text = await res.text();
+        try { return JSON.parse(text); } catch (e) { return { status: "success" }; }
+    } catch (e) {
+        console.error("Error al guardar:", e);
+        return { status: "error" };
     }
+}
 
-    window.onload = loadDataFromExcel;
+function switchView(name) {
+    document.querySelectorAll('.view-section').forEach(function(s) { s.classList.remove('active'); });
+    const t = document.getElementById('view-' + name);
+    if (t) {
+        t.classList.add('active');
+        sessionStorage.setItem('activeView', name);
+        window.scrollTo(0, 0);
+    }
+}
+
+function descargarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    let y = 15;
+    doc.setFontSize(16);
+    doc.text("Reporte Completo - Gestión Agrícola", 14, y);
+    y += 10;
+    document.querySelectorAll('.table-responsive table').forEach(function(table, idx) {
+        const name = table.getAttribute('data-sheet') || ('Hoja ' + (idx+1));
+        if (idx > 0) { doc.addPage(); y = 15; }
+        doc.setFontSize(12);
+        doc.text('Hoja: ' + name, 14, y);
+        y += 6;
+        const headers = Array.from(table.querySelectorAll('thead th')).slice(1)
+            .filter(function(th) { return !th.classList.contains('link-col'); })
+            .map(function(th) { return th.innerText; });
+        const rows = [];
+        table.querySelectorAll('tbody tr').forEach(function(tr) {
+            if (tr.querySelector('[colspan]')) return;
+            const row = [];
+            tr.querySelectorAll('td').forEach(function(td, i) {
+                if (i === 0 || td.classList.contains('link-col')) return;
+                const input = td.querySelector('input');
+                const select = td.querySelector('select');
+                const dates = td.querySelectorAll('.date-text');
+                const link = td.querySelector('a');
+                if (input && input.style.display !== 'none') row.push(input.value);
+                else if (select) row.push(select.value === "__custom__" ? (td.querySelector('input') ? td.querySelector('input').value : '') : select.value);
+                else if (dates.length) row.push(Array.from(dates).map(function(d) { return d.innerText; }).join(', '));
+                else if (link) row.push(link.innerText);
+                else row.push(td.innerText.replace('📅 Añadir Fecha', '').trim());
+            });
+            if (row.length) rows.push(row);
+        });
+        doc.autoTable({
+            startY: y, head: [headers], body: rows, theme: 'grid',
+            headStyles: { fillColor: [16, 185, 129] },
+            styles: { fontSize: 8, cellPadding: 3 },
+            margin: { left: 14, right: 14 }
+        });
+        y = doc.lastAutoTable.finalY + 12;
+    });
+    doc.save("Gestion_Agricola.pdf");
+}
+
+window.onload = loadDataFromExcel;
 </script>
 </body>
 </html>
